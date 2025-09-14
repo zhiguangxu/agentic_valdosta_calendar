@@ -3,3 +3,4 @@ title: AI Calendar
 emoji: 📅
 sdk: docker
 app_file: backend/main.py
+pinned: false

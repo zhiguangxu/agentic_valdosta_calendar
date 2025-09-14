@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
@@ -7,6 +9,9 @@ import os, json
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 app = FastAPI()
+
+# Serve React build
+app.mount("/static", StaticFiles(directory="static/static"), name="static")
 
 # Allow frontend on localhost:3000
 app.add_middleware(
@@ -19,6 +24,11 @@ app.add_middleware(
 class PromptRequest(BaseModel):
     prompt: str
 
+
+@app.get("/")
+def serve_index():
+    return FileResponse("static/index.html")
+    
 @app.post("/generate_events")
 def generate_events(req: PromptRequest):
     system_message = """

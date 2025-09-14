@@ -20,7 +20,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto" }}>
-      <h1>Agentic ValdostaCalendar</h1>
+      <h1>Agentic Valdosta Calendar</h1>
       <input
         type="text"
         placeholder="Describe events..."

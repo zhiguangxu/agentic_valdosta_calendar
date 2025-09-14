@@ -11,7 +11,8 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # On HF, you want wide access
+    allow_origins=["http://localhost:3000"],  # React dev server
+    # allow_origins=["*"],  # On HF, you want wide access
     allow_methods=["*"],
     allow_headers=["*"],
 )

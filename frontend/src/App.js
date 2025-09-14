@@ -15,6 +15,7 @@ function App() {
       try {
         // Automatically works on Hugging Face since frontend + backend are same host
         const res = await axios.post("/generate_events", { prompt });
+
         console.log("Backend response:", res.data);
         setEvents(res.data.events || []);
       } catch (err) {
@@ -28,7 +29,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto" }}>
-      <h1>📅 AI Event Calendar</h1>
+      <h1>📅 AI Event Calendar (v0.2)</h1>
       <input
         type="text"
         placeholder="Type something like 'Things to do in Valdosta GA' and press Enter"

@@ -28,7 +28,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto" }}>
-      <h1>📅 AI Calendar</h1>
+      <h1>📅 AI Event Calendar</h1>
       <input
         type="text"
         placeholder="Type something like 'Things to do in Valdosta GA' and press Enter"

@@ -1,76 +1,76 @@
-from fastapi import FastAPI
+import os
+import json
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from openai import OpenAI
-import os, json
-
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 app = FastAPI()
 
-# Serve React build
-app.mount("/static", StaticFiles(directory="static/static"), name="static")
-
-# Allow frontend on localhost:3000
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],  # On HF, you want wide access
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
-class PromptRequest(BaseModel):
-    prompt: str
+# OpenAI client
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-
-@app.get("/")
-def serve_index():
-    return FileResponse("static/index.html")
-    
 @app.post("/generate_events")
-def generate_events(req: PromptRequest):
+async def generate_events(request: Request):
+    body = await request.json()
+    prompt = body.get("prompt", "Sample events")
+
     system_message = """
     You are an assistant that outputs a JSON array of events.
     Each event must have:
       - title (string)
       - date (YYYY-MM-DD)
       - time (HH:MM)
-    Return only JSON.
+    Always return JSON, no extra text.
     """
+
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role":"system","content":system_message},
-                {"role":"user","content":req.prompt}
-            ]
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt},
+            ],
         )
+
         raw_output = response.choices[0].message.content.strip()
-        # Remove ``` blocks
-        if raw_output.startswith("```json"): raw_output = raw_output[7:].strip()
-        if raw_output.startswith("```"): raw_output = raw_output[3:].strip()
-        if raw_output.endswith("```"): raw_output = raw_output[:-3].strip()
+
+        if raw_output.startswith("```json"):
+            raw_output = raw_output[len("```json"):].strip()
+        if raw_output.startswith("```"):
+            raw_output = raw_output[3:].strip()
+        if raw_output.endswith("```"):
+            raw_output = raw_output[:-3].strip()
 
         events = json.loads(raw_output)
     except Exception as e:
-        print("Error:", e)
-        events = [
-            {"title":"Sample Event 1","date":"2025-09-15","time":"10:00"},
-            {"title":"Sample Event 2","date":"2025-09-18","time":"15:00"}
-        ]
+        print("Error parsing GPT output:", e)
+        events = []
 
-    # Convert to FullCalendar format
-    fc_events = []
+    clean_events = []
     for e in events:
         date = e.get("date", "2025-09-20")
         time = e.get("time", "12:00")
-        fc_events.append({
-            "title": e.get("title", "Untitled"),
+        clean_events.append({
+            "title": e.get("title", "Untitled Event"),
             "start": f"{date}T{time}:00"
         })
 
-    print("FullCalendar events:", fc_events)
+    return {"events": clean_events}
 
-    return {"events": fc_events}
+
+# === Serve React build ===
+app.mount("/static", StaticFiles(directory="backend/static/static"), name="static")
+
+@app.get("/{full_path:path}")
+def serve_react_app(full_path: str):
+    return FileResponse("backend/static/index.html")

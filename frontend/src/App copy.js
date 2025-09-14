@@ -1,3 +1,4 @@
+// import { useState } from "react";
 import React, { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -11,13 +12,19 @@ function App() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // useEffect(() => {
+  //   fetch("http://localhost:8000/events?query=Things%20to%20do%20in%20Valdosta")
+  //     .then((res) => res.json())
+  //     .then((data) => setEvents(data));
+  // }, []);
+
   const handlePrompt = async (e) => {
     if (e.key === "Enter" && e.target.value.trim() !== "") {
-      const query = e.target.value.trim();
+      const prompt = e.target.value;
       setLoading(true);
       try {
-        // Send JSON body with 'query' key
-        const res = await axios.post("/generate_events", { query });
+        // Automatically works on Hugging Face since frontend + backend are same host
+        const res = await axios.post("/generate_events", { prompt });
 
         console.log("Backend response:", res.data);
         setEvents(res.data.events || []);
@@ -32,7 +39,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto" }}>
-      <h1>📅 Agentic Event Calendar (v0.3)</h1>
+      <h1>📅 Agentic Event Calendar (v0.2)</h1>
       <input
         type="text"
         placeholder="Type something like 'Things to do' and press Enter"
@@ -56,7 +63,6 @@ function App() {
             content: `
               <strong>${info.event.title}</strong><br>
               ${info.event.extendedProps.description}<br>
-              <a href="${info.event.url}" target="_blank" rel="noopener noreferrer">More info</a>
             `,
             allowHTML: true,
           });

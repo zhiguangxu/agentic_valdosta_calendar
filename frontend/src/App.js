@@ -32,7 +32,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto" }}>
-      <h1>📅 Agentic Event Calendar (v0.3)</h1>
+      <h1>🗓️ Agentic Event Calendar (v0.3)</h1>
       <input
         type="text"
         placeholder="Type something like 'Things to do' and press Enter"

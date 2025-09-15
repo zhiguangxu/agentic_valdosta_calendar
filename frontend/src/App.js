@@ -35,7 +35,7 @@ function App() {
       <h1>🗓️ Agentic Event Calendar (v0.3)</h1>
       <input
         type="text"
-        placeholder="Type something like 'Things to do' and press Enter"
+        placeholder="Type something like 'Things to do in Valdosta GA in September 2025' and press Enter"
         onKeyDown={handlePrompt}
         style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
       />

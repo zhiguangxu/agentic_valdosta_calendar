@@ -69,22 +69,48 @@ def search_serper(query: str):
 @app.post("/generate_events")
 def generate_events(request: QueryRequest):
     try:
-        # 1️⃣ Search with Serper
-        serper_results = search_serper(request.query)
-        organic_results = serper_results.get("organic", [])
+        user_query = request.query.strip()
 
-        # 2️⃣ Feed results into GPT for event structuring
-        context = json.dumps(organic_results, indent=2)
+        # ✅ Step 1: approved websites
+        approved_sites = [
+            "https://visitvaldosta.org/events/",
+            "https://www.valdostamainstreet.com/events-calendar",
+            "https://wanderlog.com/list/geoCategory/1592203/top-things-to-do-and-attractions-in-valdosta",
+            "https://exploregeorgia.org/article/guide-to-valdosta",
+            "https://www.tripadvisor.com/Attractions-g35335-Activities-Valdosta_Georgia.html"
+        ]
+
+        # ✅ Step 2: Ask GPT to generate site-specific Serper queries
+        site_query_prompt = f"""
+        You are an assistant that receives a user search query and a list of websites.
+        Generate one Google-style search query per website, using the user query.
+        List the queries in plain text, one per line.
+        User query: "{user_query}"
+        Websites: {json.dumps(approved_sites)}
+        """
+        query_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": site_query_prompt}]
+        )
+
+        raw_queries = query_response.choices[0].message.content.strip().splitlines()
+        search_queries = [q.strip() for q in raw_queries if q.strip()]
+
+        # ✅ Step 3: Run Serper for each site-specific query
+        serper_results = []
+        for q in search_queries:
+            try:
+                res = search_serper(q)
+                serper_results += res.get("organic", [])
+            except Exception as e:
+                print(f"Serper query failed: {q}, error: {e}")
+
+        # ✅ Step 4: Feed Serper results into GPT for structured events
+        context = json.dumps(serper_results, indent=2)
 
         system_prompt = """
         You are an assistant that extracts events from web search results.
-        ONLY use these sources when generating events:
-        - https://visitvaldosta.org/events/
-        - https://www.valdostamainstreet.com/events-calendar
-        - https://wanderlog.com/list/geoCategory/1592203/top-things-to-do-and-attractions-in-valdosta
-        - https://exploregeorgia.org/article/guide-to-valdosta
-        - https://www.tripadvisor.com/Attractions-g35335-Activities-Valdosta_Georgia.html
-        Input: JSON of Google search results (title, snippet, link).
+        Input: JSON of search results (title, snippet, link).
         Output: JSON array of events, each with:
         - title (string)
         - date (YYYY-MM-DD if available, else guess a near-future date)
@@ -110,7 +136,7 @@ def generate_events(request: QueryRequest):
 
         events = json.loads(raw_output)
 
-        # Wrap in 'events' key for frontend
+        # ✅ Return for frontend
         return {"events": events}
 
     except Exception as e:

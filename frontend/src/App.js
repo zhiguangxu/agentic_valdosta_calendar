@@ -4,42 +4,43 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
-
 import axios from "axios";
 
 function App() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handlePrompt = async (e) => {
-    if (e.key === "Enter" && e.target.value.trim() !== "") {
-      const query = e.target.value.trim();
-      setLoading(true);
-      try {
-        // Send JSON body with 'query' key
-        const res = await axios.post("/generate_events", { query });
-
-        console.log("Backend response:", res.data);
-        setEvents(res.data.events || []);
-      } catch (err) {
-        console.error("Error fetching events:", err);
-        alert("Failed to fetch events. Check console for details.");
-      }
-      setLoading(false);
-      e.target.value = "";
+  const fetchEvents = async () => {
+    const query = "Things to do in Valdosta GA";
+    setLoading(true);
+    try {
+      const res = await axios.post("/generate_events", { query });
+      console.log("Backend response:", res.data);
+      setEvents(res.data.events || []);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      alert("Failed to fetch events. Check console for details.");
     }
+    setLoading(false);
   };
 
   return (
     <div style={{ maxWidth: "900px", margin: "40px auto" }}>
-      <h1>🗓️ Agentic Event Calendar (v0.3)</h1>
-      <input
-        type="text"
-        placeholder="Type something like 'Things to do in Valdosta GA in September 2025' and press Enter"
-        onKeyDown={handlePrompt}
-        style={{ width: "100%", padding: "10px", marginBottom: "20px" }}
-      />
+      <h1>🗺️ Wonder what to do in Valdosta GA?</h1>
+      <button
+        onClick={fetchEvents}
+        style={{
+          padding: "10px 20px",
+          fontSize: "16px",
+          marginBottom: "20px",
+          cursor: "pointer",
+        }}
+      >
+        Let's find out!
+      </button>
+
       {loading && <p>Generating events...</p>}
+
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
@@ -47,17 +48,16 @@ function App() {
         eventClick={(info) => {
           if (info.event.url) {
             window.open(info.event.url, "_blank");
-            info.jsEvent.preventDefault(); // prevents default navigation
+            info.jsEvent.preventDefault();
           }
         }}
         eventDidMount={(info) => {
-          // Attach tooltip with description + link
+          const desc = info.event.extendedProps.description || "No description";
+          const url = info.event.url
+            ? `<a href="${info.event.url}" target="_blank" rel="noopener noreferrer">More info</a>`
+            : "";
           tippy(info.el, {
-            content: `
-              <strong>${info.event.title}</strong><br>
-              ${info.event.extendedProps.description}<br>
-              <a href="${info.event.url}" target="_blank" rel="noopener noreferrer">More info</a>
-            `,
+            content: `<strong>${info.event.title}</strong><br>${desc}<br>${url}`,
             allowHTML: true,
           });
         }}

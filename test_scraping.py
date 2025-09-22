@@ -38,13 +38,54 @@ def test_scraping():
         print(f"  Description: {event['description'][:100]}...")
         print()
     
-    total_events = len(events1) + len(events2)
-    print(f"\nTotal events found: {total_events}")
+    # Test wanderlog.com
+    print("\n=== Testing wanderlog.com ===")
+    attractions1 = scrape_site("https://wanderlog.com/list/geoCategory/1592203/top-things-to-do-and-attractions-in-valdosta")
+    print(f"Found {len(attractions1)} attractions from Wanderlog")
     
-    if total_events > 0:
-        print("✅ Scraping test PASSED - Events found!")
+    for i, attraction in enumerate(attractions1[:2]):  # Show first 2 attractions
+        print(f"Attraction {i+1}:")
+        print(f"  Title: {attraction['title']}")
+        print(f"  URL: {attraction['url']}")
+        print(f"  Categories: {attraction.get('categories', [])}")
+        print(f"  Description: {attraction['description'][:100]}...")
+        print()
+    
+    # Test exploregeorgia.org
+    print("\n=== Testing exploregeorgia.org ===")
+    attractions2 = scrape_site("https://exploregeorgia.org/article/guide-to-valdosta")
+    print(f"Found {len(attractions2)} attractions from Explore Georgia")
+    
+    for i, attraction in enumerate(attractions2[:2]):  # Show first 2 attractions
+        print(f"Attraction {i+1}:")
+        print(f"  Title: {attraction['title']}")
+        print(f"  URL: {attraction['url']}")
+        print(f"  Categories: {attraction.get('categories', [])}")
+        print(f"  Description: {attraction['description'][:100]}...")
+        print()
+    
+    # Test tripadvisor.com
+    print("\n=== Testing tripadvisor.com ===")
+    attractions3 = scrape_site("https://www.tripadvisor.com/Attractions-g35335-Activities-Valdosta_Georgia.html")
+    print(f"Found {len(attractions3)} attractions from TripAdvisor")
+    
+    for i, attraction in enumerate(attractions3[:2]):  # Show first 2 attractions
+        print(f"Attraction {i+1}:")
+        print(f"  Title: {attraction['title']}")
+        print(f"  URL: {attraction['url']}")
+        print(f"  Categories: {attraction.get('categories', [])}")
+        print(f"  Description: {attraction['description'][:100]}...")
+        print()
+    
+    total_events = len(events1) + len(events2)
+    total_attractions = len(attractions1) + len(attractions2) + len(attractions3)
+    print(f"\nTotal events found: {total_events}")
+    print(f"Total attractions found: {total_attractions}")
+    
+    if total_events > 0 or total_attractions > 0:
+        print("✅ Scraping test PASSED - Content found!")
     else:
-        print("❌ Scraping test FAILED - No events found!")
+        print("❌ Scraping test FAILED - No content found!")
 
 if __name__ == "__main__":
     test_scraping()

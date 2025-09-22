@@ -19,3 +19,14 @@ To start the backend locally:
 To start the frontend locally:
     from the frontend folder: 
         npm start
+
+To deploy to Hugging Face:
+    cd frontend
+    npm install --> only once 
+    npm run build
+    cp -r build/* ../backend/static/
+
+    cd ..
+    git add .
+    git commit -m "Deploy to HF"
+    git push hf_origin master:main

@@ -14,13 +14,16 @@ This is a simple Hugging Face Space running on Docker.
 
 To start the backend locally: 
     fromt root folder: 
+        ```bash
         uv run uvicorn backend.main:app --reload --port 8000
 
 To start the frontend locally:
     from the frontend folder: 
+        ```bash
         npm start
 
 To deploy to Hugging Face:
+    ```bash
     cd frontend
     npm install --> only once 
     npm run build

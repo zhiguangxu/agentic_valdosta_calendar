@@ -12,24 +12,26 @@ pinned: false
 
 This is a simple Hugging Face Space running on Docker.
 
-To start the backend locally: 
-    fromt root folder: 
-        ```bash
-        uv run uvicorn backend.main:app --reload --port 8000
+To start the backend locally -- from the root folder: 
+```bash
+uv run uvicorn backend.main:app --reload --port 8000
+```
 
-To start the frontend locally:
-    from the frontend folder: 
-        ```bash
-        npm start
+To start the frontend locally -- from the frontend folder: 
+```bash
+npm start
+```
 
 To deploy to Hugging Face:
-    ```bash
-    cd frontend
-    npm install --> only once 
-    npm run build
-    cp -r build/* ../backend/static/
+    
+```bash
+cd frontend
+npm install --> only once 
+npm run build
+cp -r build/* ../backend/static/
 
-    cd ..
-    git add .
-    git commit -m "Deploy to HF"
-    git push hf_origin master:main
+cd ..
+git add -A
+git commit -m "Deploy to HF"
+git push hf_origin master:main
+```

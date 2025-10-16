@@ -14,11 +14,29 @@ from bs4 import BeautifulSoup
 from openai import OpenAI
 from urllib.parse import urljoin
 
+# Try to load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed, continue without it
+
 # -----------------------------
 # Setup
 # -----------------------------
 app = FastAPI()
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+# Get OpenAI API key with fallback
+openai_api_key = os.environ.get("OPENAI_API_KEY")
+if not openai_api_key:
+    print("Warning: OPENAI_API_KEY not found in environment variables.")
+    print("Please set your OpenAI API key as an environment variable or in a .env file.")
+    print("You can set it by running: export OPENAI_API_KEY='your-api-key-here'")
+    # Create a dummy client for now - the app will work but GPT features won't
+    client = None
+else:
+    client = OpenAI(api_key=openai_api_key)
+
 MODE = os.environ.get("ENV", "LOCAL")  # LOCAL or HF deploy
 
 # -----------------------------
@@ -643,7 +661,7 @@ def generate_events(request: QueryRequest):
                 all_events.extend(events)
 
         # Step 2: fallback to GPT if scraping yields too few events
-        if len(all_events) < 5:
+        if len(all_events) < 5 and client is not None:
             # Determine month/year from query (simple regex)
             month_year_match = re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})', user_query, re.I)
             if month_year_match:
@@ -666,30 +684,35 @@ def generate_events(request: QueryRequest):
             - description (short text)
             Always return valid JSON only, no extra text.
             """
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "system", "content": system_prompt}]
-            )
-            raw_output = response.choices[0].message.content.strip()
-            if raw_output.startswith("```json"):
-                raw_output = raw_output[len("```json"):].strip()
-            if raw_output.endswith("```"):
-                raw_output = raw_output[:-3].strip()
             try:
-                gpt_events = json.loads(raw_output)
-                # Assign deterministic dates within month/year
-                for idx, ev in enumerate(gpt_events):
-                    ev_date = datetime(year, month_number, min(idx+1,28))  # avoid overflow
-                    ev["start"] = f"{ev_date.strftime('%Y-%m-%d')}T{ev.get('time', '12:00')}:00"
-                    ev["description"] = ev.get("description", "")
-                    ev["url"] = ev.get("url", "")
-                    ev["allDay"] = False
-                    # Remove old date/time fields
-                    ev.pop("date", None)
-                    ev.pop("time", None)
-                all_events.extend(gpt_events)
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "system", "content": system_prompt}]
+                )
+                raw_output = response.choices[0].message.content.strip()
+                if raw_output.startswith("```json"):
+                    raw_output = raw_output[len("```json"):].strip()
+                if raw_output.endswith("```"):
+                    raw_output = raw_output[:-3].strip()
+                try:
+                    gpt_events = json.loads(raw_output)
+                    # Assign deterministic dates within month/year
+                    for idx, ev in enumerate(gpt_events):
+                        ev_date = datetime(year, month_number, min(idx+1,28))  # avoid overflow
+                        ev["start"] = f"{ev_date.strftime('%Y-%m-%d')}T{ev.get('time', '12:00')}:00"
+                        ev["description"] = ev.get("description", "")
+                        ev["url"] = ev.get("url", "")
+                        ev["allDay"] = False
+                        # Remove old date/time fields
+                        ev.pop("date", None)
+                        ev.pop("time", None)
+                    all_events.extend(gpt_events)
+                except Exception as e:
+                    print(f"Failed to parse GPT events: {e}")
             except Exception as e:
-                print(f"Failed to parse GPT events: {e}")
+                print(f"Failed to generate GPT events: {e}")
+        elif len(all_events) < 5 and client is None:
+            print("OpenAI client not available - skipping GPT fallback")
 
         # Sort events by start date
         all_events.sort(key=lambda x: x["start"])

@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import axios from "axios";
+import Settings from "./Settings";
 
 function App() {
   const [events, setEvents] = useState([]);
@@ -15,6 +16,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
   const [activeTab, setActiveTab] = useState("events");
+  const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
 
   const fetchEvents = async () => {
@@ -84,8 +86,47 @@ function App() {
     endIndex
   );
 
+  // Show settings page if requested
+  if (showSettings) {
+    return <Settings onBack={() => setShowSettings(false)} />;
+  }
+
+  // Otherwise show main calendar
   return (
-    <div style={{ maxWidth: "900px", margin: "40px auto 0 auto" }}>
+    <div style={{ maxWidth: "900px", margin: "40px auto 0 auto", position: "relative" }}>
+      {/* Settings Button - Floating */}
+      <button
+        onClick={() => setShowSettings(true)}
+        style={{
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          padding: "12px 20px",
+          backgroundColor: "#34495e",
+          color: "white",
+          border: "none",
+          borderRadius: "50px",
+          cursor: "pointer",
+          fontSize: "14px",
+          fontWeight: "600",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = "#2c3e50";
+          e.target.style.transform = "scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = "#34495e";
+          e.target.style.transform = "scale(1)";
+        }}
+      >
+        ⚙️ Settings
+      </button>
+
       {/* Hero Section with Background */}
       <div
         style={{

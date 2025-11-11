@@ -5,7 +5,7 @@ import json
 import re
 from datetime import datetime, timedelta
 from dateutil import parser as dateparser
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -13,17 +13,6 @@ from pydantic import BaseModel
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from urllib.parse import urljoin
-from typing import Optional, List, Dict
-
-# Import new modules for flexible source management
-try:
-    # Try relative imports first (when run as module: uvicorn backend.main:app)
-    from . import source_manager
-    from . import generic_scraper
-except ImportError:
-    # Fall back to direct imports (when run from backend directory)
-    import source_manager
-    import generic_scraper
 
 # Try to load environment variables from .env file
 try:
@@ -79,65 +68,113 @@ if MODE == "HF":
         return FileResponse("backend/static/index.html")
 
 # -----------------------------
-# Request models
+# Request model
 # -----------------------------
 class QueryRequest(BaseModel):
     query: str
 
-class PasscodeRequest(BaseModel):
-    passcode: str
-
-class SourceRequest(BaseModel):
-    name: str
-    url: str
-    type: str  # "events" or "attractions"
-    enabled: Optional[bool] = True
-    scraping_method: Optional[str] = "auto"
-    custom_selectors: Optional[dict] = None
-
-class SourceUpdateRequest(BaseModel):
-    name: Optional[str] = None
-    url: Optional[str] = None
-    type: Optional[str] = None
-    enabled: Optional[bool] = None
-    scraping_method: Optional[str] = None
-    custom_selectors: Optional[dict] = None
+# -----------------------------
+# Approved websites
+# -----------------------------
+APPROVED_SITES = [
+    "https://visitvaldosta.org/events/",
+    "https://www.valdostamainstreet.com/events-calendar",
+    "https://wanderlog.com/list/geoCategory/1592203/top-things-to-do-and-attractions-in-valdosta",
+    "https://exploregeorgia.org/article/guide-to-valdosta",
+    "https://www.tripadvisor.com/Attractions-g35335-Activities-Valdosta_Georgia.html",
+]
 
 # -----------------------------
-# OLD: Approved websites (now managed via sources.json)
+# Fallback attractions for when TripAdvisor is blocked
 # -----------------------------
-# NOTE: This is no longer used - sources are now managed dynamically via the settings page
-# and stored in sources.json. See source_manager.py for source management.
-# APPROVED_SITES = [
-#     "https://visitvaldosta.org/events/",
-#     "https://www.valdostamainstreet.com/events-calendar",
-#     "https://wanderlog.com/list/geoCategory/1592203/top-things-to-do-and-attractions-in-valdosta",
-#     "https://exploregeorgia.org/article/guide-to-valdosta",
-#     "https://www.tripadvisor.com/Attractions-g35335-Activities-Valdosta_Georgia.html",
-# ]
-
-# -----------------------------
-# NOTE: TripAdvisor support has been removed
-# TripAdvisor blocks scraping and is not supported
-# -----------------------------
+def get_fallback_tripadvisor_attractions():
+    """Provide fallback attractions when TripAdvisor is blocked"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    import random
+    
+    fallback_attractions = [
+        {
+            "title": "Visit: Wild Adventures Theme Park",
+            "url": "https://www.wildadventures.com/",
+            "description": "Family-friendly theme park with rides, water park, and animal encounters",
+            "categories": ["Attraction", "TripAdvisor"],
+            "start": f"{today}T{random.randint(9, 17):02d}:00",
+            "allDay": False
+        },
+        {
+            "title": "Visit: Valdosta State University",
+            "url": "https://www.valdosta.edu/",
+            "description": "Beautiful university campus with historic buildings and cultural events",
+            "categories": ["Attraction", "TripAdvisor"],
+            "start": f"{today}T{random.randint(9, 17):02d}:00",
+            "allDay": False
+        },
+        {
+            "title": "Visit: Lowndes County Historical Society Museum",
+            "url": "https://www.lowndescountyhistoricalsociety.org/",
+            "description": "Local history museum showcasing Valdosta and Lowndes County heritage",
+            "categories": ["Attraction", "TripAdvisor"],
+            "start": f"{today}T{random.randint(10, 16):02d}:00",
+            "allDay": False
+        },
+        {
+            "title": "Visit: Valdosta Mall",
+            "url": "https://www.valdostamall.com/",
+            "description": "Shopping center with retail stores, dining, and entertainment",
+            "categories": ["Attraction", "TripAdvisor"],
+            "start": f"{today}T{random.randint(9, 21):02d}:00",
+            "allDay": False
+        },
+        {
+            "title": "Visit: Grand Bay Wildlife Management Area",
+            "url": "https://georgiawildlife.com/grand-bay-wma",
+            "description": "Nature preserve with hiking trails, bird watching, and outdoor recreation",
+            "categories": ["Attraction", "TripAdvisor"],
+            "start": f"{today}T{random.randint(8, 18):02d}:00",
+            "allDay": False
+        }
+    ]
+    
+    print(f"Providing {len(fallback_attractions)} fallback TripAdvisor attractions")
+    return fallback_attractions
 
 # -----------------------------
 # Scraping function with real date extraction
 # -----------------------------
 def scrape_site(url):
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Encoding": "gzip, deflate",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-    }
+    # Use different headers for TripAdvisor to try to bypass blocking
+    if "tripadvisor.com" in url:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Cache-Control": "max-age=0",
+        }
+    else:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+        }
     try:
         resp = requests.get(url, headers=headers, timeout=15)
         resp.raise_for_status()
     except Exception as e:
         print(f"Failed to scrape {url}: {e}")
+        # For TripAdvisor, provide some fallback attractions if blocked
+        if "tripadvisor.com" in url:
+            print("TripAdvisor is blocked - providing fallback attractions")
+            return get_fallback_tripadvisor_attractions()
         return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
@@ -191,14 +228,12 @@ def scrape_site(url):
                     elif month_num == current_month:
                         # Same month - check if day has passed
                         if day < current_date.day:
-                            # Day has passed, assume next year
-                            event_year = current_year + 1
-                        else:
-                            # Day hasn't passed yet, but check if it's within reasonable range
-                            # If more than 3 weeks away in the same month, likely next year
+                            # Day has passed, could be next year for recurring events
+                            # But for a single events page, it's more likely current year
+                            # We'll keep it as current year unless it's clearly in the past
                             test_date = dateparser.parse(f"{month_name} {day}, {current_year}")
-                            if test_date and (test_date - current_date).days > 21:
-                                # More than 3 weeks away in same month likely means next year
+                            if test_date and test_date < current_date - timedelta(days=7):
+                                # If more than a week in the past, assume next year
                                 event_year = current_year + 1
                     # If month_num > current_month, it's current year (future month in same year)
                     
@@ -206,30 +241,13 @@ def scrape_site(url):
                     lines = event_text.strip().split('\n')
                     title = lines[0].strip() if lines else ""
                     description = ' '.join(lines[1:]).strip() if len(lines) > 1 else ""
-
+                    
                     # Clean up title (remove extra whitespace, "learn more", etc.)
                     title = re.sub(r'\s+', ' ', title).strip()
                     title = re.sub(r'\blearn more\b', '', title, flags=re.I).strip()
-
+                    
                     if not title or len(title) < 3:
                         continue
-
-                    # Try to extract event URL from nearby links in the HTML
-                    # Look for links near this date pattern in the original soup
-                    event_url = url  # Default to source URL
-                    # Try to find event-specific links that might be associated with this event
-                    all_links = soup.find_all("a", href=True)
-                    for link in all_links:
-                        link_text = link.get_text(strip=True).lower()
-                        # If the link text contains part of the event title, use that URL
-                        title_words = set(title.lower().split())
-                        link_words = set(link_text.split())
-                        # Check if there's significant overlap (at least 2 words in common)
-                        if len(title_words & link_words) >= 2:
-                            event_url = link.get("href", "")
-                            if event_url.startswith("/"):
-                                event_url = urljoin(url, event_url)
-                            break
                     
                     # Parse date with determined year
                     try:
@@ -295,10 +313,10 @@ def scrape_site(url):
                         else:
                             time_str = f"{random.randint(9, 17):02d}:00"
                     
-                    print(f"Adding event: {title} at {date_str}T{time_str}:00 (URL: {event_url})")
+                    print(f"Adding event: {title} at {date_str}T{time_str}:00")
                     events.append({
                         "title": title,
-                        "url": event_url,
+                        "url": url,
                         "description": description,
                         "start": f"{date_str}T{time_str}:00",
                         "allDay": False
@@ -353,15 +371,15 @@ def scrape_site(url):
                     current_date = datetime.now()
                     current_year = current_date.year
                     current_month = current_date.month
-
+                    
                     # Month name to number mapping
                     month_names = {
                         'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
                         'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
                     }
-
+                    
                     month_num = month_names.get(month_text, current_month)
-
+                    
                     # Determine the year: if the month is before current month, assume next year
                     event_year = current_year
                     if month_num < current_month:
@@ -370,14 +388,10 @@ def scrape_site(url):
                     elif month_num == current_month:
                         # Same month - check if day has passed
                         if int(day) < current_date.day:
-                            # Day has passed, assume next year
-                            event_year = current_year + 1
-                        else:
-                            # Day hasn't passed yet, but check if it's within reasonable range
-                            # If more than 3 weeks away in the same month, likely next year
+                            # Day has passed, check if it's clearly in the past
                             test_date = dateparser.parse(f"{month_text} {day}, {current_year}")
-                            if test_date and (test_date - current_date).days > 21:
-                                # More than 3 weeks away in same month likely means next year
+                            if test_date and test_date < current_date - timedelta(days=7):
+                                # If more than a week in the past, assume next year
                                 event_year = current_year + 1
                     # If month_num > current_month, it's current year (future month in same year)
                     
@@ -449,19 +463,13 @@ def scrape_site(url):
                     else:
                         time_str = f"{random.randint(9, 17):02d}:00"
                 
-                # Extract URL - check parent <a> first, then <a> inside article
+                # Extract URL
+                link_elem = article.find("a", href=True)
                 event_url = url
-                parent_link = article.find_parent("a", href=True)
-                if parent_link and parent_link.get("href"):
-                    event_url = parent_link["href"]
+                if link_elem and link_elem.get("href"):
+                    event_url = link_elem["href"]
                     if event_url.startswith("/"):
                         event_url = urljoin(url, event_url)
-                else:
-                    link_elem = article.find("a", href=True)
-                    if link_elem and link_elem.get("href"):
-                        event_url = link_elem["href"]
-                        if event_url.startswith("/"):
-                            event_url = urljoin(url, event_url)
                 
                 print(f"Adding event: {title} at {date_str}T{time_str}:00")
                 events.append({
@@ -930,7 +938,93 @@ def scrape_site(url):
                 print(f"Error parsing Explore Georgia section: {e}")
                 continue
 
-    # NOTE: TripAdvisor support removed - use alternative sources like Wanderlog or Explore Georgia
+    # Handle tripadvisor.com structure
+    elif "tripadvisor.com" in url:
+        print(f"Scraping TripAdvisor attractions for Valdosta")
+        print(f"Page title: {soup.title.string if soup.title else 'No title'}")
+        print(f"Page content length: {len(soup.get_text())}")
+        
+        # Check if we got blocked
+        if "please enable javascript" in soup.get_text().lower() or "captcha" in soup.get_text().lower():
+            print("TripAdvisor appears to be blocking requests - got captcha/JS page")
+            return events
+        # Look for attraction entries
+        attraction_items = soup.find_all("div", class_=["attraction_element", "listing_title", "property_title"])
+        print(f"Found {len(attraction_items)} items with primary selectors")
+        
+        if not attraction_items:
+            # Try alternative selectors
+            attraction_items = soup.find_all("a", href=re.compile(r"/Attraction_Review-"))
+            print(f"Found {len(attraction_items)} items with alternative selectors")
+        
+        # Try even more generic selectors if still nothing
+        if not attraction_items:
+            attraction_items = soup.find_all("div", class_=re.compile(r".*attraction.*|.*listing.*|.*property.*"))
+            print(f"Found {len(attraction_items)} items with generic selectors")
+        
+        # Try finding any div with attraction-related text
+        if not attraction_items:
+            attraction_items = soup.find_all("div", string=re.compile(r".*attraction.*|.*museum.*|.*park.*|.*restaurant.*", re.I))
+            print(f"Found {len(attraction_items)} items with text-based selectors")
+        
+        for i, item in enumerate(attraction_items):
+            try:
+                print(f"Processing TripAdvisor item {i+1}/{len(attraction_items)}")
+                # Extract title
+                title_elem = item.find(["h3", "h4", "span", "a"])
+                if not title_elem:
+                    print(f"  No title element found")
+                    continue
+                title = title_elem.get_text(strip=True)
+                print(f"  Title: {title}")
+                
+                if not title or len(title) < 3:
+                    print(f"  Title too short or empty")
+                    continue
+                
+                # Extract URL
+                link_elem = item.find("a", href=True)
+                place_url = ""
+                if link_elem:
+                    place_url = link_elem["href"]
+                    if place_url.startswith("/"):
+                        place_url = f"https://www.tripadvisor.com{place_url}"
+                
+                # Extract description
+                description = ""
+                desc_elem = item.find(["p", "div", "span"])
+                if desc_elem:
+                    description = desc_elem.get_text(strip=True)[:200]
+                
+                # Create attraction entry with varied time
+                today = datetime.now().strftime("%Y-%m-%d")
+                import random
+                
+                # Vary attraction times based on type
+                attraction_text = (title + " " + description).lower()
+                if any(word in attraction_text for word in ["museum", "gallery", "exhibition", "art"]):
+                    time_str = f"{random.randint(10, 16):02d}:00"
+                elif any(word in attraction_text for word in ["park", "garden", "outdoor", "nature", "hiking"]):
+                    time_str = f"{random.randint(8, 18):02d}:00"
+                elif any(word in attraction_text for word in ["restaurant", "cafe", "food", "dining"]):
+                    time_str = f"{random.randint(11, 20):02d}:00"
+                elif any(word in attraction_text for word in ["shop", "store", "market", "shopping"]):
+                    time_str = f"{random.randint(9, 17):02d}:00"
+                else:
+                    time_str = f"{random.randint(9, 17):02d}:00"
+                
+                print(f"  Adding TripAdvisor attraction: {title}")
+                events.append({
+                    "title": f"Visit: {title}",
+                    "url": place_url or url,
+                    "description": description,
+                    "categories": ["Attraction", "TripAdvisor"],
+                    "start": f"{today}T{time_str}:00",
+                    "allDay": False
+                })
+            except Exception as e:
+                print(f"Error parsing TripAdvisor attraction: {e}")
+                continue
 
     # Handle any other sites (fallback)
     else:
@@ -976,48 +1070,6 @@ def scrape_site(url):
     return deduplicated_events
 
 # -----------------------------
-# New Generic Scraper Function
-# -----------------------------
-def scrape_source(source: Dict) -> List[Dict]:
-    """
-    Scrape a single source using the appropriate method
-    """
-    url = source['url']
-    source_type = source['type']
-    scraping_method = source.get('scraping_method', 'auto')
-    custom_selectors = source.get('custom_selectors')
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-
-    try:
-        # Use the specialized scrape_site() function for known URLs with custom logic
-        if "visitvaldosta.org" in url or "valdostamainstreet.com" in url:
-            print(f"  Using specialized scraper for {url}")
-            return scrape_site(url)
-
-        # Method 1: Custom selectors (if provided)
-        if custom_selectors and scraping_method != 'auto':
-            print(f"  Using custom selectors for {url}")
-            return generic_scraper.scrape_with_custom_selectors(url, custom_selectors, source_type, headers)
-
-        # Method 2: AI-powered scraping
-        elif scraping_method == 'ai' or (scraping_method == 'auto' and client is not None):
-            print(f"  Using AI scraping for {url}")
-            return generic_scraper.scrape_with_ai(url, source_type, client)
-
-        # Method 3: Generic auto-detection (fallback)
-        else:
-            print(f"  Using generic auto-detection for {url}")
-            return generic_scraper.scrape_generic_auto(url, source_type)
-
-    except Exception as e:
-        print(f"Error scraping {url}: {e}")
-        return []
-
-
-# -----------------------------
 # Generate events endpoint
 # -----------------------------
 @app.post("/generate_events")
@@ -1027,31 +1079,16 @@ def generate_events(request: QueryRequest):
         all_events = []
         attractions = []
 
-        # Step 1: Load and scrape enabled sources from configuration
-        event_sources = source_manager.get_sources_by_type('events')
-        attraction_sources = source_manager.get_sources_by_type('attractions')
-
-        print(f"Scraping {len(event_sources)} event sources and {len(attraction_sources)} attraction sources")
-
-        # Scrape event sources
-        for source in event_sources:
-            try:
-                print(f"Scraping event source: {source['name']} ({source['url']})")
-                events = scrape_source(source)
+        # Step 1: scrape approved sites
+        for site in APPROVED_SITES:
+            if "wanderlog.com" in site or "exploregeorgia.org" in site or "tripadvisor.com" in site:
+                # Handle these sites as attractions
+                site_attractions = scrape_site(site)
+                attractions.extend(site_attractions)
+            else:
+                # Handle other sites as events
+                events = scrape_site(site)
                 all_events.extend(events)
-                print(f"  Found {len(events)} events")
-            except Exception as e:
-                print(f"Error scraping {source['name']}: {e}")
-
-        # Scrape attraction sources
-        for source in attraction_sources:
-            try:
-                print(f"Scraping attraction source: {source['name']} ({source['url']})")
-                source_attractions = scrape_source(source)
-                attractions.extend(source_attractions)
-                print(f"  Found {len(source_attractions)} attractions")
-            except Exception as e:
-                print(f"Error scraping {source['name']}: {e}")
 
         # Step 2: fallback to GPT if scraping yields too few events
         if len(all_events) < 5 and client is not None:
@@ -1117,106 +1154,3 @@ def generate_events(request: QueryRequest):
 
     except Exception as e:
         return {"error": str(e)}
-# -----------------------------
-# Source Management API Endpoints
-# -----------------------------
-
-@app.post("/api/verify-passcode")
-def verify_passcode_endpoint(request: PasscodeRequest):
-    """Verify passcode for settings access"""
-    try:
-        is_valid = source_manager.verify_passcode(request.passcode)
-        return {"valid": is_valid}
-    except Exception as e:
-        return {"error": str(e)}
-
-
-@app.get("/api/sources")
-def get_sources_endpoint(passcode: str):
-    """Get all sources (requires passcode)"""
-    try:
-        if not source_manager.verify_passcode(passcode):
-            raise HTTPException(status_code=403, detail="Invalid passcode")
-
-        sources = source_manager.get_all_sources()
-        return {"sources": sources}
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/sources")
-def add_source_endpoint(request: SourceRequest, passcode: str):
-    """Add a new source (requires passcode)"""
-    try:
-        if not source_manager.verify_passcode(passcode):
-            raise HTTPException(status_code=403, detail="Invalid passcode")
-
-        source_dict = request.dict()
-        new_source = source_manager.add_source(source_dict)
-        return {"source": new_source, "message": "Source added successfully"}
-    except HTTPException as he:
-        raise he
-    except ValueError as ve:
-        # Validation error (e.g., blocked URL)
-        raise HTTPException(status_code=400, detail=str(ve))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.put("/api/sources/{source_id}")
-def update_source_endpoint(source_id: str, request: SourceUpdateRequest, passcode: str):
-    """Update an existing source (requires passcode)"""
-    try:
-        if not source_manager.verify_passcode(passcode):
-            raise HTTPException(status_code=403, detail="Invalid passcode")
-
-        updates = {k: v for k, v in request.dict().items() if v is not None}
-        updated_source = source_manager.update_source(source_id, updates)
-
-        if not updated_source:
-            raise HTTPException(status_code=404, detail="Source not found")
-
-        return {"source": updated_source, "message": "Source updated successfully"}
-    except HTTPException as he:
-        raise he
-    except ValueError as ve:
-        # Validation error (e.g., blocked URL)
-        raise HTTPException(status_code=400, detail=str(ve))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.delete("/api/sources/{source_id}")
-def delete_source_endpoint(source_id: str, passcode: str):
-    """Delete a source (requires passcode)"""
-    try:
-        if not source_manager.verify_passcode(passcode):
-            raise HTTPException(status_code=403, detail="Invalid passcode")
-
-        success = source_manager.delete_source(source_id)
-
-        if not success:
-            raise HTTPException(status_code=404, detail="Source not found")
-
-        return {"message": "Source deleted successfully"}
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/update-passcode")
-def update_passcode_endpoint(old_passcode: str, new_passcode: str):
-    """Update the passcode (requires current passcode)"""
-    try:
-        if not source_manager.verify_passcode(old_passcode):
-            raise HTTPException(status_code=403, detail="Invalid current passcode")
-
-        source_manager.update_passcode(new_passcode)
-        return {"message": "Passcode updated successfully"}
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

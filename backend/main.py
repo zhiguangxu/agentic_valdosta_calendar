@@ -3,7 +3,7 @@ import os
 import requests
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil import parser as dateparser
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -182,73 +182,266 @@ def scrape_site(url):
 
     # Handle visitvaldosta.org structure
     if "visitvaldosta.org" in url:
+        # Try multiple selectors to find events
         event_articles = soup.find_all("article", class_="event")
+        if not event_articles:
+            # Try alternative: look for event containers
+            event_articles = soup.find_all("div", class_=re.compile(r".*event.*", re.I))
+        if not event_articles:
+            # Try finding sections with dates and event info
+            event_articles = soup.find_all(["article", "div", "section"], class_=re.compile(r".*event|.*upcoming", re.I))
+        
         print(f"Found {len(event_articles)} event articles on visitvaldosta.org")
+        
+        # If no articles found, try parsing from text patterns
+        if not event_articles:
+            # Look for date patterns followed by event titles
+            # Pattern: "DD Month Event Title" or "Month DD Event Title"
+            text_content = soup.get_text()
+            # Look for patterns like "10 November", "13 November", etc.
+            date_event_pattern = re.compile(r'(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(.+?)(?=\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)|$)', re.DOTALL)
+            matches = date_event_pattern.findall(text_content)
+            
+            current_date = datetime.now()
+            current_year = current_date.year
+            current_month = current_date.month
+            
+            # Month name to number mapping
+            month_names = {
+                'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
+                'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
+            }
+            
+            for match in matches:
+                try:
+                    day, month_name, event_text = match
+                    day = int(day)
+                    month_num = month_names.get(month_name, current_month)
+                    
+                    # Determine the year: if the month is before current month, assume next year
+                    # (e.g., if we're in November and see January, it's next year)
+                    # Also, if we're near the end of the year and see early months, it's next year
+                    event_year = current_year
+                    if month_num < current_month:
+                        # Month is earlier in the year (e.g., January when we're in November)
+                        event_year = current_year + 1
+                    elif month_num == current_month:
+                        # Same month - check if day has passed
+                        if day < current_date.day:
+                            # Day has passed, could be next year for recurring events
+                            # But for a single events page, it's more likely current year
+                            # We'll keep it as current year unless it's clearly in the past
+                            test_date = dateparser.parse(f"{month_name} {day}, {current_year}")
+                            if test_date and test_date < current_date - timedelta(days=7):
+                                # If more than a week in the past, assume next year
+                                event_year = current_year + 1
+                    # If month_num > current_month, it's current year (future month in same year)
+                    
+                    # Parse the event text to extract title and description
+                    lines = event_text.strip().split('\n')
+                    title = lines[0].strip() if lines else ""
+                    description = ' '.join(lines[1:]).strip() if len(lines) > 1 else ""
+                    
+                    # Clean up title (remove extra whitespace, "learn more", etc.)
+                    title = re.sub(r'\s+', ' ', title).strip()
+                    title = re.sub(r'\blearn more\b', '', title, flags=re.I).strip()
+                    
+                    if not title or len(title) < 3:
+                        continue
+                    
+                    # Parse date with determined year
+                    try:
+                        date_str = f"{month_name} {day}, {event_year}"
+                        dt = dateparser.parse(date_str)
+                        if dt:
+                            date_str = dt.strftime("%Y-%m-%d")
+                        else:
+                            continue
+                    except Exception as e:
+                        print(f"Date parsing error for {date_str}: {e}")
+                        continue
+                    
+                    # Extract time from description
+                    time_str = None
+                    time_patterns = [
+                        r'\b(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)\b',
+                        r'\b(\d{1,2})\s*(?:AM|PM|am|pm)\b',
+                        r'\b(\d{1,2}):(\d{2})\b',
+                        r'at\s+(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)',
+                        r'(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)',
+                    ]
+                    
+                    for pattern in time_patterns:
+                        match_time = re.search(pattern, event_text, re.I)
+                        if match_time:
+                            try:
+                                if len(match_time.groups()) == 2:  # HH:MM format
+                                    hour, minute = match_time.groups()
+                                    hour_int = int(hour)
+                                    if 'PM' in match_time.group(0).upper() and hour_int != 12:
+                                        hour_int += 12
+                                    elif 'AM' in match_time.group(0).upper() and hour_int == 12:
+                                        hour_int = 0
+                                    time_str = f"{hour_int:02d}:{minute}"
+                                else:  # H AM/PM format
+                                    hour = match_time.group(1)
+                                    hour_int = int(hour)
+                                    if 'PM' in match_time.group(0).upper() and hour_int != 12:
+                                        hour_int += 12
+                                    elif 'AM' in match_time.group(0).upper() and hour_int == 12:
+                                        hour_int = 0
+                                    time_str = f"{hour_int:02d}:00"
+                                break
+                            except (ValueError, IndexError):
+                                continue
+                    
+                    # Set intelligent default time if none found
+                    if not time_str:
+                        import random
+                        event_text_lower = (title + " " + description).lower()
+                        
+                        if any(word in event_text_lower for word in ["breakfast", "morning", "dawn", "sunrise"]):
+                            time_str = f"{random.randint(7, 9):02d}:00"
+                        elif any(word in event_text_lower for word in ["lunch", "noon", "midday"]):
+                            time_str = f"{random.randint(11, 13):02d}:00"
+                        elif any(word in event_text_lower for word in ["dinner", "evening", "sunset", "night", "concert", "show", "performance"]):
+                            time_str = f"{random.randint(18, 21):02d}:00"
+                        elif any(word in event_text_lower for word in ["festival", "fair", "market", "exhibition"]):
+                            time_str = f"{random.randint(10, 16):02d}:00"
+                        elif any(word in event_text_lower for word in ["tour", "walking", "hiking", "outdoor"]):
+                            time_str = f"{random.randint(9, 15):02d}:00"
+                        else:
+                            time_str = f"{random.randint(9, 17):02d}:00"
+                    
+                    print(f"Adding event: {title} at {date_str}T{time_str}:00")
+                    events.append({
+                        "title": title,
+                        "url": url,
+                        "description": description,
+                        "start": f"{date_str}T{time_str}:00",
+                        "allDay": False
+                    })
+                except Exception as e:
+                    print(f"Error parsing text-based event: {e}")
+                    continue
+        
+        # Also try the original article-based parsing
         for article in event_articles:
             try:
-                # Extract title from h3
-                title_elem = article.find("h3")
+                # Extract title from h3, h2, or strong/bold text
+                title_elem = article.find(["h3", "h2", "h4", "strong", "b"])
                 if not title_elem:
-                    continue
-                title = title_elem.get_text(strip=True)
+                    # Try getting text from first link
+                    link_elem = article.find("a")
+                    if link_elem:
+                        title = link_elem.get_text(strip=True)
+                    else:
+                        continue
+                else:
+                    title = title_elem.get_text(strip=True)
                 
-                # Extract date information
+                if not title or len(title) < 3:
+                    continue
+                
+                # Extract date information - try multiple approaches
+                date_str = None
+                month_text = None
+                day = None
+                
+                # Method 1: Look for div.date and div.txt structure
                 date_elem = article.find("div", class_="date")
                 month_elem = article.find("div", class_="txt")
                 
-                if not date_elem or not month_elem:
-                    continue
+                if date_elem and month_elem:
+                    day_span = date_elem.find("span")
+                    month_span = month_elem.find("span")
+                    if day_span and month_span:
+                        day = day_span.get_text(strip=True)
+                        month_text = month_span.get_text(strip=True)
+                
+                # Method 2: Look for date patterns in text
+                if not date_str:
+                    article_text = article.get_text()
+                    date_pattern = re.search(r'(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)', article_text, re.I)
+                    if date_pattern:
+                        day = date_pattern.group(1)
+                        month_text = date_pattern.group(2)
+                
+                if day and month_text:
+                    current_date = datetime.now()
+                    current_year = current_date.year
+                    current_month = current_date.month
                     
-                day = date_elem.find("span").get_text(strip=True)
-                month_text = month_elem.find("span").get_text(strip=True)
-                
-                # Get current year as fallback
-                current_year = datetime.now().year
-                
-                # Parse the date
-                try:
-                    date_str = f"{month_text} {day}, {current_year}"
-                    print(f"Parsing date: {date_str}")
-                    dt = dateparser.parse(date_str)
-                    if dt:
-                        date_str = dt.strftime("%Y-%m-%d")
-                        print(f"Parsed date: {date_str}")
-                    else:
-                        print(f"Failed to parse date: {date_str}")
+                    # Month name to number mapping
+                    month_names = {
+                        'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
+                        'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
+                    }
+                    
+                    month_num = month_names.get(month_text, current_month)
+                    
+                    # Determine the year: if the month is before current month, assume next year
+                    event_year = current_year
+                    if month_num < current_month:
+                        # Month is earlier in the year (e.g., January when we're in November)
+                        event_year = current_year + 1
+                    elif month_num == current_month:
+                        # Same month - check if day has passed
+                        if int(day) < current_date.day:
+                            # Day has passed, check if it's clearly in the past
+                            test_date = dateparser.parse(f"{month_text} {day}, {current_year}")
+                            if test_date and test_date < current_date - timedelta(days=7):
+                                # If more than a week in the past, assume next year
+                                event_year = current_year + 1
+                    # If month_num > current_month, it's current year (future month in same year)
+                    
+                    try:
+                        date_str_full = f"{month_text} {day}, {event_year}"
+                        dt = dateparser.parse(date_str_full)
+                        if dt:
+                            date_str = dt.strftime("%Y-%m-%d")
+                    except Exception as e:
+                        print(f"Date parsing error: {e}")
                         continue
-                except Exception as e:
-                    print(f"Date parsing error: {e}")
+                
+                if not date_str:
                     continue
                 
-                # Extract time information (simplified for robustness)
+                # Extract time information
                 time_str = None
-                # Look for time patterns in the entire article text
                 article_text = article.get_text()
                 time_patterns = [
                     r'\b(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)\b',
                     r'\b(\d{1,2})\s*(?:AM|PM|am|pm)\b',
-                    r'\b(\d{1,2}):(\d{2})\b'
+                    r'at\s+(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)',
+                    r'(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)',
                 ]
                 
                 for pattern in time_patterns:
-                    match = re.search(pattern, article_text)
+                    match = re.search(pattern, article_text, re.I)
                     if match:
                         try:
                             if len(match.groups()) == 2:  # HH:MM format
                                 hour, minute = match.groups()
-                                time_str = f"{hour.zfill(2)}:{minute}"
+                                hour_int = int(hour)
+                                if 'PM' in match.group(0).upper() and hour_int != 12:
+                                    hour_int += 12
+                                elif 'AM' in match.group(0).upper() and hour_int == 12:
+                                    hour_int = 0
+                                time_str = f"{hour_int:02d}:{minute}"
                             else:  # H AM/PM format
                                 hour = match.group(1)
-                                if 'PM' in match.group(0).upper() and int(hour) != 12:
-                                    hour = str(int(hour) + 12)
-                                elif 'AM' in match.group(0).upper() and int(hour) == 12:
-                                    hour = "00"
-                                time_str = f"{hour.zfill(2)}:00"
+                                hour_int = int(hour)
+                                if 'PM' in match.group(0).upper() and hour_int != 12:
+                                    hour_int += 12
+                                elif 'AM' in match.group(0).upper() and hour_int == 12:
+                                    hour_int = 0
+                                time_str = f"{hour_int:02d}:00"
                             break
                         except (ValueError, IndexError):
                             continue
                 
-                # Extract description first
+                # Extract description
                 desc_elem = article.find("p")
                 description = desc_elem.get_text(strip=True) if desc_elem else ""
                 
@@ -268,14 +461,13 @@ def scrape_site(url):
                     elif any(word in event_text for word in ["tour", "walking", "hiking", "outdoor"]):
                         time_str = f"{random.randint(9, 15):02d}:00"
                     else:
-                        # Default to business hours with some variation
                         time_str = f"{random.randint(9, 17):02d}:00"
                 
-                # Extract URL from parent link
-                parent_link = article.find_parent("a")
-                event_url = ""
-                if parent_link and parent_link.get("href"):
-                    event_url = parent_link["href"]
+                # Extract URL
+                link_elem = article.find("a", href=True)
+                event_url = url
+                if link_elem and link_elem.get("href"):
+                    event_url = link_elem["href"]
                     if event_url.startswith("/"):
                         event_url = urljoin(url, event_url)
                 
@@ -362,136 +554,338 @@ def scrape_site(url):
                 print(f"Error parsing Wanderlog place: {e}")
                 continue
     
-    # Handle valdostamainstreet.com structure (fallback to generic scraping)
+    # Handle valdostamainstreet.com structure (calendar table)
     elif "valdostamainstreet.com" in url:
-        # Look for common event patterns
-        all_links = soup.find_all("a", href=True)
-        print(f"Found {len(all_links)} total links on valdostamainstreet.com")
-        for a in all_links:
-            text = a.get_text(strip=True)
-            link = a["href"]
+        print(f"Scraping valdostamainstreet.com calendar")
 
-            if not text or len(text) < 3 or link.startswith("tel:") or link.startswith("mailto:"):
-                continue
+        # FIXED: Scrape multiple months (current and next 2 months) to get all upcoming events
+        # The calendar uses ?month=YYYY-MM parameter to show different months
+        months_to_scrape = []
 
-            keywords = ["event", "festival", "concert", "show", "tour", "attraction", "art", "music", "calendar"]
-            if not any(kw in text.lower() for kw in keywords) and not any(kw in link.lower() for kw in keywords):
-                continue
-            
-            print(f"Processing potential event: {text[:50]}...")
+        # If URL doesn't specify a month, scrape current and next 2 months
+        if "?month=" not in url:
+            current_date = datetime.now()
 
-            if link.startswith("/"):
-                link = urljoin(url, link)
+            # Generate URLs for current month and next 2 months
+            for month_offset in range(3):
+                year = current_date.year
+                month = current_date.month + month_offset
 
-            # Extract description
-            description = ""
-            parent = a.find_parent()
-            if parent:
-                p = parent.find("p")
-                if p:
-                    description = p.get_text(strip=True)
+                # Handle year rollover
+                while month > 12:
+                    month -= 12
+                    year += 1
+
+                month_url = f"{url}?month={year}-{month:02d}"
+                months_to_scrape.append(month_url)
+                print(f"Will scrape: {month_url}")
+        else:
+            # If URL already specifies a month, just scrape that one
+            months_to_scrape = [url]
+
+        # Scrape each month
+        for month_url in months_to_scrape:
+            try:
+                # Fetch the month's calendar
+                if month_url != url:
+                    resp_month = requests.get(month_url, headers=headers, timeout=15)
+                    resp_month.raise_for_status()
+                    soup = BeautifulSoup(resp_month.text, "html.parser")
+                    print(f"Fetched calendar for {month_url}")
+
+                # Find the calendar table
+                calendar_table = soup.find("table")
+                if not calendar_table:
+                    # Try finding calendar container
+                    calendar_div = soup.find("div", class_=re.compile(r".*calendar.*", re.I))
+                    if calendar_div:
+                        calendar_table = calendar_div.find("table")
+
+                if not calendar_table:
+                    print(f"No calendar table found for {month_url}")
+                    continue
+
+                # Process this month's calendar
+                # Extract month and year from page
+                month_year_elem = soup.find(["h1", "h2", "h3"], string=re.compile(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}"))
+                if not month_year_elem:
+                    # Try finding in other elements
+                    month_year_text = soup.get_text()
+                    month_year_match = re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})', month_year_text, re.I)
+                    if month_year_match:
+                        month_name = month_year_match.group(1)
+                        year = int(month_year_match.group(2))
+                    else:
+                        # Default to current month/year
+                        now = datetime.now()
+                        month_name = now.strftime("%B")
+                        year = now.year
                 else:
-                    next_sib = a.find_next_sibling()
-                    if next_sib:
-                        description = next_sib.get_text(strip=True)
-
-            # Extract date and time - look for various date patterns
-            date_str = None
-            time_str = None
+                    month_year_text = month_year_elem.get_text()
+                    month_year_match = re.search(r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})', month_year_text, re.I)
+                    if month_year_match:
+                        month_name = month_year_match.group(1)
+                        year = int(month_year_match.group(2))
+                    else:
+                        now = datetime.now()
+                        month_name = now.strftime("%B")
+                        year = now.year
             
-            # Check <time> tag
-            time_tag = a.find("time")
-            if time_tag and time_tag.has_attr("datetime"):
-                datetime_str = time_tag["datetime"]
-                if "T" in datetime_str:
-                    date_str, time_str = datetime_str.split("T")
-                    # Keep only HH:MM part
-                    if ":" in time_str:
-                        time_str = time_str.split(":")[0] + ":" + time_str.split(":")[1]
-                else:
-                    date_str = datetime_str
+                # Month name to number mapping
+                month_names_to_num = {
+                    'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
+                    'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12
+                }
+                month_num = month_names_to_num.get(month_name, datetime.now().month)
             
-            # Check parent text for date and time patterns
-            if not date_str and parent:
-                parent_text = parent.get_text()
-                
-                # Look for various date formats
-                date_patterns = [
-                    r'\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4}\b',
-                    r'\b\d{1,2}/\d{1,2}/\d{4}\b',
-                    r'\b\d{4}-\d{2}-\d{2}\b',
-                    r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b'
-                ]
-                
-                for pattern in date_patterns:
-                    match = re.search(pattern, parent_text)
-                    if match:
-                        try:
-                            dt = dateparser.parse(match.group())
-                            if dt:
-                                date_str = dt.strftime("%Y-%m-%d")
+                # Find all table rows (skip header row)
+                rows = calendar_table.find_all("tr")
+                print(f"Found {len(rows)} rows in calendar table for {month_name} {year}")
+            
+                # Better approach: collect all days first, then determine month boundaries
+                # Calendar typically shows: previous month days (high numbers) -> current month -> next month days (low numbers)
+                all_calendar_days = []
+                for row_idx, row in enumerate(rows):
+                    if row_idx == 0:
+                        continue
+                    cells = row.find_all(["td", "th"])
+                    row_days = []
+                    for cell in cells:
+                        day_text = cell.get_text(strip=True)
+                        day_match = re.search(r'^(\d{1,2})', day_text)
+                        if day_match:
+                            row_days.append(int(day_match.group(1)))
+                    if row_days:
+                        all_calendar_days.append(row_days)
+            
+                # Simplified approach: determine month based on day number and position
+                # Previous month: days > 20 in first row
+                # Current month: days 1-31 in middle rows, or day 1 in first row after high numbers
+                # Next month: days 1-7 in last row after day 30
+                first_transition = None
+                second_transition = None
+            
+                # Find first transition: look for day 1 in first row (current month start)
+                if all_calendar_days:
+                    first_row = all_calendar_days[0]
+                    if 1 in first_row:
+                        day_1_idx = first_row.index(1)
+                        first_transition = (1, day_1_idx)
+                        print(f"First transition found at row 1, cell {day_1_idx} (day 1)")
+            
+                # Find second transition: look for day 1 in last row after a high number (next month start)
+                if all_calendar_days and len(all_calendar_days) > 1:
+                    last_row = all_calendar_days[-1]
+                    last_row_idx = len(all_calendar_days)  # This is the row_idx in the rows enumeration (1-based after header)
+                    if 1 in last_row and max(last_row) > 20:
+                        # Find where day 1 appears after a high number
+                        for cell_idx, day in enumerate(last_row):
+                            if day == 1 and cell_idx > 0 and last_row[cell_idx - 1] > 20:
+                                second_transition = (last_row_idx, cell_idx)
+                                print(f"Second transition found at row {last_row_idx}, cell {cell_idx} (day 1 after day {last_row[cell_idx - 1]})")
                                 break
-                        except:
+                        # If not found, day 1 at start of last row with high numbers is also next month
+                        if not second_transition and last_row[0] == 1 and max(last_row) > 20:
+                            second_transition = (last_row_idx, 0)
+                            print(f"Second transition found at row {last_row_idx}, cell 0 (day 1 at start)")
+            
+                # Now process the calendar
+                for row_idx, row in enumerate(rows):
+                    # Skip header row
+                    if row_idx == 0:
+                        continue
+
+                    # Find all cells in this row
+                    cells = row.find_all(["td", "th"])
+
+                    for cell_idx, cell in enumerate(cells):
+                        # Find all event links in this cell
+                        event_links = cell.find_all("a", href=True)
+
+                        # Skip cells without events
+                        if not event_links:
                             continue
-                
-                # Look for time patterns if no time found yet
-                if not time_str:
-                    time_patterns = [
-                        r'\b(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)\b',
-                        r'\b(\d{1,2})\s*(?:AM|PM|am|pm)\b',
-                        r'\b(\d{1,2}):(\d{2})\b'
-                    ]
-                    
-                    for pattern in time_patterns:
-                        match = re.search(pattern, parent_text)
-                        if match:
+
+                        # FIXED: Use data-date attribute instead of extracting from text
+                        # The calendar has a special structure where event cells have data-date attributes
+                        # that contain the correct ISO format date (e.g., "2025-11-02")
+                        data_date = cell.get("data-date", "")
+
+                        if data_date:
+                            # Use the data-date attribute directly
                             try:
-                                if len(match.groups()) == 2:  # HH:MM format
-                                    hour, minute = match.groups()
-                                    time_str = f"{hour.zfill(2)}:{minute}"
-                                else:  # H AM/PM format
-                                    hour = match.group(1)
-                                    if 'PM' in match.group(0).upper() and int(hour) != 12:
-                                        hour = str(int(hour) + 12)
-                                    elif 'AM' in match.group(0).upper() and int(hour) == 12:
-                                        hour = "00"
-                                    time_str = f"{hour.zfill(2)}:00"
-                                break
-                            except (ValueError, IndexError):
+                                dt = dateparser.parse(data_date)
+                                if dt:
+                                    date_str = dt.strftime("%Y-%m-%d")
+                                    day = dt.day
+                                    event_month = dt.month
+                                    event_year = dt.year
+                                else:
+                                    continue
+                            except Exception as e:
+                                print(f"Error parsing data-date {data_date}: {e}")
                                 continue
-            
-            # Skip event if no date found
-            if not date_str:
+                        else:
+                            # Fallback: Extract day number from text (old logic)
+                            day_text = cell.get_text(strip=True)
+                            day_match = re.search(r'^(\d{1,2})', day_text)
+                            if not day_match:
+                                continue
+
+                            day = int(day_match.group(1))
+
+                            # Determine which month this day belongs to
+                            event_month = month_num
+                            event_year = year
+
+                            # Simple heuristic:
+                            # - Days > 20 in first row = previous month
+                            # - Days 1-31 in middle = current month (default)
+                            # - Days 1-7 in last row after day 30 = next month
+
+                            # Check if this is from previous month (high numbers in first data row)
+                            if row_idx == 1 and day > 20:
+                                event_month = month_num - 1
+                                if event_month == 0:
+                                    event_month = 12
+                                    event_year = year - 1
+                            # Check if this is from next month (in the transition row or after)
+                            elif second_transition:
+                                if row_idx == second_transition[0]:
+                                    # In the transition row, check if we're at or after the transition point
+                                    if cell_idx >= second_transition[1]:
+                                        event_month = month_num + 1
+                                        if event_month == 13:
+                                            event_month = 1
+                                            event_year = year + 1
+                                elif row_idx > second_transition[0]:
+                                    # After the transition row, all days are next month
+                                    event_month = month_num + 1
+                                    if event_month == 13:
+                                        event_month = 1
+                                        event_year = year + 1
+                            # Default: current month (most days fall here)
+
+                            # Parse the date with correct month/year
+                            try:
+                                month_name_for_date = list(month_names_to_num.keys())[list(month_names_to_num.values()).index(event_month)]
+                                date_str_full = f"{month_name_for_date} {day}, {event_year}"
+                                dt = dateparser.parse(date_str_full)
+                                if dt:
+                                    date_str = dt.strftime("%Y-%m-%d")
+                                else:
+                                    continue
+                            except Exception as e:
+                                print(f"Date parsing error for {date_str_full}: {e}")
+                                continue
+
+                        # Process all event links found in this cell
+                        for link in event_links:
+                            try:
+                                event_text = link.get_text(strip=True)
+                                if not event_text or len(event_text) < 3:
+                                    continue
+                            
+                                # Skip navigation links
+                                if any(word in event_text.lower() for word in ["prev", "next", "«", "»"]):
+                                    continue
+                            
+                                # Get the full link
+                                event_url = link.get("href", "")
+                                if event_url.startswith("/"):
+                                    event_url = urljoin(url, event_url)
+                            
+                                # Extract time from link text or cell text
+                                time_str = None
+                                cell_text = cell.get_text()
+                            
+                                # Look for time patterns like "1:00 pm to 4:00 pm" or "5:00 pm"
+                                time_patterns = [
+                                    r'(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)\s+to\s+(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)',  # Range
+                                    r'(\d{1,2}):(\d{2})\s*(?:AM|PM|am|pm)',  # Single time
+                                    r'(\d{1,2})\s*(?:AM|PM|am|pm)',  # Hour only
+                                ]
+                            
+                                for pattern in time_patterns:
+                                    match = re.search(pattern, cell_text, re.I)
+                                    if match:
+                                        try:
+                                            if len(match.groups()) == 4:  # Time range
+                                                # Use start time
+                                                hour, minute = match.groups()[0], match.groups()[1]
+                                                hour_int = int(hour)
+                                                if 'PM' in match.group(0).upper() and hour_int != 12:
+                                                    hour_int += 12
+                                                elif 'AM' in match.group(0).upper() and hour_int == 12:
+                                                    hour_int = 0
+                                                time_str = f"{hour_int:02d}:{minute}"
+                                            elif len(match.groups()) == 2:  # HH:MM format
+                                                hour, minute = match.groups()
+                                                hour_int = int(hour)
+                                                if 'PM' in match.group(0).upper() and hour_int != 12:
+                                                    hour_int += 12
+                                                elif 'AM' in match.group(0).upper() and hour_int == 12:
+                                                    hour_int = 0
+                                                time_str = f"{hour_int:02d}:{minute}"
+                                            else:  # H AM/PM format
+                                                hour = match.group(1)
+                                                hour_int = int(hour)
+                                                if 'PM' in match.group(0).upper() and hour_int != 12:
+                                                    hour_int += 12
+                                                elif 'AM' in match.group(0).upper() and hour_int == 12:
+                                                    hour_int = 0
+                                                time_str = f"{hour_int:02d}:00"
+                                            break
+                                        except (ValueError, IndexError):
+                                            continue
+                            
+                                # Set default time if not found
+                                if not time_str:
+                                    import random
+                                    event_text_lower = event_text.lower()
+
+                                    if any(word in event_text_lower for word in ["breakfast", "morning"]):
+                                        time_str = f"{random.randint(7, 9):02d}:00"
+                                    elif any(word in event_text_lower for word in ["lunch", "noon", "midday"]):
+                                        time_str = f"{random.randint(11, 13):02d}:00"
+                                    elif any(word in event_text_lower for word in ["dinner", "evening", "night", "concert", "show"]):
+                                        time_str = f"{random.randint(18, 21):02d}:00"
+                                    elif any(word in event_text_lower for word in ["market", "fair", "festival"]):
+                                        time_str = f"{random.randint(9, 16):02d}:00"
+                                    else:
+                                        time_str = f"{random.randint(9, 17):02d}:00"
+                            
+                                # Extract description from link title or nearby text
+                                description = ""
+                                link_title = link.get("title", "")
+                                if link_title:
+                                    description = link_title
+                                else:
+                                    # Try to get description from parent or sibling elements
+                                    parent = link.find_parent()
+                                    if parent:
+                                        # Look for description in the same cell
+                                        cell_text_clean = cell.get_text(separator=" ").strip()
+                                        # Remove the event title and time to get description
+                                        desc_text = re.sub(re.escape(event_text), "", cell_text_clean, flags=re.I)
+                                        desc_text = re.sub(r'\d{1,2}:\d{2}\s*(?:AM|PM|am|pm).*', '', desc_text, flags=re.I)
+                                        description = desc_text.strip()
+                            
+                                print(f"Adding event: {event_text} at {date_str}T{time_str}:00")
+                                events.append({
+                                    "title": event_text,
+                                    "url": event_url,
+                                    "description": description,
+                                    "start": f"{date_str}T{time_str}:00",
+                                    "allDay": False
+                                })
+                            except Exception as e:
+                                print(f"Error parsing event link: {e}")
+                                continue
+
+            except Exception as e:
+                print(f"Error scraping calendar for {month_url}: {e}")
                 continue
-
-            # Set intelligent default time if none found
-            if not time_str:
-                import random
-                # Determine event type from title/description
-                event_text = (text + " " + description).lower()
-                
-                if any(word in event_text for word in ["breakfast", "morning", "dawn", "sunrise"]):
-                    time_str = f"{random.randint(7, 9):02d}:00"
-                elif any(word in event_text for word in ["lunch", "noon", "midday"]):
-                    time_str = f"{random.randint(11, 13):02d}:00"
-                elif any(word in event_text for word in ["dinner", "evening", "sunset", "night", "concert", "show", "performance"]):
-                    time_str = f"{random.randint(18, 21):02d}:00"
-                elif any(word in event_text for word in ["festival", "fair", "market", "exhibition"]):
-                    time_str = f"{random.randint(10, 16):02d}:00"
-                elif any(word in event_text for word in ["tour", "walking", "hiking", "outdoor"]):
-                    time_str = f"{random.randint(9, 15):02d}:00"
-                else:
-                    # Default to business hours with some variation
-                    time_str = f"{random.randint(9, 17):02d}:00"
-
-            print(f"Adding event: {text} at {date_str}T{time_str}:00")
-            events.append({
-                "title": text,
-                "url": link,
-                "description": description,
-                "start": f"{date_str}T{time_str}:00",
-                "allDay": False
-            })
 
     # Handle exploregeorgia.org structure
     elif "exploregeorgia.org" in url:
@@ -636,8 +1030,44 @@ def scrape_site(url):
     else:
         print(f"No specific handler for {url}, skipping...")
 
-    print(f"Total events found for {url}: {len(events)}")
-    return events
+    # Filter out past events
+    current_datetime = datetime.now()
+    filtered_events = []
+    for event in events:
+        try:
+            # Parse the event start date
+            event_start_str = event.get("start", "")
+            if event_start_str:
+                # Handle ISO format: "YYYY-MM-DDTHH:MM:SS" or "YYYY-MM-DDTHH:MM"
+                if "T" in event_start_str:
+                    event_date_str = event_start_str.split("T")[0]
+                else:
+                    event_date_str = event_start_str
+                
+                event_date = datetime.strptime(event_date_str, "%Y-%m-%d")
+                # Only include events that are today or in the future
+                if event_date.date() >= current_datetime.date():
+                    filtered_events.append(event)
+                else:
+                    print(f"Filtering out past event: {event.get('title', 'Unknown')} on {event_date_str}")
+        except Exception as e:
+            print(f"Error filtering event {event.get('title', 'Unknown')}: {e}")
+            # If we can't parse the date, include it to be safe
+            filtered_events.append(event)
+    
+    # Deduplicate events (same title and date)
+    seen_events = set()
+    deduplicated_events = []
+    for event in filtered_events:
+        event_key = (event.get("title", "").strip().lower(), event.get("start", ""))
+        if event_key not in seen_events:
+            seen_events.add(event_key)
+            deduplicated_events.append(event)
+        else:
+            print(f"Deduplicating event: {event.get('title', 'Unknown')} on {event.get('start', 'Unknown')}")
+    
+    print(f"Total events found for {url}: {len(events)}, after filtering past events: {len(filtered_events)}, after deduplication: {len(deduplicated_events)}")
+    return deduplicated_events
 
 # -----------------------------
 # Generate events endpoint

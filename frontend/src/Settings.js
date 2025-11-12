@@ -137,7 +137,8 @@ function Settings({ onBack }) {
       scraping_method: source.scraping_method || "auto",
       custom_selectors: source.custom_selectors,
     });
-    setShowAddForm(true);
+    // Don't show the top form when editing
+    setShowAddForm(false);
   };
 
   const resetForm = () => {
@@ -469,102 +470,240 @@ function Settings({ onBack }) {
           <div
             key={source.id}
             style={{
-              backgroundColor: source.enabled ? "white" : "#f8f9fa",
+              backgroundColor: editingSource?.id === source.id ? "#f8f9fa" : (source.enabled ? "white" : "#f8f9fa"),
               padding: "20px",
               borderRadius: "8px",
-              border: `2px solid ${source.enabled ? "#3498db" : "#ddd"}`,
+              border: editingSource?.id === source.id ? "2px solid #f39c12" : `2px solid ${source.enabled ? "#3498db" : "#ddd"}`,
               opacity: source.enabled ? 1 : 0.6,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "start",
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: "0 0 10px 0", color: "#2c3e50" }}>
-                  {source.name}
-                  {!source.enabled && (
-                    <span
+            {editingSource?.id === source.id ? (
+              // Inline edit form
+              <div>
+                <h3 style={{ marginBottom: "20px", color: "#2c3e50" }}>
+                  ✏️ Editing: {source.name}
+                </h3>
+                <div style={{ display: "grid", gap: "15px" }}>
+                  <div>
+                    <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                      Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="e.g., City Events Calendar"
                       style={{
-                        marginLeft: "10px",
-                        fontSize: "12px",
-                        backgroundColor: "#95a5a6",
-                        color: "white",
-                        padding: "2px 8px",
+                        width: "100%",
+                        padding: "10px",
+                        border: "1px solid #ddd",
                         borderRadius: "4px",
                       }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                      URL *
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.url}
+                      onChange={(e) =>
+                        setFormData({ ...formData, url: e.target.value })
+                      }
+                      placeholder="https://example.com/events"
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "4px",
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+                    <div>
+                      <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                        Type
+                      </label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) =>
+                          setFormData({ ...formData, type: e.target.value })
+                        }
+                        style={{
+                          width: "100%",
+                          padding: "10px",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        <option value="events">Events</option>
+                        <option value="attractions">Attractions</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                        Scraping Method
+                      </label>
+                      <select
+                        value={formData.scraping_method}
+                        onChange={(e) =>
+                          setFormData({ ...formData, scraping_method: e.target.value })
+                        }
+                        style={{
+                          width: "100%",
+                          padding: "10px",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        <option value="auto">Auto-detect</option>
+                        <option value="ai">AI-powered</option>
+                        <option value="calendar_table">Calendar Table</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.enabled}
+                        onChange={(e) =>
+                          setFormData({ ...formData, enabled: e.target.checked })
+                        }
+                      />
+                      <span style={{ fontWeight: "500" }}>Enabled</span>
+                    </label>
+                  </div>
+                  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                    <button
+                      onClick={handleUpdateSource}
+                      disabled={loading}
+                      style={{
+                        padding: "12px 24px",
+                        backgroundColor: "#3498db",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontWeight: "600",
+                      }}
                     >
-                      DISABLED
-                    </span>
-                  )}
-                </h3>
-                <p
-                  style={{
-                    margin: "0 0 8px 0",
-                    color: "#666",
-                    fontSize: "14px",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  🔗 {source.url}
-                </p>
-                <div style={{ display: "flex", gap: "10px", fontSize: "13px" }}>
-                  <span
-                    style={{
-                      backgroundColor: source.type === "events" ? "#e8f4fd" : "#fef5e7",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      color: "#2c3e50",
-                    }}
-                  >
-                    {source.type === "events" ? "📅 Events" : "🏛️ Attractions"}
-                  </span>
-                  <span
-                    style={{
-                      backgroundColor: "#e8f8f5",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      color: "#2c3e50",
-                    }}
-                  >
-                    {source.scraping_method || "auto"}
-                  </span>
+                      {loading ? "Saving..." : "Save Changes"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingSource(null);
+                        resetForm();
+                      }}
+                      style={{
+                        padding: "12px 24px",
+                        backgroundColor: "#95a5a6",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  onClick={() => startEdit(source)}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#f39c12",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                  }}
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteSource(source.id)}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#e74c3c",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                  }}
-                >
-                  🗑️ Delete
-                </button>
+            ) : (
+              // Normal source display
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "start",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "#2c3e50" }}>
+                    {source.name}
+                    {!source.enabled && (
+                      <span
+                        style={{
+                          marginLeft: "10px",
+                          fontSize: "12px",
+                          backgroundColor: "#95a5a6",
+                          color: "white",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        DISABLED
+                      </span>
+                    )}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "0 0 8px 0",
+                      color: "#666",
+                      fontSize: "14px",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    🔗 {source.url}
+                  </p>
+                  <div style={{ display: "flex", gap: "10px", fontSize: "13px" }}>
+                    <span
+                      style={{
+                        backgroundColor: source.type === "events" ? "#e8f4fd" : "#fef5e7",
+                        padding: "4px 10px",
+                        borderRadius: "4px",
+                        color: "#2c3e50",
+                      }}
+                    >
+                      {source.type === "events" ? "📅 Events" : "🏛️ Attractions"}
+                    </span>
+                    <span
+                      style={{
+                        backgroundColor: "#e8f8f5",
+                        padding: "4px 10px",
+                        borderRadius: "4px",
+                        color: "#2c3e50",
+                      }}
+                    >
+                      {source.scraping_method || "auto"}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    onClick={() => startEdit(source)}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#f39c12",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSource(source.id)}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#e74c3c",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ))}
       </div>

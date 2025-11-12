@@ -5,13 +5,13 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
-import axios from "axios";
 import Settings from "./Settings";
 
 function App() {
   const [events, setEvents] = useState([]);
   const [attractions, setAttractions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0, source: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
@@ -19,28 +19,112 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
 
-  const fetchEvents = async () => {
+  // Use ref to store EventSource so we can clean it up
+  const eventSourceRef = React.useRef(null);
+
+  const fetchEvents = () => {
+    // Close any existing EventSource connection
+    if (eventSourceRef.current) {
+      console.log("Closing existing EventSource");
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+
     setLoading(true);
+    setProgress({ current: 0, total: 0, source: "" });
+    setEvents([]); // Clear previous events
+    setAttractions([]); // Clear previous attractions
     setCurrentPage(1); // Reset to first page when fetching new data
     setSelectedCategory("All"); // Reset filter when fetching new data
     setSortBy("name"); // Reset sort when fetching new data
+
     try {
-      const res = await axios.post("/generate_events", {
-        query: "Things to do in Valdosta GA",
-      });
-      console.log("Backend response:", res.data);
-      setEvents(res.data.events || []);
-      setAttractions(res.data.attractions || []);
+      // Use Server-Sent Events for progressive loading
+      const eventSource = new EventSource("/generate_events_stream");
+      eventSourceRef.current = eventSource;
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const timestamp = new Date().toLocaleTimeString();
+        console.log(`[${timestamp}] SSE message:`, data.type, data);
+
+        if (data.type === "init") {
+          // Initialize progress
+          console.log(`[${timestamp}] ✅ Initialized with ${data.total} sources`);
+          setProgress({ current: 0, total: data.total, source: "Initializing..." });
+        } else if (data.type === "events") {
+          // Add events progressively
+          console.log(`[${timestamp}] 📅 Adding ${data.events.length} events from "${data.source}" (${data.current}/${data.total})`);
+          setEvents((prev) => {
+            const newEvents = [...prev, ...data.events];
+            console.log(`[${timestamp}] 📊 Total events now: ${newEvents.length}`);
+            return newEvents;
+          });
+          setProgress({
+            current: data.current,
+            total: data.total,
+            source: data.source
+          });
+        } else if (data.type === "attractions") {
+          // Add attractions progressively
+          console.log(`[${timestamp}] 🏛️ Adding ${data.attractions.length} attractions from "${data.source}" (${data.current}/${data.total})`);
+          setAttractions((prev) => {
+            const newAttractions = [...prev, ...data.attractions];
+            console.log(`[${timestamp}] 📊 Total attractions now: ${newAttractions.length}`);
+            return newAttractions;
+          });
+          setProgress({
+            current: data.current,
+            total: data.total,
+            source: data.source
+          });
+        } else if (data.type === "error") {
+          // Handle error but continue
+          console.error(`[${timestamp}] ❌ Error scraping ${data.source}:`, data.error);
+          setProgress({
+            current: data.current,
+            total: data.total,
+            source: data.source
+          });
+        } else if (data.type === "complete") {
+          // All done!
+          console.log(`[${timestamp}] ✅ All scraping complete!`);
+          setLoading(false);
+          if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+            eventSourceRef.current = null;
+          }
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("SSE error:", error);
+        alert("Failed to fetch events. Check console for details.");
+        setLoading(false);
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+      };
     } catch (err) {
-      console.error("Error fetching events:", err);
+      console.error("Error setting up event stream:", err);
       alert("Failed to fetch events. Check console for details.");
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // Auto-fetch data when component mounts
   useEffect(() => {
     fetchEvents();
+
+    // Cleanup function to close EventSource when component unmounts
+    return () => {
+      if (eventSourceRef.current) {
+        console.log("Cleaning up EventSource on unmount");
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
   }, []);
 
   // Get unique categories from all attractions
@@ -225,24 +309,103 @@ function App() {
       {loading && (
         <div
           style={{
-            textAlign: "center",
-            padding: "20px",
+            padding: "25px",
             backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-            marginBottom: "20px",
-            border: "1px solid #e9ecef",
+            borderRadius: "12px",
+            marginBottom: "30px",
+            border: "2px solid #3498db",
+            boxShadow: "0 4px 12px rgba(52, 152, 219, 0.1)",
           }}
         >
-          <p
+          <div style={{ marginBottom: "15px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "8px",
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "16px",
+                  color: "#2c3e50",
+                  fontWeight: "600",
+                }}
+              >
+                🔄 Loading Events & Attractions
+              </p>
+              {progress.total > 0 && (
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#3498db",
+                    fontWeight: "600",
+                  }}
+                >
+                  {progress.current} / {progress.total}
+                </span>
+              )}
+            </div>
+            {progress.source && (
+              <p
+                style={{
+                  margin: "0 0 12px 0",
+                  fontSize: "14px",
+                  color: "#666",
+                }}
+              >
+                Scraping: <strong>{progress.source}</strong>
+              </p>
+            )}
+            {progress.total === 0 && (
+              <p
+                style={{
+                  margin: "0 0 12px 0",
+                  fontSize: "14px",
+                  color: "#666",
+                }}
+              >
+                Connecting to server...
+              </p>
+            )}
+          </div>
+
+          {/* Progress Bar */}
+          <div
             style={{
-              margin: 0,
-              fontSize: "16px",
-              color: "#495057",
-              fontWeight: "500",
+              width: "100%",
+              height: "12px",
+              backgroundColor: "#e9ecef",
+              borderRadius: "6px",
+              overflow: "hidden",
+              position: "relative",
             }}
           >
-            🔄 Discovering amazing events and attractions in Valdosta...
-          </p>
+            <div
+              style={{
+                width: progress.total > 0 ? `${(progress.current / progress.total) * 100}%` : "100%",
+                height: "100%",
+                backgroundColor: "#3498db",
+                borderRadius: "6px",
+                transition: "width 0.3s ease",
+                backgroundImage:
+                  "linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent)",
+                backgroundSize: "40px 40px",
+                animation: "progress-bar-stripes 1s linear infinite",
+              }}
+            />
+          </div>
+
+          <style>
+            {`
+              @keyframes progress-bar-stripes {
+                0% { background-position: 40px 0; }
+                100% { background-position: 0 0; }
+              }
+            `}
+          </style>
         </div>
       )}
 

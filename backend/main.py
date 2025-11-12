@@ -3,12 +3,14 @@ import os
 import requests
 import json
 import re
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from dateutil import parser as dateparser
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from bs4 import BeautifulSoup
 from openai import OpenAI
@@ -1117,6 +1119,89 @@ def generate_events(request: QueryRequest):
 
     except Exception as e:
         return {"error": str(e)}
+
+
+# -----------------------------
+# Generate events with progressive updates (SSE)
+# -----------------------------
+# Create a thread pool executor for running blocking scraping operations
+executor = ThreadPoolExecutor(max_workers=1)
+
+@app.get("/generate_events_stream")
+async def generate_events_stream():
+    """
+    Server-Sent Events endpoint that streams scraping progress and results.
+    Allows frontend to update UI progressively as each source is scraped.
+    """
+    async def event_generator():
+        try:
+            # Load sources
+            event_sources = source_manager.get_sources_by_type('events')
+            attraction_sources = source_manager.get_sources_by_type('attractions')
+
+            total_sources = len(event_sources) + len(attraction_sources)
+            current = 0
+
+            # Send initial progress
+            yield f"data: {json.dumps({'type': 'init', 'total': total_sources, 'current': 0})}\n\n"
+
+            # Get the event loop
+            loop = asyncio.get_event_loop()
+
+            # Scrape event sources
+            for source in event_sources:
+                try:
+                    print(f"Scraping event source: {source['name']} ({source['url']})")
+
+                    # Run blocking scrape_source in thread pool to avoid blocking the event loop
+                    events = await loop.run_in_executor(executor, scrape_source, source)
+                    current += 1
+
+                    # Send events and progress update
+                    yield f"data: {json.dumps({'type': 'events', 'events': events, 'source': source['name'], 'current': current, 'total': total_sources})}\n\n"
+                    print(f"  Found {len(events)} events")
+                except Exception as e:
+                    print(f"Error scraping {source['name']}: {e}")
+                    current += 1
+                    # Send error update
+                    yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+
+            # Scrape attraction sources
+            for source in attraction_sources:
+                try:
+                    print(f"Scraping attraction source: {source['name']} ({source['url']})")
+
+                    # Run blocking scrape_source in thread pool to avoid blocking the event loop
+                    attractions = await loop.run_in_executor(executor, scrape_source, source)
+                    current += 1
+
+                    # Send attractions and progress update
+                    yield f"data: {json.dumps({'type': 'attractions', 'attractions': attractions, 'source': source['name'], 'current': current, 'total': total_sources})}\n\n"
+                    print(f"  Found {len(attractions)} attractions")
+                except Exception as e:
+                    print(f"Error scraping {source['name']}: {e}")
+                    current += 1
+                    # Send error update
+                    yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+
+            # Send completion signal
+            yield f"data: {json.dumps({'type': 'complete'})}\n\n"
+
+        except Exception as e:
+            print(f"Error in event_generator: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        }
+    )
+
+
 # -----------------------------
 # Source Management API Endpoints
 # -----------------------------

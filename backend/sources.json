@@ -6,8 +6,7 @@
       "url": "https://visitvaldosta.org/events/",
       "type": "events",
       "enabled": true,
-      "scraping_method": "calendar_table",
-      "site_scraper": "visitvaldosta_events",
+      "scraping_method": "auto",
       "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
@@ -17,13 +16,8 @@
       "url": "https://www.valdostamainstreet.com/events-calendar",
       "type": "events",
       "enabled": true,
-      "scraping_method": "calendar_table",
-      "custom_selectors": {
-        "calendar_table": "table",
-        "event_cell": "td[data-date]",
-        "event_link": "a[href*='/event/']",
-        "date_attribute": "data-date"
-      },
+      "scraping_method": "auto",
+      "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -33,7 +27,6 @@
       "type": "attractions",
       "enabled": true,
       "scraping_method": "auto",
-      "site_scraper": "wanderlog_attractions",
       "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
@@ -44,7 +37,6 @@
       "type": "attractions",
       "enabled": true,
       "scraping_method": "auto",
-      "site_scraper": "exploregeorgia_attractions",
       "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     }

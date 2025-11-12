@@ -22,12 +22,10 @@ try:
     # Try relative imports first (when run as module: uvicorn backend.main:app)
     from . import source_manager
     from . import generic_scraper
-    from . import site_scrapers
 except ImportError:
     # Fall back to direct imports (when run from backend directory)
     import source_manager
     import generic_scraper
-    import site_scrapers
 
 # Try to load environment variables from .env file
 try:
@@ -140,26 +138,17 @@ def scrape_source(source: Dict) -> List[Dict]:
     }
 
     try:
-        # Method 0: Site-specific scraper (highest priority if configured)
-        if site_scraper_name:
-            scraper_func = site_scrapers.get_site_scraper(site_scraper_name)
-            if scraper_func:
-                print(f"  Using site-specific scraper: {site_scraper_name}")
-                return scraper_func(url)
-            else:
-                print(f"  Warning: Site scraper '{site_scraper_name}' not found, falling back to other methods")
-
-        # Method 1: Custom selectors (if provided)
-        if custom_selectors and scraping_method != 'auto':
-            print(f"  Using custom selectors for {url}")
+        # Method 1: Custom selectors (if provided and not using auto)
+        if custom_selectors and scraping_method == 'calendar_table':
+            print(f"  Using custom selectors (calendar table) for {url}")
             return generic_scraper.scrape_with_custom_selectors(url, custom_selectors, source_type, headers)
 
-        # Method 2: AI-powered scraping
-        elif scraping_method == 'ai' or (scraping_method == 'auto' and client is not None):
+        # Method 2: AI-powered scraping (only if explicitly set to 'ai')
+        elif scraping_method == 'ai' and client is not None:
             print(f"  Using AI scraping for {url}")
             return generic_scraper.scrape_with_ai(url, source_type, client)
 
-        # Method 3: Generic auto-detection (fallback)
+        # Method 3: Generic auto-detection (default for 'auto' method)
         else:
             print(f"  Using generic auto-detection for {url}")
             return generic_scraper.scrape_generic_auto(url, source_type)

@@ -540,8 +540,10 @@ function App() {
               marginBottom: "20px",
             }}
           >
-            📅 Scheduled Events
+            📅 Scheduled Events ({events.length} total)
           </h2>
+          {/* Debug: Log events before passing to calendar */}
+          {console.log("📊 Events being passed to FullCalendar:", JSON.stringify(events, null, 2))}
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"

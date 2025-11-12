@@ -6,7 +6,7 @@
       "url": "https://visitvaldosta.org/events/",
       "type": "events",
       "enabled": true,
-      "scraping_method": "auto",
+      "scraping_method": "ai",
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -15,7 +15,7 @@
       "url": "https://www.valdostamainstreet.com/events-calendar",
       "type": "events",
       "enabled": true,
-      "scraping_method": "auto",
+      "scraping_method": "ai",
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -24,7 +24,7 @@
       "url": "https://wanderlog.com/list/geoCategory/1592203/top-things-to-do-and-attractions-in-valdosta",
       "type": "attractions",
       "enabled": true,
-      "scraping_method": "auto",
+      "scraping_method": "ai",
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -39,6 +39,6 @@
   ],
   "settings": {
     "passcode_hash": "0d4a67cd480b8bc2b2805f48bbd44be60efc64b488788a774d0428f2be0973ce",
-    "last_updated": "2025-11-12T20:58:54.186941Z"
+    "last_updated": "2025-11-12T21:09:37.951940Z"
   }
 }

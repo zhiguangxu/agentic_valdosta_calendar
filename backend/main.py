@@ -71,14 +71,10 @@ else:
     )
 
 # -----------------------------
-# Serve React build in HF mode
+# Mount static files in HF mode (but don't add catch-all route yet)
 # -----------------------------
 if MODE == "HF":
     app.mount("/static", StaticFiles(directory="backend/static/static"), name="static")
-
-    @app.get("/{full_path:path}")
-    def serve_react_app(full_path: str):
-        return FileResponse("backend/static/index.html")
 
 # -----------------------------
 # Request models
@@ -538,3 +534,12 @@ def update_passcode_endpoint(old_passcode: str, new_passcode: str):
         raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# -----------------------------
+# Serve React app (catch-all route - MUST be last!)
+# -----------------------------
+if MODE == "HF":
+    @app.get("/{full_path:path}")
+    def serve_react_app(full_path: str):
+        return FileResponse("backend/static/index.html")

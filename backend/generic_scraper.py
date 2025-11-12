@@ -319,10 +319,12 @@ def scrape_generic_auto(url: str, source_type: str) -> List[Dict]:
                                 "allDay": False
                             })
 
-        # Pattern 2: Look for article/event containers
+        # Pattern 2: Look for article/event/place containers (with broader patterns)
         if not results:
-            containers = soup.find_all(["article", "div"], class_=re.compile(r"event|attraction|place", re.I))
-            for container in containers[:20]:  # Limit to 20 items
+            # Enhanced pattern to catch more variations: PlaceView, EventCard, etc.
+            containers = soup.find_all(["article", "div", "li", "section"],
+                                      class_=re.compile(r"event|attraction|place|card|item|entry|post|listing|view", re.I))
+            for container in containers:  # No limit - scrape all items found
                 title_elem = container.find(["h2", "h3", "h4", "a"])
                 if not title_elem:
                     continue
@@ -366,8 +368,11 @@ def scrape_generic_auto(url: str, source_type: str) -> List[Dict]:
                     import random
                     time_str = f"{random.randint(9, 17):02d}:00"
 
+                    # Don't add "Visit:" prefix if title already has it
+                    display_title = title if title.startswith(("Visit:", "Visit ")) else title
+
                     results.append({
-                        "title": f"Visit: {title}",
+                        "title": display_title,
                         "url": item_url,
                         "description": description,
                         "start": f"{today}T{time_str}:00",

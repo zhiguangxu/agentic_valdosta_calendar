@@ -7,6 +7,7 @@
       "type": "events",
       "enabled": true,
       "scraping_method": "calendar_table",
+      "site_scraper": "visitvaldosta_events",
       "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
@@ -32,6 +33,7 @@
       "type": "attractions",
       "enabled": true,
       "scraping_method": "auto",
+      "site_scraper": "wanderlog_attractions",
       "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
@@ -42,6 +44,7 @@
       "type": "attractions",
       "enabled": true,
       "scraping_method": "auto",
+      "site_scraper": "exploregeorgia_attractions",
       "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     }

@@ -65,7 +65,7 @@ function Settings({ onBack }) {
 
     // Check for blocked URLs (frontend validation)
     if (isBlockedUrl(formData.url)) {
-      setError("⚠️ TripAdvisor is not supported due to scraping restrictions. Please use alternative attraction sources like Wanderlog or Explore Georgia.");
+      setError("⚠️ This source is not supported due to scraping restrictions. Please use an alternative source.");
       return;
     }
 
@@ -88,7 +88,7 @@ function Settings({ onBack }) {
 
     // Check for blocked URLs (frontend validation)
     if (formData.url && isBlockedUrl(formData.url)) {
-      setError("⚠️ TripAdvisor is not supported due to scraping restrictions. Please use alternative attraction sources like Wanderlog or Explore Georgia.");
+      setError("⚠️ This source is not supported due to scraping restrictions. Please use an alternative source.");
       return;
     }
 

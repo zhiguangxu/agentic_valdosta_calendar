@@ -78,6 +78,14 @@ function App() {
             total: data.total,
             source: data.source
           });
+        } else if (data.type === "progress") {
+          // Handle progress messages (for attraction scraping)
+          console.log(`[${timestamp}] 📊 Progress: ${data.message}`);
+          setProgress({
+            current: data.current,
+            total: data.total,
+            source: data.source
+          });
         } else if (data.type === "error") {
           // Handle error but continue
           console.error(`[${timestamp}] ❌ Error scraping ${data.source}:`, data.error);
@@ -738,26 +746,16 @@ function App() {
                 >
                   <span style={{ marginRight: "5px" }}>🔗</span>
                   {(() => {
-                    // Determine source based on categories or URL
-                    const categories = attraction.categories || [];
+                    // Extract domain name from URL for dynamic button text
                     const url = attraction.url || "";
-
-                    if (
-                      categories.includes("Explore Georgia") ||
-                      url.includes("exploregeorgia.org")
-                    ) {
-                      return "Learn more on Explore Georgia";
-                    } else if (
-                      categories.includes("TripAdvisor") ||
-                      url.includes("tripadvisor.com")
-                    ) {
-                      return "Learn more on TripAdvisor";
-                    } else if (
-                      categories.includes("Wanderlog") ||
-                      url.includes("wanderlog.com")
-                    ) {
-                      return "Learn more on Wanderlog";
-                    } else {
+                    try {
+                      const urlObj = new URL(url);
+                      const hostname = urlObj.hostname.replace(/^www\./, '');
+                      // Capitalize first letter of domain name
+                      const siteName = hostname.split('.')[0].charAt(0).toUpperCase() +
+                                      hostname.split('.')[0].slice(1);
+                      return `Learn more on ${siteName}`;
+                    } catch (e) {
                       return "Learn more";
                     }
                   })()}

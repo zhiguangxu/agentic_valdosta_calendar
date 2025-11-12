@@ -63,7 +63,7 @@ def get_source_by_id(source_id: str) -> Optional[Dict]:
 
 
 def is_blocked_url(url: str) -> bool:
-    """Check if URL is blocked (e.g., TripAdvisor)"""
+    """Check if URL is blocked due to scraping restrictions"""
     blocked_domains = [
         'tripadvisor.com',
         'tripadvisor.',  # Catches all TripAdvisor subdomains
@@ -81,7 +81,7 @@ def add_source(source: Dict) -> Dict:
     # Check if URL is blocked
     url = source.get('url', '')
     if is_blocked_url(url):
-        raise ValueError("TripAdvisor is not supported due to scraping restrictions. Please use alternative attraction sources.")
+        raise ValueError("This source is not supported due to scraping restrictions. Please use an alternative source.")
 
     data = load_sources()
     sources = data.get('sources', [])
@@ -118,7 +118,7 @@ def update_source(source_id: str, updates: Dict) -> Optional[Dict]:
     """Update an existing source"""
     # Check if trying to update URL to a blocked domain
     if 'url' in updates and is_blocked_url(updates['url']):
-        raise ValueError("TripAdvisor is not supported due to scraping restrictions. Please use alternative attraction sources.")
+        raise ValueError("This source is not supported due to scraping restrictions. Please use an alternative source.")
 
     data = load_sources()
     sources = data.get('sources', [])

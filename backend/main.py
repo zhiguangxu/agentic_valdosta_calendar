@@ -94,16 +94,14 @@ class SourceRequest(BaseModel):
     url: str
     type: str  # "events" or "attractions"
     enabled: Optional[bool] = True
-    scraping_method: Optional[str] = "auto"
-    custom_selectors: Optional[dict] = None
+    scraping_method: Optional[str] = "auto"  # Only "auto" or "ai"
 
 class SourceUpdateRequest(BaseModel):
     name: Optional[str] = None
     url: Optional[str] = None
     type: Optional[str] = None
     enabled: Optional[bool] = None
-    scraping_method: Optional[str] = None
-    custom_selectors: Optional[dict] = None
+    scraping_method: Optional[str] = None  # Only "auto" or "ai"
 
 # -----------------------------
 # OLD: Approved websites (now managed via sources.json)
@@ -125,30 +123,20 @@ class SourceUpdateRequest(BaseModel):
 
 def scrape_source(source: Dict) -> List[Dict]:
     """
-    Scrape a single source using the appropriate method
+    Scrape a single source using the appropriate method.
+    Only supports 'auto' (default, generic pattern matching) and 'ai' (AI-powered scraping).
     """
     url = source['url']
     source_type = source['type']
     scraping_method = source.get('scraping_method', 'auto')
-    custom_selectors = source.get('custom_selectors')
-    site_scraper_name = source.get('site_scraper')  # NEW: Check for site-specific scraper
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
 
     try:
-        # Method 1: Custom selectors (if provided and not using auto)
-        if custom_selectors and scraping_method == 'calendar_table':
-            print(f"  Using custom selectors (calendar table) for {url}")
-            return generic_scraper.scrape_with_custom_selectors(url, custom_selectors, source_type, headers)
-
-        # Method 2: AI-powered scraping (only if explicitly set to 'ai')
-        elif scraping_method == 'ai' and client is not None:
+        # Method 1: AI-powered scraping (only if explicitly set to 'ai')
+        if scraping_method == 'ai' and client is not None:
             print(f"  Using AI scraping for {url}")
             return generic_scraper.scrape_with_ai(url, source_type, client)
 
-        # Method 3: Generic auto-detection (default for 'auto' method)
+        # Method 2: Generic auto-detection (default for 'auto' method or fallback)
         else:
             print(f"  Using generic auto-detection for {url}")
             return generic_scraper.scrape_generic_auto(url, source_type)

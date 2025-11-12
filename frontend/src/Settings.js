@@ -10,6 +10,13 @@ function Settings({ onBack }) {
   const [error, setError] = useState("");
   const [editingSource, setEditingSource] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showPasscodeChange, setShowPasscodeChange] = useState(false);
+  const [passcodeChangeData, setPasscodeChangeData] = useState({
+    oldPasscode: "",
+    newPasscode: "",
+    confirmPasscode: "",
+  });
+  const [passcodeChangeMessage, setPasscodeChangeMessage] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,7 +24,6 @@ function Settings({ onBack }) {
     type: "events",
     enabled: true,
     scraping_method: "auto",
-    custom_selectors: null,
   });
 
   const handlePasscodeSubmit = async (e) => {
@@ -135,7 +141,6 @@ function Settings({ onBack }) {
       type: source.type,
       enabled: source.enabled,
       scraping_method: source.scraping_method || "auto",
-      custom_selectors: source.custom_selectors,
     });
     // Don't show the top form when editing
     setShowAddForm(false);
@@ -148,9 +153,59 @@ function Settings({ onBack }) {
       type: "events",
       enabled: true,
       scraping_method: "auto",
-      custom_selectors: null,
     });
     setEditingSource(null);
+  };
+
+  const handlePasscodeChange = async () => {
+    setPasscodeChangeMessage("");
+    setError("");
+
+    // Validate inputs
+    if (!passcodeChangeData.oldPasscode || !passcodeChangeData.newPasscode || !passcodeChangeData.confirmPasscode) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (passcodeChangeData.newPasscode !== passcodeChangeData.confirmPasscode) {
+      setError("New passcode and confirmation do not match");
+      return;
+    }
+
+    if (passcodeChangeData.newPasscode.length < 6) {
+      setError("New passcode must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await axios.post("/api/update-passcode", null, {
+        params: {
+          old_passcode: passcodeChangeData.oldPasscode,
+          new_passcode: passcodeChangeData.newPasscode,
+        },
+      });
+
+      setPasscodeChangeMessage("Passcode changed successfully! Please use the new passcode next time.");
+      setPasscodeChangeData({
+        oldPasscode: "",
+        newPasscode: "",
+        confirmPasscode: "",
+      });
+
+      // Update the stored passcode
+      setPasscode(passcodeChangeData.newPasscode);
+      localStorage.setItem("settings_passcode", passcodeChangeData.newPasscode);
+
+      setTimeout(() => {
+        setShowPasscodeChange(false);
+        setPasscodeChangeMessage("");
+      }, 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Error changing passcode");
+    }
+    setLoading(false);
   };
 
   // Check for saved passcode on mount
@@ -412,7 +467,6 @@ function Settings({ onBack }) {
                 >
                   <option value="auto">Auto-detect</option>
                   <option value="ai">AI-powered</option>
-                  <option value="calendar_table">Calendar Table</option>
                 </select>
               </div>
             </div>
@@ -561,7 +615,6 @@ function Settings({ onBack }) {
                       >
                         <option value="auto">Auto-detect</option>
                         <option value="ai">AI-powered</option>
-                        <option value="calendar_table">Calendar Table</option>
                       </select>
                     </div>
                   </div>
@@ -732,14 +785,165 @@ function Settings({ onBack }) {
         }}
       >
         <h4 style={{ margin: "0 0 10px 0", color: "#2c3e50" }}>
-          💡 Default Passcode
+          🔐 Passcode Management
         </h4>
         <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>
-          The default passcode is: <strong>admin123</strong>
-          <br />
-          Please change it for security reasons!
+          You can change your passcode for security purposes.
         </p>
+        <button
+          onClick={() => setShowPasscodeChange(!showPasscodeChange)}
+          style={{
+            marginTop: "10px",
+            padding: "8px 16px",
+            backgroundColor: "#3498db",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "600",
+          }}
+        >
+          {showPasscodeChange ? "Cancel" : "Change Passcode"}
+        </button>
       </div>
+
+      {showPasscodeChange && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "25px",
+            backgroundColor: "#fff3cd",
+            borderRadius: "8px",
+            border: "2px solid #ffc107",
+          }}
+        >
+          <h4 style={{ margin: "0 0 15px 0", color: "#2c3e50" }}>
+            🔐 Change Passcode
+          </h4>
+          {passcodeChangeMessage && (
+            <div
+              style={{
+                padding: "12px",
+                backgroundColor: "#d4edda",
+                border: "1px solid #c3e6cb",
+                borderRadius: "6px",
+                marginBottom: "15px",
+                color: "#155724",
+              }}
+            >
+              {passcodeChangeMessage}
+            </div>
+          )}
+          <div style={{ display: "grid", gap: "15px" }}>
+            <div>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                Current Passcode *
+              </label>
+              <input
+                type="password"
+                value={passcodeChangeData.oldPasscode}
+                onChange={(e) =>
+                  setPasscodeChangeData({
+                    ...passcodeChangeData,
+                    oldPasscode: e.target.value,
+                  })
+                }
+                placeholder="Enter current passcode"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                New Passcode * (min 6 characters)
+              </label>
+              <input
+                type="password"
+                value={passcodeChangeData.newPasscode}
+                onChange={(e) =>
+                  setPasscodeChangeData({
+                    ...passcodeChangeData,
+                    newPasscode: e.target.value,
+                  })
+                }
+                placeholder="Enter new passcode"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                Confirm New Passcode *
+              </label>
+              <input
+                type="password"
+                value={passcodeChangeData.confirmPasscode}
+                onChange={(e) =>
+                  setPasscodeChangeData({
+                    ...passcodeChangeData,
+                    confirmPasscode: e.target.value,
+                  })
+                }
+                placeholder="Confirm new passcode"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button
+                onClick={handlePasscodeChange}
+                disabled={loading}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                {loading ? "Updating..." : "Update Passcode"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowPasscodeChange(false);
+                  setPasscodeChangeData({
+                    oldPasscode: "",
+                    newPasscode: "",
+                    confirmPasscode: "",
+                  });
+                  setPasscodeChangeMessage("");
+                  setError("");
+                }}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#95a5a6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

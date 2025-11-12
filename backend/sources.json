@@ -7,7 +7,6 @@
       "type": "events",
       "enabled": true,
       "scraping_method": "auto",
-      "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -17,7 +16,6 @@
       "type": "events",
       "enabled": true,
       "scraping_method": "auto",
-      "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -27,7 +25,6 @@
       "type": "attractions",
       "enabled": true,
       "scraping_method": "auto",
-      "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
@@ -37,12 +34,11 @@
       "type": "attractions",
       "enabled": true,
       "scraping_method": "auto",
-      "custom_selectors": null,
       "added_date": "2025-01-10T00:00:00Z"
     }
   ],
   "settings": {
-    "passcode_hash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
-    "last_updated": "2025-11-12T00:37:34.858658Z"
+    "passcode_hash": "0d4a67cd480b8bc2b2805f48bbd44be60efc64b488788a774d0428f2be0973ce",
+    "last_updated": "2025-11-12T04:34:46.805758Z"
   }
 }

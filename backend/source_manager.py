@@ -17,7 +17,7 @@ def load_sources() -> Dict:
         default_data = {
             "sources": [],
             "settings": {
-                "passcode_hash": hash_passcode("admin123"),  # Default passcode
+                "passcode_hash": hash_passcode("ovl4you"),  # Default passcode
                 "last_updated": datetime.utcnow().isoformat() + "Z"
             }
         }
@@ -104,8 +104,6 @@ def add_source(source: Dict) -> Dict:
         source['enabled'] = True
     if 'scraping_method' not in source:
         source['scraping_method'] = 'auto'
-    if 'custom_selectors' not in source:
-        source['custom_selectors'] = None
 
     sources.append(source)
     data['sources'] = sources

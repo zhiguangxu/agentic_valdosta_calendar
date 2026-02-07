@@ -1211,7 +1211,8 @@ def _expand_recurring_events(results: List[Dict]) -> List[Dict]:
     expanded = []
     for event in results:
         title = event.get('title', '').lower()
-        recurring_pattern = event.get('recurring_pattern', '').lower()
+        # Handle None values for recurring_pattern
+        recurring_pattern = (event.get('recurring_pattern') or '').lower()
 
         # Check both title AND recurring_pattern field for patterns
         search_text = f"{title} {recurring_pattern}"

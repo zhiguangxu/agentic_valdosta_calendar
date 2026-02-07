@@ -11,6 +11,7 @@ function Settings({ onBack }) {
   const [editingSource, setEditingSource] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showPasscodeChange, setShowPasscodeChange] = useState(false);
+  const [activeTab, setActiveTab] = useState("events");
   const [passcodeChangeData, setPasscodeChangeData] = useState({
     oldPasscode: "",
     newPasscode: "",
@@ -150,7 +151,7 @@ function Settings({ onBack }) {
     setFormData({
       name: "",
       url: "",
-      type: "events",
+      type: activeTab, // Set type to match current tab
       enabled: true,
       scraping_method: "ai_twostage", // Always use two-stage scraping
     });
@@ -247,7 +248,7 @@ function Settings({ onBack }) {
           🔒 Settings Access
         </h2>
         <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          Enter passcode to manage event sources
+          Enter passcode to manage sources
         </p>
         <form onSubmit={handlePasscodeSubmit}>
           <input
@@ -305,6 +306,15 @@ function Settings({ onBack }) {
     );
   }
 
+  // Filter sources by active tab
+  const filteredSources = sources.filter((source) => {
+    if (activeTab === "events") return source.type === "events";
+    if (activeTab === "classes") return source.type === "classes";
+    if (activeTab === "meetings") return source.type === "meetings";
+    if (activeTab === "attractions") return source.type === "attractions";
+    return true;
+  });
+
   return (
     <div style={{ maxWidth: "1000px", margin: "40px auto", padding: "0 20px" }}>
       <div
@@ -315,7 +325,7 @@ function Settings({ onBack }) {
           marginBottom: "30px",
         }}
       >
-        <h1 style={{ color: "#2c3e50" }}>⚙️ Event Source Settings</h1>
+        <h1 style={{ color: "#2c3e50" }}>⚙️ Source Settings</h1>
         <button
           onClick={onBack}
           style={{
@@ -346,380 +356,454 @@ function Settings({ onBack }) {
         </div>
       )}
 
+      {/* Tab Navigation */}
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
+          borderBottom: "2px solid #e9ecef",
+          marginBottom: "30px",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "8px 8px 0 0",
+          overflow: "hidden",
         }}
       >
-        <h2 style={{ color: "#2c3e50" }}>
-          📋 Configured Sources ({sources.length})
-        </h2>
         <button
           onClick={() => {
+            setActiveTab("events");
             resetForm();
-            setShowAddForm(true);
+            setShowAddForm(false);
+            setEditingSource(null);
           }}
           style={{
-            padding: "10px 20px",
-            backgroundColor: "#27ae60",
-            color: "white",
+            flex: 1,
+            padding: "15px 20px",
             border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
+            backgroundColor:
+              activeTab === "events" ? "#3498db" : "transparent",
+            color: activeTab === "events" ? "white" : "#495057",
+            fontSize: "16px",
             fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
           }}
         >
-          + Add New Source
+          📅 Events
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("classes");
+            resetForm();
+            setShowAddForm(false);
+            setEditingSource(null);
+          }}
+          style={{
+            flex: 1,
+            padding: "15px 20px",
+            border: "none",
+            backgroundColor:
+              activeTab === "classes" ? "#3498db" : "transparent",
+            color: activeTab === "classes" ? "white" : "#495057",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          📚 Classes
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("meetings");
+            resetForm();
+            setShowAddForm(false);
+            setEditingSource(null);
+          }}
+          style={{
+            flex: 1,
+            padding: "15px 20px",
+            border: "none",
+            backgroundColor:
+              activeTab === "meetings" ? "#3498db" : "transparent",
+            color: activeTab === "meetings" ? "white" : "#495057",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          🤝 Meetings
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("attractions");
+            resetForm();
+            setShowAddForm(false);
+            setEditingSource(null);
+          }}
+          style={{
+            flex: 1,
+            padding: "15px 20px",
+            border: "none",
+            backgroundColor:
+              activeTab === "attractions" ? "#3498db" : "transparent",
+            color: activeTab === "attractions" ? "white" : "#495057",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          🏛️ Visit Valdosta
         </button>
       </div>
 
-      {showAddForm && (
+      {/* Tab Content */}
+      <div>
         <div
           style={{
-            backgroundColor: "#f8f9fa",
-            padding: "25px",
-            borderRadius: "8px",
-            marginBottom: "25px",
-            border: "2px solid #3498db",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
           }}
         >
-          <h3 style={{ marginBottom: "20px", color: "#2c3e50" }}>
-            {editingSource ? "Edit Source" : "Add New Source"}
-          </h3>
-          <div style={{ display: "grid", gap: "15px" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="e.g., City Events Calendar"
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                URL *
-              </label>
-              <input
-                type="url"
-                value={formData.url}
-                onChange={(e) =>
-                  setFormData({ ...formData, url: e.target.value })
-                }
-                placeholder="https://example.com/events"
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                Type
-              </label>
-              <select
-                value={formData.type}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-              >
-                <option value="events">Events</option>
-                <option value="attractions">Attractions</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <input
-                  type="checkbox"
-                  checked={formData.enabled}
-                  onChange={(e) =>
-                    setFormData({ ...formData, enabled: e.target.checked })
-                  }
-                />
-                <span style={{ fontWeight: "500" }}>Enabled</span>
-              </label>
-            </div>
-            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-              <button
-                onClick={editingSource ? handleUpdateSource : handleAddSource}
-                disabled={loading}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#3498db",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                {loading ? "Saving..." : editingSource ? "Update" : "Add Source"}
-              </button>
-              <button
-                onClick={() => {
-                  setShowAddForm(false);
-                  resetForm();
-                }}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#95a5a6",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: "grid", gap: "15px" }}>
-        {sources.map((source) => (
-          <div
-            key={source.id}
+          <h2 style={{ color: "#2c3e50" }}>
+            📋 Configured Sources ({filteredSources.length})
+          </h2>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowAddForm(true);
+            }}
             style={{
-              backgroundColor: editingSource?.id === source.id ? "#f8f9fa" : (source.enabled ? "white" : "#f8f9fa"),
-              padding: "20px",
-              borderRadius: "8px",
-              border: editingSource?.id === source.id ? "2px solid #f39c12" : `2px solid ${source.enabled ? "#3498db" : "#ddd"}`,
-              opacity: source.enabled ? 1 : 0.6,
+              padding: "10px 20px",
+              backgroundColor: "#27ae60",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "600",
             }}
           >
-            {editingSource?.id === source.id ? (
-              // Inline edit form
+            + Add New Source
+          </button>
+        </div>
+
+        {showAddForm && (
+          <div
+            style={{
+              backgroundColor: "#f8f9fa",
+              padding: "25px",
+              borderRadius: "8px",
+              marginBottom: "25px",
+              border: "2px solid #3498db",
+            }}
+          >
+            <h3 style={{ marginBottom: "20px", color: "#2c3e50" }}>
+              {editingSource ? "Edit Source" : "Add New Source"}
+            </h3>
+            <div style={{ display: "grid", gap: "15px" }}>
               <div>
-                <h3 style={{ marginBottom: "20px", color: "#2c3e50" }}>
-                  ✏️ Editing: {source.name}
-                </h3>
-                <div style={{ display: "grid", gap: "15px" }}>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                      Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="e.g., City Events Calendar"
-                      style={{
-                        width: "100%",
-                        padding: "10px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                      URL *
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.url}
-                      onChange={(e) =>
-                        setFormData({ ...formData, url: e.target.value })
-                      }
-                      placeholder="https://example.com/events"
-                      style={{
-                        width: "100%",
-                        padding: "10px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                      Type
-                    </label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) =>
-                        setFormData({ ...formData, type: e.target.value })
-                      }
-                      style={{
-                        width: "100%",
-                        padding: "10px",
-                        border: "1px solid #ddd",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <option value="events">Events</option>
-                      <option value="attractions">Attractions</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <input
-                        type="checkbox"
-                        checked={formData.enabled}
-                        onChange={(e) =>
-                          setFormData({ ...formData, enabled: e.target.checked })
-                        }
-                      />
-                      <span style={{ fontWeight: "500" }}>Enabled</span>
-                    </label>
-                  </div>
-                  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                    <button
-                      onClick={handleUpdateSource}
-                      disabled={loading}
-                      style={{
-                        padding: "12px 24px",
-                        backgroundColor: "#3498db",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: loading ? "not-allowed" : "pointer",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {loading ? "Saving..." : "Save Changes"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingSource(null);
-                        resetForm();
-                      }}
-                      style={{
-                        padding: "12px 24px",
-                        backgroundColor: "#95a5a6",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="e.g., City Events Calendar"
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                  }}
+                />
               </div>
-            ) : (
-              // Normal source display
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "start",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "#2c3e50" }}>
-                    {source.name}
-                    {!source.enabled && (
-                      <span
+              <div>
+                <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                  URL *
+                </label>
+                <input
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) =>
+                    setFormData({ ...formData, url: e.target.value })
+                  }
+                  placeholder="https://example.com/events"
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.enabled}
+                    onChange={(e) =>
+                      setFormData({ ...formData, enabled: e.target.checked })
+                    }
+                  />
+                  <span style={{ fontWeight: "500" }}>Enabled</span>
+                </label>
+              </div>
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <button
+                  onClick={editingSource ? handleUpdateSource : handleAddSource}
+                  disabled={loading}
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#3498db",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    fontWeight: "600",
+                  }}
+                >
+                  {loading ? "Saving..." : editingSource ? "Update" : "Add Source"}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    resetForm();
+                  }}
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#95a5a6",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: "grid", gap: "15px" }}>
+          {filteredSources.map((source) => (
+            <div
+              key={source.id}
+              style={{
+                backgroundColor: editingSource?.id === source.id ? "#f8f9fa" : (source.enabled ? "white" : "#f8f9fa"),
+                padding: "20px",
+                borderRadius: "8px",
+                border: editingSource?.id === source.id ? "2px solid #f39c12" : `2px solid ${source.enabled ? "#3498db" : "#ddd"}`,
+                opacity: source.enabled ? 1 : 0.6,
+              }}
+            >
+              {editingSource?.id === source.id ? (
+                // Inline edit form
+                <div>
+                  <h3 style={{ marginBottom: "20px", color: "#2c3e50" }}>
+                    ✏️ Editing: {source.name}
+                  </h3>
+                  <div style={{ display: "grid", gap: "15px" }}>
+                    <div>
+                      <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                        Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        placeholder="e.g., City Events Calendar"
                         style={{
-                          marginLeft: "10px",
-                          fontSize: "12px",
-                          backgroundColor: "#95a5a6",
-                          color: "white",
-                          padding: "2px 8px",
+                          width: "100%",
+                          padding: "10px",
+                          border: "1px solid #ddd",
                           borderRadius: "4px",
                         }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                        URL *
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.url}
+                        onChange={(e) =>
+                          setFormData({ ...formData, url: e.target.value })
+                        }
+                        placeholder="https://example.com/events"
+                        style={{
+                          width: "100%",
+                          padding: "10px",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.enabled}
+                          onChange={(e) =>
+                            setFormData({ ...formData, enabled: e.target.checked })
+                          }
+                        />
+                        <span style={{ fontWeight: "500" }}>Enabled</span>
+                      </label>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                      <button
+                        onClick={handleUpdateSource}
+                        disabled={loading}
+                        style={{
+                          padding: "12px 24px",
+                          backgroundColor: "#3498db",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: loading ? "not-allowed" : "pointer",
+                          fontWeight: "600",
+                        }}
                       >
-                        DISABLED
-                      </span>
-                    )}
-                  </h3>
-                  <p
-                    style={{
-                      margin: "0 0 8px 0",
-                      color: "#666",
-                      fontSize: "14px",
-                      wordBreak: "break-all",
-                    }}
-                  >
-                    🔗 {source.url}
-                  </p>
-                  <div style={{ display: "flex", gap: "10px", fontSize: "13px" }}>
-                    <span
-                      style={{
-                        backgroundColor: source.type === "events" ? "#e8f4fd" : "#fef5e7",
-                        padding: "4px 10px",
-                        borderRadius: "4px",
-                        color: "#2c3e50",
-                      }}
-                    >
-                      {source.type === "events" ? "📅 Events" : "🏛️ Attractions"}
-                    </span>
+                        {loading ? "Saving..." : "Save Changes"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingSource(null);
+                          resetForm();
+                        }}
+                        style={{
+                          padding: "12px 24px",
+                          backgroundColor: "#95a5a6",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    onClick={() => startEdit(source)}
-                    style={{
-                      padding: "8px 16px",
-                      backgroundColor: "#f39c12",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                    }}
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteSource(source.id)}
-                    style={{
-                      padding: "8px 16px",
-                      backgroundColor: "#e74c3c",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                    }}
-                  >
-                    🗑️ Delete
-                  </button>
+              ) : (
+                // Normal source display
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "start",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: "0 0 10px 0", color: "#2c3e50" }}>
+                      {source.name}
+                      {!source.enabled && (
+                        <span
+                          style={{
+                            marginLeft: "10px",
+                            fontSize: "12px",
+                            backgroundColor: "#95a5a6",
+                            color: "white",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          DISABLED
+                        </span>
+                      )}
+                    </h3>
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        color: "#666",
+                        fontSize: "14px",
+                        wordBreak: "break-all",
+                      }}
+                    >
+                      🔗 {source.url}
+                    </p>
+                    <div style={{ display: "flex", gap: "10px", fontSize: "13px" }}>
+                      <span
+                        style={{
+                          backgroundColor:
+                            source.type === "events" ? "#e8f4fd" :
+                            source.type === "classes" ? "#fef5e7" :
+                            source.type === "meetings" ? "#e8f8f5" :
+                            "#f4ecf7",
+                          padding: "4px 10px",
+                          borderRadius: "4px",
+                          color: "#2c3e50",
+                        }}
+                      >
+                        {source.type === "events" && "📅 Events"}
+                        {source.type === "classes" && "📚 Classes"}
+                        {source.type === "meetings" && "🤝 Meetings"}
+                        {source.type === "attractions" && "🏛️ Visit Valdosta"}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => startEdit(source)}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#f39c12",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSource(source.id)}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#e74c3c",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                      }}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {sources.length === 0 && !showAddForm && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "60px 20px",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-          }}
-        >
-          <h3 style={{ color: "#6c757d" }}>No sources configured</h3>
-          <p style={{ color: "#6c757d" }}>Click "Add New Source" to get started</p>
+              )}
+            </div>
+          ))}
         </div>
-      )}
+
+        {filteredSources.length === 0 && !showAddForm && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              backgroundColor: "#f8f9fa",
+              borderRadius: "8px",
+            }}
+          >
+            <h3 style={{ color: "#6c757d" }}>No sources configured for {activeTab}</h3>
+            <p style={{ color: "#6c757d" }}>Click "Add New Source" to get started</p>
+          </div>
+        )}
+      </div>
 
       <div
         style={{

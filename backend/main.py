@@ -88,7 +88,7 @@ class PasscodeRequest(BaseModel):
 class SourceRequest(BaseModel):
     name: str
     url: str
-    type: str  # "events" or "attractions"
+    type: str  # "events", "classes", "meetings", or "attractions"
     enabled: Optional[bool] = True
     scraping_method: Optional[str] = "auto"  # "auto", "ai", or "ai_twostage"
 
@@ -272,14 +272,14 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
         # Normalize title for comparison
         normalized = event_title
 
+        # Remove year prefixes like "2026" FIRST (before annual)
+        normalized = re.sub(r'^20\d{2}\s+', '', normalized)
+
         # Remove ordinal indicators (1st, 2nd, 3rd, 4th, etc.) with "annual"
         normalized = re.sub(r'^\d+(st|nd|rd|th)\s+annual\s+', '', normalized, flags=re.IGNORECASE)
 
         # Remove standalone "annual" at beginning
         normalized = re.sub(r'^annual\s+', '', normalized, flags=re.IGNORECASE)
-
-        # Remove year prefixes like "2026"
-        normalized = re.sub(r'^20\d{2}\s+', '', normalized)
 
         # Remove common prefixes
         for prefix in ['the ', 'a ', 'an ']:
@@ -296,23 +296,176 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
         # If we haven't seen this event before, or if this event is better, keep it
         if dedup_key not in best_events:
             best_events[dedup_key] = event
+            print(f"  [DEDUP] New event: {event_title[:60]} on {event_date}")
         else:
             # Compare: prefer event with description, then longer title
             existing = best_events[dedup_key]
             existing_desc = existing.get('description', '').strip()
             current_desc = event.get('description', '').strip()
 
+            print(f"  [DEDUP] Duplicate found:")
+            print(f"    Existing: {existing.get('title', '')[:60]}")
+            print(f"    Current:  {event_title[:60]}")
+            print(f"    Key: {dedup_key}")
+
             # Prefer event with non-empty description
             if current_desc and not existing_desc:
+                print(f"    → Keeping current (has description)")
                 best_events[dedup_key] = event
             elif not current_desc and existing_desc:
+                print(f"    → Keeping existing (has description)")
                 pass  # Keep existing
             else:
                 # Both have descriptions or both don't - prefer longer/more specific title
                 if len(event.get('title', '')) > len(existing.get('title', '')):
+                    print(f"    → Keeping current (longer title)")
                     best_events[dedup_key] = event
+                else:
+                    print(f"    → Keeping existing (longer or same title)")
 
     return list(best_events.values())
+
+
+def deduplicate_classes(classes: List[Dict]) -> List[Dict]:
+    """
+    Remove duplicate classes across multiple sources.
+    Classes are considered duplicates if they have the same date, instructor, and title.
+    This is more permissive than events - allows same-named classes on different dates.
+    """
+    if not classes:
+        return []
+
+    # Use dict to store best class for each dedup_key
+    best_classes = {}
+
+    for cls in classes:
+        # Create key from date + instructor + normalized title
+        class_date = cls.get('start', '').split('T')[0]  # Get date part (YYYY-MM-DD)
+        class_title = cls.get('title', '').lower().strip()
+
+        # Try to extract instructor from title or description
+        # Common patterns: "Class Name with Instructor Name", "Instructor: Name"
+        instructor = ""
+        description = cls.get('description', '').lower()
+
+        # Look for "with [instructor]" or "by [instructor]" patterns
+        import re
+        instructor_match = re.search(r'(?:with|by|instructor:?)\s+([a-z\s]+?)(?:\||$|\.)', class_title + " " + description, re.I)
+        if instructor_match:
+            instructor = instructor_match.group(1).strip()[:30]
+
+        # Normalize title for comparison (less aggressive than events)
+        normalized = class_title
+
+        # Remove common prefixes but keep ordinals (2nd Week is meaningful for classes)
+        for prefix in ['class:', 'class ', 'workshop:', 'workshop ']:
+            if normalized.startswith(prefix):
+                normalized = normalized[len(prefix):]
+
+        # Remove special characters for comparison
+        normalized = ''.join(c for c in normalized if c.isalnum() or c.isspace())
+        normalized = ' '.join(normalized.split())  # Normalize whitespace
+
+        # Create deduplication key: date + instructor + title
+        dedup_key = f"{class_date}_{instructor}_{normalized[:50]}"
+
+        # If we haven't seen this class before, or if this class is better, keep it
+        if dedup_key not in best_classes:
+            best_classes[dedup_key] = cls
+            print(f"  [DEDUP-CLASSES] New class: {class_title[:60]} on {class_date}")
+        else:
+            # Compare: prefer class with description, then longer title
+            existing = best_classes[dedup_key]
+            existing_desc = existing.get('description', '').strip()
+            current_desc = cls.get('description', '').strip()
+
+            print(f"  [DEDUP-CLASSES] Duplicate found:")
+            print(f"    Existing: {existing.get('title', '')[:60]}")
+            print(f"    Current:  {class_title[:60]}")
+            print(f"    Key: {dedup_key}")
+
+            # Prefer class with non-empty description
+            if current_desc and not existing_desc:
+                print(f"    → Keeping current (has description)")
+                best_classes[dedup_key] = cls
+            elif not current_desc and existing_desc:
+                print(f"    → Keeping existing (has description)")
+                pass  # Keep existing
+            else:
+                # Both have descriptions or both don't - prefer longer/more specific title
+                if len(cls.get('title', '')) > len(existing.get('title', '')):
+                    print(f"    → Keeping current (longer title)")
+                    best_classes[dedup_key] = cls
+                else:
+                    print(f"    → Keeping existing (longer or same title)")
+
+    return list(best_classes.values())
+
+
+def deduplicate_meetings(meetings: List[Dict]) -> List[Dict]:
+    """
+    Remove duplicate meetings across multiple sources.
+    Meetings are considered duplicates if they have the same date, location, and exact title.
+    This is more strict than events - meetings need exact title match.
+    """
+    if not meetings:
+        return []
+
+    # Use dict to store best meeting for each dedup_key
+    best_meetings = {}
+
+    for meeting in meetings:
+        # Create key from date + location + exact title
+        meeting_date = meeting.get('start', '').split('T')[0]  # Get date part (YYYY-MM-DD)
+        meeting_title = meeting.get('title', '').lower().strip()
+
+        # Try to extract location from title or description
+        location = ""
+        description = meeting.get('description', '').lower()
+
+        # Look for location patterns: "at [location]", "location: [place]"
+        import re
+        location_match = re.search(r'(?:at|location:?)\s+([a-z\s]+?)(?:\||$|\.)', meeting_title + " " + description, re.I)
+        if location_match:
+            location = location_match.group(1).strip()[:30]
+
+        # For meetings, use exact title (only normalize whitespace)
+        normalized = ' '.join(meeting_title.split())
+
+        # Create deduplication key: date + location + exact title
+        dedup_key = f"{meeting_date}_{location}_{normalized}"
+
+        # If we haven't seen this meeting before, or if this meeting is better, keep it
+        if dedup_key not in best_meetings:
+            best_meetings[dedup_key] = meeting
+            print(f"  [DEDUP-MEETINGS] New meeting: {meeting_title[:60]} on {meeting_date}")
+        else:
+            # Compare: prefer meeting with description, then longer title
+            existing = best_meetings[dedup_key]
+            existing_desc = existing.get('description', '').strip()
+            current_desc = meeting.get('description', '').strip()
+
+            print(f"  [DEDUP-MEETINGS] Duplicate found:")
+            print(f"    Existing: {existing.get('title', '')[:60]}")
+            print(f"    Current:  {meeting_title[:60]}")
+            print(f"    Key: {dedup_key}")
+
+            # Prefer meeting with non-empty description
+            if current_desc and not existing_desc:
+                print(f"    → Keeping current (has description)")
+                best_meetings[dedup_key] = meeting
+            elif not current_desc and existing_desc:
+                print(f"    → Keeping existing (has description)")
+                pass  # Keep existing
+            else:
+                # Both have descriptions or both don't - prefer longer/more specific title
+                if len(meeting.get('title', '')) > len(existing.get('title', '')):
+                    print(f"    → Keeping current (longer title)")
+                    best_meetings[dedup_key] = meeting
+                else:
+                    print(f"    → Keeping existing (longer or same title)")
+
+    return list(best_meetings.values())
 
 
 def normalize_title(title: str) -> str:
@@ -401,19 +554,27 @@ def extract_categories(attraction: Dict) -> List[str]:
 executor = ThreadPoolExecutor(max_workers=1)
 
 @app.get("/generate_events_stream")
-async def generate_events_stream():
+async def generate_events_stream(category: str = "events"):
     """
     Server-Sent Events endpoint that streams scraping progress and results.
     Allows frontend to update UI progressively as each source is scraped.
+
+    Args:
+        category: The category to scrape (events, classes, meetings, or attractions)
     """
     async def event_generator():
         try:
-            # Load sources
-            event_sources = source_manager.get_sources_by_type('events')
-            attraction_sources = source_manager.get_sources_by_type('attractions')
+            print(f"\n{'#'*80}")
+            print(f"# STARTING STREAM FOR CATEGORY: {category.upper()}")
+            print(f"{'#'*80}\n")
 
-            total_sources = len(event_sources) + len(attraction_sources)
+            # Load sources for the requested category
+            sources = source_manager.get_sources_by_type(category)
+
+            total_sources = len(sources)
             current = 0
+
+            print(f"Loaded {total_sources} sources for category '{category}'")
 
             # Send initial progress
             yield f"data: {json.dumps({'type': 'init', 'total': total_sources, 'current': 0})}\n\n"
@@ -421,87 +582,118 @@ async def generate_events_stream():
             # Get the event loop
             loop = asyncio.get_event_loop()
 
-            # Scrape event sources with progress updates
-            all_events = []
-            for source in event_sources:
-                try:
-                    print(f"Scraping event source: {source['name']} ({source['url']})")
+            # For calendar categories (events, classes, meetings), scrape each source with progress updates
+            if category in ['events', 'classes', 'meetings']:
+                print(f"\n{'='*80}")
+                print(f"SCRAPING CATEGORY: {category.upper()}")
+                print(f"{'='*80}")
 
-                    # Run blocking scrape_source in thread pool to avoid blocking the event loop
-                    events = await loop.run_in_executor(executor, scrape_source, source)
-                    current += 1
+                all_items = []
+                for idx, source in enumerate(sources, 1):
+                    try:
+                        print(f"[{category.upper()}] ({idx}/{total_sources}) Scraping: {source['name']}")
+                        print(f"[{category.upper()}]   URL: {source['url']}")
+                        print(f"[{category.upper()}]   Type: {source['type']}")
 
-                    all_events.extend(events)
+                        # Validate source type matches category
+                        if source['type'] != category:
+                            print(f"[{category.upper()}] ⚠️  WARNING: Source type mismatch! Expected '{category}', got '{source['type']}'. Skipping.")
+                            current += 1
+                            error_msg = f"Type mismatch: expected {category}, got {source['type']}"
+                            yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': error_msg, 'current': current, 'total': total_sources})}\n\n"
+                            continue
 
-                    # Send progress update (events will be sent after deduplication at the end)
-                    progress_data = {
-                        'type': 'progress',
-                        'message': f'Scraped {len(events)} events from {source["name"]}',
-                        'source': source['name'],
-                        'current': current,
-                        'total': total_sources
-                    }
-                    yield f"data: {json.dumps(progress_data)}\n\n"
-                    print(f"  Found {len(events)} events")
-                except Exception as e:
-                    print(f"Error scraping {source['name']}: {e}")
-                    current += 1
-                    # Send error update
-                    yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+                        # Run blocking scrape_source in thread pool
+                        items = await loop.run_in_executor(executor, scrape_source, source)
+                        current += 1
 
-            # Deduplicate and send all events at once
-            if all_events:
-                print(f"Total events before deduplication: {len(all_events)}")
-                unique_events = deduplicate_events(all_events)
-                print(f"Total events after deduplication: {len(unique_events)}")
+                        all_items.extend(items)
 
-                # Sort events by start date
-                unique_events.sort(key=lambda x: x["start"])
+                        # Send progress update
+                        progress_data = {
+                            'type': 'progress',
+                            'message': f'Scraped {len(items)} {category} from {source["name"]}',
+                            'source': source['name'],
+                            'current': current,
+                            'total': total_sources
+                        }
+                        yield f"data: {json.dumps(progress_data)}\n\n"
+                        print(f"[{category.upper()}]   ✅ Found {len(items)} items")
 
-                # Send deduplicated events
-                yield f"data: {json.dumps({'type': 'events', 'events': unique_events, 'source': 'All Sources (Deduplicated)', 'current': current, 'total': total_sources})}\n\n"
+                    except Exception as e:
+                        print(f"[{category.upper()}]   ❌ Error: {e}")
+                        current += 1
+                        yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
 
-            # Scrape attraction sources and collect them for deduplication
-            all_attractions = []
-            for source in attraction_sources:
-                try:
-                    print(f"Scraping attraction source: {source['name']} ({source['url']})")
+                # Deduplicate and send all items using category-specific deduplication
+                if all_items:
+                    print(f"\n[{category.upper()}] Total items before deduplication: {len(all_items)}")
 
-                    # Run blocking scrape_source in thread pool to avoid blocking the event loop
-                    attractions = await loop.run_in_executor(executor, scrape_source, source)
-                    current += 1
+                    # Use category-specific deduplication function
+                    if category == 'events':
+                        unique_items = deduplicate_events(all_items)
+                    elif category == 'classes':
+                        unique_items = deduplicate_classes(all_items)
+                    elif category == 'meetings':
+                        unique_items = deduplicate_meetings(all_items)
+                    else:
+                        # Fallback to events deduplication for unknown categories
+                        unique_items = deduplicate_events(all_items)
 
-                    # Extract categories for each attraction
-                    for attraction in attractions:
-                        if 'categories' not in attraction or not attraction['categories']:
-                            attraction['categories'] = extract_categories(attraction)
+                    print(f"[{category.upper()}] Total items after deduplication: {len(unique_items)}")
 
-                    all_attractions.extend(attractions)
+                    # Sort by start date
+                    unique_items.sort(key=lambda x: x["start"])
 
-                    # Send progress update (but not attractions yet - we'll deduplicate first)
-                    progress_data = {
-                        'type': 'progress',
-                        'message': f'Scraped {len(attractions)} attractions from {source["name"]}',
-                        'source': source['name'],
-                        'current': current,
-                        'total': total_sources
-                    }
-                    yield f"data: {json.dumps(progress_data)}\n\n"
-                    print(f"  Found {len(attractions)} attractions")
-                except Exception as e:
-                    print(f"Error scraping {source['name']}: {e}")
-                    current += 1
-                    # Send error update
-                    yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+                    # Send deduplicated items with the correct type for the category
+                    print(f"[{category.upper()}] Sending {len(unique_items)} items to frontend")
+                    yield f"data: {json.dumps({'type': category, 'events': unique_items, 'source': 'All Sources (Deduplicated)', 'current': current, 'total': total_sources})}\n\n"
+                else:
+                    print(f"\n[{category.upper()}] No items to send")
+                    yield f"data: {json.dumps({'type': 'progress', 'message': f'No {category} found', 'source': 'Complete', 'current': current, 'total': total_sources})}\n\n"
 
-            # Deduplicate and send all attractions at once
-            if all_attractions:
-                print(f"Total attractions before deduplication: {len(all_attractions)}")
-                unique_attractions = deduplicate_attractions(all_attractions)
-                print(f"Total attractions after deduplication: {len(unique_attractions)}")
+            elif category == 'attractions':
+                # Scrape attraction sources and collect them for deduplication
+                all_attractions = []
+                for source in sources:
+                    try:
+                        print(f"Scraping attraction source: {source['name']} ({source['url']})")
 
-                # Send deduplicated attractions
-                yield f"data: {json.dumps({'type': 'attractions', 'attractions': unique_attractions, 'source': 'All Sources (Deduplicated)', 'current': current, 'total': total_sources})}\n\n"
+                        # Run blocking scrape_source in thread pool to avoid blocking the event loop
+                        attractions = await loop.run_in_executor(executor, scrape_source, source)
+                        current += 1
+
+                        # Extract categories for each attraction
+                        for attraction in attractions:
+                            if 'categories' not in attraction or not attraction['categories']:
+                                attraction['categories'] = extract_categories(attraction)
+
+                        all_attractions.extend(attractions)
+
+                        # Send progress update (but not attractions yet - we'll deduplicate first)
+                        progress_data = {
+                            'type': 'progress',
+                            'message': f'Scraped {len(attractions)} attractions from {source["name"]}',
+                            'source': source['name'],
+                            'current': current,
+                            'total': total_sources
+                        }
+                        yield f"data: {json.dumps(progress_data)}\n\n"
+                        print(f"  Found {len(attractions)} attractions")
+                    except Exception as e:
+                        print(f"Error scraping {source['name']}: {e}")
+                        current += 1
+                        # Send error update
+                        yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+
+                # Deduplicate and send all attractions at once
+                if all_attractions:
+                    print(f"Total attractions before deduplication: {len(all_attractions)}")
+                    unique_attractions = deduplicate_attractions(all_attractions)
+                    print(f"Total attractions after deduplication: {len(unique_attractions)}")
+
+                    # Send deduplicated attractions
+                    yield f"data: {json.dumps({'type': 'attractions', 'attractions': unique_attractions, 'source': 'All Sources (Deduplicated)', 'current': current, 'total': total_sources})}\n\n"
 
             # Send completion signal
             yield f"data: {json.dumps({'type': 'complete'})}\n\n"

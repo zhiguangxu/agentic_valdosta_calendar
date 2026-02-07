@@ -21,8 +21,9 @@ def scrape_with_ai(url: str, source_type: str, openai_client: Optional[OpenAI],
         return []
 
     # Two-stage scraping for problematic listing pages
-    if scraping_method == "ai_twostage" and source_type == "events":
-        return _scrape_twostage(url, openai_client)
+    # Support all calendar-based types: events, classes, meetings
+    if scraping_method == "ai_twostage" and source_type in ["events", "classes", "meetings"]:
+        return _scrape_twostage(url, openai_client, source_type)
 
     try:
         from dateutil.relativedelta import relativedelta
@@ -183,38 +184,17 @@ def scrape_with_ai(url: str, source_type: str, openai_client: Optional[OpenAI],
                             content_html = str(soup.body)[:char_limit] if soup.body else str(soup)[:char_limit]
                             print(f"  HTML extraction: Using body fallback ({len(content_html)} chars)")
 
-                # Use AI to extract events/attractions
+                # Use AI to extract events/classes/meetings/attractions
                 current_year = datetime.now().year
                 current_month = datetime.now().month
 
-                # Create source-type specific prompts
+                # Create source-type specific prompts using helper functions
                 if source_type == 'events':
-                    prompt = f"""
-You are an expert web scraper. Extract EVENTS information from the following HTML content.
-
-TODAY'S DATE: {datetime.now().strftime("%Y-%m-%d")}
-CURRENT YEAR: {current_year}
-
-IMPORTANT INSTRUCTIONS:
-1. Extract ALL events you can find, not just a few examples - INCLUDE ALL calendar entries
-2. For dates: Use YYYY-MM-DD format. The current year is {current_year}. For dates without a year, assume {current_year}. If a date (like "November 13") has already passed in {current_year}, assume it's for the NEXT year ({current_year + 1}).
-3. For times: Use HH:MM 24-hour format. Look for times in the content. If no time found, use "19:00"
-4. For URLs: Extract href attributes from <a> tags. Return relative URLs as-is (e.g., "/event/123")
-5. For titles: Extract the event name exactly as shown - keep all calendar entries
-6. EXCLUDE ONLY: Navigation items and UI elements like "Log In", "Sign Up", "Read More", "Menu", "Search", "Home", "About", "Contact"
-7. For descriptions: Extract from paragraph text, keep it under 200 characters
-
-Return ONLY a valid JSON array with no markdown formatting or additional text. Format:
-[
-  {{"title": "Event Name", "date": "{current_year}-01-15", "time": "19:00", "description": "Brief description", "url": "/event/123"}},
-  {{"title": "Another Event", "date": "{current_year}-02-20", "time": "14:00", "description": "Another description", "url": "/event/456"}}
-]
-
-If you cannot find any events, return an empty array: []
-
-HTML content:
-{content_html}
-"""
+                    prompt = _generate_events_prompt(content_html, current_year)
+                elif source_type == 'classes':
+                    prompt = _generate_classes_prompt(content_html, current_year)
+                elif source_type == 'meetings':
+                    prompt = _generate_meetings_prompt(content_html, current_year)
                 else:  # attractions
                     prompt = f"""
 Extract ALL attractions from the structured list below. Each ITEM represents one place/attraction.
@@ -353,6 +333,97 @@ ITEMS:
         return []
 
 
+def _generate_events_prompt(content_html: str, current_year: int) -> str:
+    """Generate AI prompt specifically for events extraction"""
+    return f"""
+You are an expert web scraper. Extract EVENTS information from the following HTML content.
+
+TODAY'S DATE: {datetime.now().strftime("%Y-%m-%d")}
+CURRENT YEAR: {current_year}
+
+IMPORTANT INSTRUCTIONS:
+1. Extract ALL events you can find, not just a few examples - INCLUDE ALL calendar entries
+2. For dates: Use YYYY-MM-DD format. The current year is {current_year}. For dates without a year, assume {current_year}. If a date (like "November 13") has already passed in {current_year}, assume it's for the NEXT year ({current_year + 1}).
+3. For times: Use HH:MM 24-hour format. Look for times in the content. If no time found, use "19:00"
+4. For URLs: Extract href attributes from <a> tags. Return relative URLs as-is (e.g., "/event/123")
+5. For titles: Extract the event name exactly as shown - keep all calendar entries
+6. EXCLUDE ONLY: Navigation items and UI elements like "Log In", "Sign Up", "Read More", "Menu", "Search", "Home", "About", "Contact"
+7. For descriptions: Extract from paragraph text, keep it under 200 characters
+
+Return ONLY a valid JSON array with no markdown formatting or additional text. Format:
+[
+  {{"title": "Event Name", "date": "{current_year}-01-15", "time": "19:00", "description": "Brief description", "url": "/event/123"}},
+  {{"title": "Another Event", "date": "{current_year}-02-20", "time": "14:00", "description": "Another description", "url": "/event/456"}}
+]
+
+If you cannot find any events, return an empty array: []
+
+HTML content:
+{content_html}
+"""
+
+
+def _generate_classes_prompt(content_html: str, current_year: int) -> str:
+    """Generate AI prompt specifically for classes extraction"""
+    return f"""
+You are an expert web scraper. Extract CLASS/WORKSHOP information from the following HTML content.
+
+TODAY'S DATE: {datetime.now().strftime("%Y-%m-%d")}
+CURRENT YEAR: {current_year}
+
+CLASSES-SPECIFIC INSTRUCTIONS:
+1. Extract ALL classes/workshops you can find
+2. For titles: Keep full class names including instructors (e.g., "Drawing Class with Jane Smith")
+3. For instructors: Try to identify the instructor name from the content
+4. For dates: Use YYYY-MM-DD format. Classes may be ongoing or recurring - extract start dates
+5. For times: Use HH:MM 24-hour format. Default to "10:00" for morning classes, "14:00" for afternoon
+6. For skill level: Note if the class mentions "beginner", "intermediate", "advanced"
+7. For descriptions: Include instructor, skill level, what students will learn, materials needed (200-300 chars)
+8. IMPORTANT: Keep ordinals like "2nd Week", "Week 3" - these are meaningful for classes
+9. Look for recurring schedules: "Every Monday", "Wednesdays 2-4pm", "Monthly workshop"
+
+Return ONLY a valid JSON array with no markdown formatting. Format:
+[
+  {{"title": "Class Name with Instructor", "date": "{current_year}-02-15", "time": "14:00", "description": "Detailed class description with instructor, skill level, what you'll learn", "url": "/class/123", "instructor": "Instructor Name", "skill_level": "beginner"}}
+]
+
+If you cannot find any classes, return an empty array: []
+
+HTML content:
+{content_html}
+"""
+
+
+def _generate_meetings_prompt(content_html: str, current_year: int) -> str:
+    """Generate AI prompt specifically for meetings extraction"""
+    return f"""
+You are an expert web scraper. Extract MEETING information from the following HTML content.
+
+TODAY'S DATE: {datetime.now().strftime("%Y-%m-%d")}
+CURRENT YEAR: {current_year}
+
+MEETINGS-SPECIFIC INSTRUCTIONS:
+1. Extract ALL meetings you can find
+2. For titles: Use exact meeting names - be precise (e.g., "City Council Meeting", "Board of Directors Meeting")
+3. For locations: Extract meeting location/venue (e.g., "City Hall Room 203")
+4. For dates: Use YYYY-MM-DD format. Current year is {current_year}
+5. For times: Use HH:MM 24-hour format. Meetings often have exact start times - extract them precisely
+6. For descriptions: Include agenda items, attendees, purpose of meeting (200 chars)
+7. Look for recurring patterns: "Monthly meeting", "Every 3rd Tuesday", "Quarterly review"
+8. IMPORTANT: Keep year prefixes if present (e.g., "2026 Annual Meeting")
+
+Return ONLY a valid JSON array with no markdown formatting. Format:
+[
+  {{"title": "Meeting Name", "date": "{current_year}-02-15", "time": "18:00", "description": "Meeting purpose and agenda", "url": "/meeting/123", "location": "Meeting Location", "recurring_pattern": "Monthly on 3rd Tuesday"}}
+]
+
+If you cannot find any meetings, return an empty array: []
+
+HTML content:
+{content_html}
+"""
+
+
 def _truncate_description(desc: str, max_length: int = 150) -> str:
     """
     Truncate description to max_length, preferring to end at sentence boundary.
@@ -374,7 +445,153 @@ def _truncate_description(desc: str, max_length: int = 150) -> str:
         return truncated + '...'
 
 
-def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
+def _generate_stage2_events_prompt(event_title: str, event_content: str, listing_date: str, today: datetime, six_months_later: datetime) -> str:
+    """Generate Stage 2 AI prompt specifically for events"""
+    date_hint = f"\nIMPORTANT: The listing page showed this event on {listing_date}. This is likely the correct date." if listing_date else ""
+
+    return f"""
+Extract ACCURATE date and schedule information from this event details page.
+
+Item Title: {event_title}{date_hint}
+Today's Date: {today.strftime("%Y-%m-%d")} ({today.strftime("%A, %B %d, %Y")})
+Extract dates through: {six_months_later.strftime("%Y-%m-%d")} (next 6 months)
+
+CRITICAL: If this page lists MULTIPLE events or dates, focus on finding the date for "{event_title}" specifically.
+- If the page shows other events with different dates, ignore those dates
+- Look for the date that matches the event title "{event_title}"
+- Only extract dates that clearly belong to this specific event
+
+INSTRUCTIONS:
+
+1. RECURRING SCHEDULE DETECTION:
+   - Look for recurring patterns like "First Friday", "Every Monday", "Monthly"
+   - If found, generate ALL dates for the next 6 months
+   - Return ALL generated dates in the "dates" array
+
+2. SPECIFIC DATE EXTRACTION (FOR ONE-TIME EVENTS):
+   - Look for specific dates like "Saturday, February 7, 2026"
+   - CRITICAL: Return only ONE date unless this is a multi-day event
+   - Do NOT extract dates for other events on the same page
+
+3. TIME EXTRACTION:
+   - Extract time like "7:00 PM" → "19:00" (24-hour format)
+   - Default to "19:00" if no time found
+
+4. DESCRIPTION EXTRACTION:
+   - Extract a comprehensive description (200-300 characters)
+   - Include: what it is, what attendees will experience
+
+Return ONLY valid JSON:
+{{
+  "status": "active|cancelled|postponed|full|unknown",
+  "dates": ["2026-02-14"],
+  "recurring_pattern": "Optional: describe pattern",
+  "time": "19:00",
+  "description": "Detailed description",
+  "corrected_title": "Only if page has BETTER title"
+}}
+
+HTML content:
+{event_content}
+"""
+
+
+def _generate_stage2_classes_prompt(class_title: str, class_content: str, listing_date: str, today: datetime, six_months_later: datetime) -> str:
+    """Generate Stage 2 AI prompt specifically for classes"""
+    date_hint = f"\nIMPORTANT: The listing page showed this class starting on {listing_date}." if listing_date else ""
+
+    return f"""
+Extract ACCURATE schedule and class information from this class/workshop details page.
+
+Class Title: {class_title}{date_hint}
+Today's Date: {today.strftime("%Y-%m-%d")}
+Extract dates through: {six_months_later.strftime("%Y-%m-%d")} (next 6 months)
+
+CLASSES-SPECIFIC INSTRUCTIONS:
+
+1. RECURRING SCHEDULE (VERY IMPORTANT FOR CLASSES):
+   - Classes often meet weekly or multiple times
+   - Look for patterns like: "Every Wednesday", "Tuesdays and Thursdays", "Weekly on Monday"
+   - GENERATE ALL CLASS DATES for the next 6 months if recurring
+   - Example: "Every Monday" → ["2026-02-10", "2026-02-17", "2026-02-24", ...]
+
+2. CLASS SERIES / MULTI-WEEK:
+   - Look for "6-week class", "8-session workshop"
+   - Generate all session dates if weekly schedule is mentioned
+
+3. TIME EXTRACTION:
+   - Extract exact class time (e.g., "2:00 PM - 4:00 PM" → "14:00")
+   - Default to "10:00" for morning, "14:00" for afternoon
+
+4. DETAILED DESCRIPTION FOR CLASSES:
+   - MUST include: instructor name, skill level, what students will learn
+   - Include: materials needed, age group if specified
+   - Example: "Learn watercolor techniques with Jane Smith. Beginner-friendly. Materials provided."
+
+5. INSTRUCTOR:
+   - Extract instructor name if mentioned
+
+Return ONLY valid JSON:
+{{
+  "status": "active|cancelled|full|unknown",
+  "dates": ["2026-02-10", "2026-02-17", ...],
+  "recurring_pattern": "Every Monday 2-4pm",
+  "time": "14:00",
+  "description": "Class description with instructor, skill level, what you'll learn",
+  "instructor": "Instructor Name",
+  "corrected_title": "Only if page has BETTER title"
+}}
+
+HTML content:
+{class_content}
+"""
+
+
+def _generate_stage2_meetings_prompt(meeting_title: str, meeting_content: str, listing_date: str, today: datetime, six_months_later: datetime) -> str:
+    """Generate Stage 2 AI prompt specifically for meetings"""
+    date_hint = f"\nIMPORTANT: The listing page showed this meeting on {listing_date}." if listing_date else ""
+
+    return f"""
+Extract ACCURATE date and meeting information from this meeting details page.
+
+Meeting Title: {meeting_title}{date_hint}
+Today's Date: {today.strftime("%Y-%m-%d")}
+Extract dates through: {six_months_later.strftime("%Y-%m-%d")} (next 6 months)
+
+MEETINGS-SPECIFIC INSTRUCTIONS:
+
+1. RECURRING MEETINGS:
+   - Look for patterns like "Monthly meeting", "Every 3rd Tuesday"
+   - Generate ALL meeting dates for the next 6 months
+
+2. EXACT DATE AND TIME:
+   - Meetings usually have precise dates and times
+   - Extract exact start time
+
+3. LOCATION:
+   - Extract meeting location/venue
+
+4. AGENDA/PURPOSE:
+   - Extract meeting agenda or purpose
+   - Include who should attend
+
+Return ONLY valid JSON:
+{{
+  "status": "active|cancelled|unknown",
+  "dates": ["2026-02-18"],
+  "recurring_pattern": "Monthly on 3rd Tuesday",
+  "time": "18:00",
+  "description": "Meeting agenda and purpose",
+  "location": "Meeting Location",
+  "corrected_title": "Only if page has BETTER title"
+}}
+
+HTML content:
+{meeting_content}
+"""
+
+
+def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events") -> List[Dict]:
     """
     Two-stage scraping for event listing pages with unreliable dates.
     Stage 1: Extract event titles and external URLs from listing page
@@ -450,12 +667,57 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
                 else:
                     html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
 
-                stage1_prompt = f"""
+                # Generate category-specific Stage 1 prompt
+                if source_type == 'classes':
+                    stage1_prompt = f"""
+Extract class/workshop information from this page. For each class, extract:
+1. The class title (include instructor if visible)
+2. The URL where full class details can be found
+3. The start date (YYYY-MM-DD format)
+4. The time if available (HH:MM 24-hour format)
+5. Recurring pattern (e.g., "Every Monday", "Weekly on Wednesday")
+
+CLASSES-SPECIFIC:
+- Look for class schedules, workshop listings
+- Include instructor names in title if visible
+- For recurring classes, note the schedule pattern
+- Parse times: "2:00pm" → "14:00", default to "10:00" if not found
+- Extract ALL upcoming classes
+
+Return JSON: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
+
+HTML:
+{html_content}
+"""
+                elif source_type == 'meetings':
+                    stage1_prompt = f"""
+Extract meeting information from this page. For each meeting, extract:
+1. The meeting title (exact name)
+2. The URL where full meeting details can be found
+3. The date (YYYY-MM-DD format)
+4. The time (HH:MM 24-hour format)
+5. Recurring pattern (e.g., "Monthly on 3rd Tuesday")
+
+MEETINGS-SPECIFIC:
+- Look for meeting schedules, board meetings, council meetings
+- Extract exact meeting times
+- Note location if visible in listing
+- For recurring meetings, note the pattern
+- Extract ALL upcoming meetings
+
+Return JSON: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
+
+HTML:
+{html_content}
+"""
+                else:  # events (default)
+                    stage1_prompt = f"""
 Extract event information from this calendar page. For each event, extract:
 1. The event title
 2. The URL where full event details can be found (if available, otherwise leave empty)
 3. The date (YYYY-MM-DD format)
 4. The time if available (HH:MM 24-hour format)
+5. Recurring pattern (if this is a recurring event, describe the pattern like "first friday of each month")
 
 INSTRUCTIONS:
 - Look for structured events (in tables, divs, or plain text lists)
@@ -463,6 +725,9 @@ INSTRUCTIONS:
   * "Day, Month Date" followed by event titles
   * "Event Title | Time | Venue"
   * Event listings under month headings
+- DETECT RECURRING PATTERNS:
+  * Look for phrases like "first friday", "every monday", "monthly", "weekly"
+  * If found, include the pattern in recurring_pattern field
 - If events don't have individual URLs, set url to empty string ""
 - For calendar tables, look for links within cells
 - Parse times: "7:00pm" → "19:00", "10:00am" → "10:00"
@@ -471,9 +736,12 @@ INSTRUCTIONS:
 - Only skip events that are clearly in the past (before February 7, 2026)
 - If multiple events occur on the same day, extract ALL of them
 
-Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "..."}}]
+Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
 
 If no events found, return: []
+
+HTML:
+{html_content}
 """
 
                 ai_response = openai_client.chat.completions.create(
@@ -502,6 +770,7 @@ If no events found, return: []
                         event_url = event.get('url', '')
                         event_date = event.get('date') or ''
                         event_time = event.get('time') or '19:00'
+                        recurring_pattern = event.get('recurring_pattern', '')
 
                         # Make URL absolute
                         if event_url and not event_url.startswith('http'):
@@ -518,15 +787,22 @@ If no events found, return: []
                         needs_stage2 = event_url != process_url and event_url and ("valdostacity.com" not in event_url or "/event/" in event_url)
 
                         if title:
+                            # Debug: check for suspicious titles
+                            if title.lower() in ['unknown', 'untitled', 'tbd', 'tba']:
+                                print(f"    ⚠️  WARNING: Suspicious title '{title}' extracted from {process_url}")
+
                             event_urls.append({
                                 "title": title,
                                 "url": event_url,
                                 "has_external_url": needs_stage2,
                                 "date": event_date,
                                 "time": event_time,
-                                "description": ""
+                                "description": "",
+                                "recurring_pattern": recurring_pattern  # Store recurring pattern from Stage 1
                             })
                             print(f"    Adding: {title} on {event_date}")
+                            if recurring_pattern:
+                                print(f"      Recurring: {recurring_pattern}")
                 except Exception as e:
                     print(f"  Error parsing AI response: {e}")
                     continue
@@ -591,6 +867,10 @@ If no events found, return: []
 
                                     # Check if URL is external (not visitvaldosta.org)
                                     has_external_url = event_url and "visitvaldosta.org" not in event_url if event_url else False
+
+                                    # Debug: check for suspicious titles
+                                    if title.lower() in ['unknown', 'untitled', 'tbd', 'tba']:
+                                        print(f"[Two-Stage]   ⚠️  WARNING: Suspicious title '{title}' extracted!")
 
                                     event_data = {
                                         "title": title,
@@ -667,7 +947,8 @@ If no events found, return: []
                         "url": event_url,
                         "description": _truncate_description(event.get('description', '')),
                         "start": f"{event_date}T{event_time}:00",
-                        "allDay": False
+                        "allDay": False,
+                        "recurring_pattern": event.get('recurring_pattern', '')  # Store recurring pattern if available
                     }
                     all_results.append(result_item)
                     print(f"[Two-Stage]   Added (no external URL): {event_title} on {event_date}")
@@ -682,11 +963,14 @@ If no events found, return: []
         for idx, event in enumerate(events_with_external_urls, 1):
             event_title = event.get('title', 'Untitled')
             event_url = event.get('url', '')
+            listing_date = event.get('date', '')  # Date from Stage 1 (listing page)
 
             if not event_url:
                 continue
 
             print(f"[Two-Stage] Stage 2 ({idx}/{len(events_with_external_urls)}): Scraping {event_title}")
+            if listing_date:
+                print(f"[Two-Stage]   Hint: Listing page showed date {listing_date}")
 
             try:
                 # Fetch event page
@@ -701,68 +985,17 @@ If no events found, return: []
                 # Get event page content
                 event_content = str(event_soup.body)[:30000] if event_soup.body else str(event_soup)[:30000]
 
-                # Stage 2 AI prompt - MORE SPECIFIC
-                stage2_prompt = f"""
-Extract ACCURATE event date information from this event details page.
+                # Stage 2 AI prompt - Use category-specific prompts
+                today = datetime.now()
+                six_months_later = today + timedelta(days=180)
 
-Event Title: {event_title}
-Today's Date: {datetime.now().strftime("%Y-%m-%d")} (Thursday, February 6, 2026)
-
-CRITICAL INSTRUCTIONS:
-
-1. DATE EXTRACTION - FIND THE PRIMARY EVENT DATE:
-   - Look for patterns like "Saturday, February 7, 2026" or "Friday, February 7"
-   - YEAR IS CRITICAL: If dates mention "2025" or earlier, those are PAST events - do NOT extract them
-   - If dates don't specify year, look for context clues:
-     * "2020-2021 season", "last year", "past event" = OLD, skip these
-     * Dates in Jan-Feb when we're in Feb may be from 2025 (past) - be cautious
-   - Only extract dates that are clearly FUTURE events (after Feb 6, 2026)
-   - If the page has NO future event dates, return empty dates: []
-   - Day-of-week + date is usually the PRIMARY event date (not article metadata)
-   - IGNORE article metadata dates like "Published:", "Updated:", "Modified:"
-   - For multi-day events, list EACH date separately: ["2026-03-06", "2026-03-07", "2026-03-08"]
-   - Use YYYY-MM-DD format with year 2026 or later
-
-   Example: "Saturday, February 7, 2026 - 12:00pm" → date is "2026-02-07"
-   Example: "January 22" on a page mentioning "2020-2021 season" → SKIP (past event)
-
-2. POSTPONEMENT/CANCELLATION DETECTION:
-   - Search for: "postponed", "cancelled", "canceled", "rescheduled", "delayed", "moved to", "new date"
-   - If event was originally scheduled but now postponed, set status: "postponed"
-   - If you see phrases like "originally scheduled" or "was scheduled" it means it's NOT happening on that date
-   - If status is postponed/cancelled, you can still extract the NEW dates if mentioned
-
-3. TIME EXTRACTION:
-   - Extract time like "7:00 PM" → "19:00" (24-hour format)
-   - "12:00 PM" → "12:00", "12:00 AM" → "00:00"
-   - Default to "19:00" if no time found
-
-4. DESCRIPTION EXTRACTION:
-   - Extract a brief, informative summary (100-150 characters ideal)
-   - Focus on the key highlights: what the event is, what to expect
-   - NO marketing fluff, NO long sentences
-   - Example GOOD: "Comedy show featuring Vanessa Fraction and Marvin Hunter with BBQ and laughs"
-   - Example BAD: "Join us for an unforgettable night of entertainment where you'll experience the best comedy..."
-
-5. TITLE CORRECTION:
-   - If the external page has a DIFFERENT or MORE COMPLETE title than the listing page, use the external page title
-   - Example: If listing says "Event @ Venue" but external page says "Full Event Name", use the full name
-
-Return ONLY valid JSON with no markdown formatting:
-{{
-  "status": "active|cancelled|postponed|unknown",
-  "dates": ["2026-02-14"],
-  "time": "19:00",
-  "description": "Brief event description",
-  "corrected_title": "Use this if external page has better title, otherwise omit this field"
-}}
-
-If postponed/cancelled, still set status but dates can be empty: {{"status": "postponed", "dates": [], ...}}
-If you cannot find any date information, return {{"status": "unknown", "dates": [], "time": "19:00", "description": ""}}.
-
-HTML content:
-{event_content}
-"""
+                # Generate category-specific Stage 2 prompt
+                if source_type == 'classes':
+                    stage2_prompt = _generate_stage2_classes_prompt(event_title, event_content, listing_date, today, six_months_later)
+                elif source_type == 'meetings':
+                    stage2_prompt = _generate_stage2_meetings_prompt(event_title, event_content, listing_date, today, six_months_later)
+                else:  # events (default)
+                    stage2_prompt = _generate_stage2_events_prompt(event_title, event_content, listing_date, today, six_months_later)
 
                 # Use GPT-4o-mini for Stage 2 (GPT-4o for Stage 1 is more critical)
                 stage2_response = openai_client.chat.completions.create(
@@ -792,6 +1025,7 @@ HTML content:
                     raw_description = event_data.get('description', '')
                     description = _truncate_description(raw_description)
                     corrected_title = event_data.get('corrected_title', '')
+                    recurring_pattern = event_data.get('recurring_pattern', '')
 
                     # Debug logging for description
                     if raw_description:
@@ -852,7 +1086,8 @@ HTML content:
                                     "url": event_url,
                                     "description": _truncate_description(description),
                                     "start": f"{date_str}T{time_str}:00",
-                                    "allDay": False
+                                    "allDay": False,
+                                    "recurring_pattern": recurring_pattern  # Store recurring pattern for detection
                                 }
                                 all_results.append(result_item)
                                 print(f"[Two-Stage]   Added: {event_title} on {date_str}")
@@ -894,7 +1129,8 @@ HTML content:
                                 "url": event_url,
                                 "description": fallback_desc,
                                 "start": f"{fallback_date}T{fallback_time}:00",
-                                "allDay": False
+                                "allDay": False,
+                                "recurring_pattern": event.get('recurring_pattern', '')
                             }
                             all_results.append(result_item)
                             print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
@@ -924,7 +1160,8 @@ HTML content:
                                 "url": event_url,
                                 "description": fallback_desc,
                                 "start": f"{fallback_date}T{fallback_time}:00",
-                                "allDay": False
+                                "allDay": False,
+                                "recurring_pattern": event.get('recurring_pattern', '')
                             }
                             all_results.append(result_item)
                             print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
@@ -974,10 +1211,20 @@ def _expand_recurring_events(results: List[Dict]) -> List[Dict]:
     expanded = []
     for event in results:
         title = event.get('title', '').lower()
+        recurring_pattern = event.get('recurring_pattern', '').lower()
 
-        # Detect "First Friday" pattern
-        if 'first friday' in title:
-            print(f"  Detected recurring event: {event['title']}")
+        # Check both title AND recurring_pattern field for patterns
+        search_text = f"{title} {recurring_pattern}"
+
+        # Track if this is a recurring event
+        is_recurring = False
+
+        # Pattern 1: First Friday (or 1st Friday)
+        if 'first friday' in search_text or '1st friday' in search_text:
+            print(f"  [RECURRING] Detected 'First Friday' pattern: {event['title']}")
+            if recurring_pattern:
+                print(f"    Pattern field: {recurring_pattern}")
+            is_recurring = True
 
             # Get the original event's time
             original_start = event.get('start', '')
@@ -1007,13 +1254,86 @@ def _expand_recurring_events(results: List[Dict]) -> List[Dict]:
                         recurring_event = event.copy()
                         recurring_event['start'] = f"{first_friday.strftime('%Y-%m-%d')}T{event_time}"
                         expanded.append(recurring_event)
-                        print(f"    Generated: {event['title']} on {first_friday.strftime('%Y-%m-%d')}")
+                        print(f"    [RECURRING] Generated: {event['title']} on {first_friday.strftime('%Y-%m-%d')}")
             except Exception as e:
-                print(f"    Error expanding recurring event: {e}")
+                print(f"    [RECURRING] Error expanding: {e}")
                 # If expansion fails, just add the original event
                 expanded.append(event)
-        else:
-            # Not a recurring event, add as-is
+
+        # Pattern 2: Second Saturday (or 2nd Saturday)
+        elif 'second saturday' in search_text or '2nd saturday' in search_text:
+            print(f"  [RECURRING] Detected 'Second Saturday' pattern: {event['title']}")
+            if recurring_pattern:
+                print(f"    Pattern field: {recurring_pattern}")
+            is_recurring = True
+
+            original_start = event.get('start', '')
+            try:
+                if 'T' in original_start:
+                    event_time = original_start.split('T')[1]
+                else:
+                    event_time = '19:00:00'
+
+                current_date = datetime.now()
+                for i in range(6):
+                    target_month = current_date + relativedelta(months=i)
+                    year = target_month.year
+                    month = target_month.month
+
+                    # Find second Saturday of the month
+                    first_day = datetime(year, month, 1)
+                    # Saturday is weekday 5
+                    days_until_saturday = (5 - first_day.weekday()) % 7
+                    first_saturday = first_day + timedelta(days=days_until_saturday)
+                    second_saturday = first_saturday + timedelta(days=7)
+
+                    if second_saturday.date() >= datetime.now().date():
+                        recurring_event = event.copy()
+                        recurring_event['start'] = f"{second_saturday.strftime('%Y-%m-%d')}T{event_time}"
+                        expanded.append(recurring_event)
+                        print(f"    [RECURRING] Generated: {event['title']} on {second_saturday.strftime('%Y-%m-%d')}")
+            except Exception as e:
+                print(f"    [RECURRING] Error expanding: {e}")
+                expanded.append(event)
+
+        # Pattern 3: Third Tuesday (or 3rd Tuesday)
+        elif 'third tuesday' in search_text or '3rd tuesday' in search_text:
+            print(f"  [RECURRING] Detected 'Third Tuesday' pattern: {event['title']}")
+            if recurring_pattern:
+                print(f"    Pattern field: {recurring_pattern}")
+            is_recurring = True
+
+            original_start = event.get('start', '')
+            try:
+                if 'T' in original_start:
+                    event_time = original_start.split('T')[1]
+                else:
+                    event_time = '19:00:00'
+
+                current_date = datetime.now()
+                for i in range(6):
+                    target_month = current_date + relativedelta(months=i)
+                    year = target_month.year
+                    month = target_month.month
+
+                    # Find third Tuesday of the month
+                    first_day = datetime(year, month, 1)
+                    # Tuesday is weekday 1
+                    days_until_tuesday = (1 - first_day.weekday()) % 7
+                    first_tuesday = first_day + timedelta(days=days_until_tuesday)
+                    third_tuesday = first_tuesday + timedelta(days=14)
+
+                    if third_tuesday.date() >= datetime.now().date():
+                        recurring_event = event.copy()
+                        recurring_event['start'] = f"{third_tuesday.strftime('%Y-%m-%d')}T{event_time}"
+                        expanded.append(recurring_event)
+                        print(f"    [RECURRING] Generated: {event['title']} on {third_tuesday.strftime('%Y-%m-%d')}")
+            except Exception as e:
+                print(f"    [RECURRING] Error expanding: {e}")
+                expanded.append(event)
+
+        # If not a recurring event, add as-is
+        if not is_recurring:
             expanded.append(event)
 
     return expanded
@@ -1027,13 +1347,30 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
     for item in results:
         title = item.get('title', '')
 
-        # Step 1: Clean up title - remove leading numbers, dates, etc.
-        # Remove leading numbers BUT NOT ordinals (1st, 2nd, 3rd, 4th, etc.)
-        if not re.match(r'^\d+(st|nd|rd|th)\s', title, re.IGNORECASE):
-            title = re.sub(r'^\d+\s+', '', title)  # Remove leading numbers with space
-            title = re.sub(r'^\d{1,2}[A-Za-z]+', '', title)  # Remove date prefixes like "13November"
-        # Remove month names at the beginning
-        title = re.sub(r'^(January|February|March|April|May|June|July|August|September|October|November|December)', '', title, flags=re.IGNORECASE)
+        # Step 1: Category-specific title cleanup
+        if source_type == 'events':
+            # For events: Remove ordinals + "annual", year prefixes
+            # Remove ordinal indicators (1st, 2nd, 3rd, 4th, etc.) with "annual"
+            title = re.sub(r'^\d+(st|nd|rd|th)\s+annual\s+', '', title, flags=re.IGNORECASE)
+            # Remove standalone "annual" at beginning
+            title = re.sub(r'^annual\s+', '', title, flags=re.IGNORECASE)
+            # Remove year prefixes like "2026"
+            title = re.sub(r'^20\d{2}\s+', '', title)
+            # Remove month names at the beginning
+            title = re.sub(r'^(January|February|March|April|May|June|July|August|September|October|November|December)', '', title, flags=re.IGNORECASE)
+
+        elif source_type == 'classes':
+            # For classes: Keep ordinals (2nd Week, Week 3), don't remove year prefixes
+            # Only remove leading bare numbers without ordinals
+            if not re.match(r'^\d+(st|nd|rd|th)\s', title, re.IGNORECASE):
+                if not re.match(r'^(week|session)\s+\d+', title, re.IGNORECASE):  # Keep "Week 3"
+                    title = re.sub(r'^\d+\s+', '', title)  # Remove bare leading numbers only
+
+        elif source_type == 'meetings':
+            # For meetings: Keep everything including year prefixes (e.g., "2026 Annual Meeting")
+            # Don't remove ordinals or year prefixes - meetings need precise names
+            pass
+
         title = title.strip()
 
         # Step 2: Filter out junk titles (UI elements, navigation, etc.)
@@ -1052,8 +1389,9 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
         item['title'] = title
         processed.append(item)
 
-    # Step 4: Filter out past events
+    # Step 4: Category-specific date filtering
     if source_type == 'events':
+        # Events: Filter out past dates
         current_date = datetime.now().date()
         before_filter = len(processed)
         filtered_events = []
@@ -1066,6 +1404,38 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
         processed = filtered_events
         if before_filter > len(processed):
             print(f"  Filtered out {before_filter - len(processed)} past events")
+
+    elif source_type == 'classes':
+        # Classes: DON'T filter past dates aggressively (might show recent history or ongoing classes)
+        # Only filter dates more than 30 days in the past
+        current_date = datetime.now().date()
+        before_filter = len(processed)
+        filtered_classes = []
+        for r in processed:
+            class_date = datetime.fromisoformat(r['start'].split('T')[0]).date()
+            days_diff = (current_date - class_date).days
+            if days_diff <= 30:  # Keep classes from last 30 days
+                filtered_classes.append(r)
+            else:
+                print(f"    Filtering old class: {r['title']} on {class_date} ({days_diff} days ago)")
+        processed = filtered_classes
+        if before_filter > len(processed):
+            print(f"  Filtered out {before_filter - len(processed)} old classes")
+
+    elif source_type == 'meetings':
+        # Meetings: Filter out past dates (like events)
+        current_date = datetime.now().date()
+        before_filter = len(processed)
+        filtered_meetings = []
+        for r in processed:
+            meeting_date = datetime.fromisoformat(r['start'].split('T')[0]).date()
+            if meeting_date >= current_date:
+                filtered_meetings.append(r)
+            else:
+                print(f"    Filtering past meeting: {r['title']} on {meeting_date}")
+        processed = filtered_meetings
+        if before_filter > len(processed):
+            print(f"  Filtered out {before_filter - len(processed)} past meetings")
 
     # Step 5: Deduplicate events on the same date with similar titles
     if source_type == 'events':

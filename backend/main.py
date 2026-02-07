@@ -232,6 +232,12 @@ def generate_events(request: QueryRequest):
         elif len(all_events) < 5 and client is None:
             print("OpenAI client not available - skipping GPT fallback")
 
+        # Deduplicate events across sources (same event from multiple sources)
+        before_dedup = len(all_events)
+        all_events = deduplicate_events(all_events)
+        if before_dedup > len(all_events):
+            print(f"Cross-source deduplication: {before_dedup} → {len(all_events)} events ({before_dedup - len(all_events)} duplicates removed)")
+
         # Sort events by start date
         all_events.sort(key=lambda x: x["start"])
 
@@ -245,8 +251,55 @@ def generate_events(request: QueryRequest):
 
 
 # -----------------------------
-# Helper functions for attraction deduplication and categorization
+# Helper functions for event and attraction deduplication
 # -----------------------------
+def deduplicate_events(events: List[Dict]) -> List[Dict]:
+    """
+    Remove duplicate events across multiple sources.
+    Events are considered duplicates if they have the same date and very similar titles.
+    """
+    if not events:
+        return []
+
+    unique_events = []
+    seen_keys = set()
+
+    for event in events:
+        # Create key from date + normalized title
+        event_date = event.get('start', '').split('T')[0]  # Get date part (YYYY-MM-DD)
+        event_title = event.get('title', '').lower().strip()
+
+        # Normalize title for comparison
+        normalized = event_title
+
+        # Remove ordinal indicators (1st, 2nd, 3rd, 4th, etc.) with "annual"
+        normalized = re.sub(r'^\d+(st|nd|rd|th)\s+annual\s+', '', normalized, flags=re.IGNORECASE)
+
+        # Remove standalone "annual" at beginning
+        normalized = re.sub(r'^annual\s+', '', normalized, flags=re.IGNORECASE)
+
+        # Remove year prefixes like "2026"
+        normalized = re.sub(r'^20\d{2}\s+', '', normalized)
+
+        # Remove common prefixes
+        for prefix in ['the ', 'a ', 'an ']:
+            if normalized.startswith(prefix):
+                normalized = normalized[len(prefix):]
+
+        # Remove special characters for comparison
+        normalized = ''.join(c for c in normalized if c.isalnum() or c.isspace())
+        normalized = ' '.join(normalized.split())  # Normalize whitespace
+
+        # Create deduplication key
+        dedup_key = f"{event_date}_{normalized[:50]}"  # First 50 chars of normalized title
+
+        if dedup_key not in seen_keys:
+            seen_keys.add(dedup_key)
+            unique_events.append(event)
+
+    return unique_events
+
+
 def normalize_title(title: str) -> str:
     """Normalize title for deduplication (lowercase, remove special chars)"""
     import string

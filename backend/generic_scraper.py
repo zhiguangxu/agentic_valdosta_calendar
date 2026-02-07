@@ -814,7 +814,9 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
         title = item.get('title', '')
 
         # Step 1: Clean up title - remove leading numbers, dates, etc.
-        title = re.sub(r'^\d+\s*', '', title)  # Remove leading numbers
+        # Remove leading numbers BUT NOT ordinals (1st, 2nd, 3rd, 4th, etc.)
+        if not re.match(r'^\d+(st|nd|rd|th)\s', title, re.IGNORECASE):
+            title = re.sub(r'^\d+\s+', '', title)  # Remove leading numbers with space
         title = re.sub(r'^\d{1,2}[A-Za-z]+', '', title)  # Remove date prefixes like "13November"
         # Remove month names at the beginning
         title = re.sub(r'^(January|February|March|April|May|June|July|August|September|October|November|December)', '', title, flags=re.IGNORECASE)

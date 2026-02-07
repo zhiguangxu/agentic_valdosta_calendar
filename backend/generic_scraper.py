@@ -632,9 +632,39 @@ def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events
         event_urls = []
         current_year = datetime.now().year
 
-        # For calendar-based sites (e.g., valdostacity.com, chamber), fetch multiple months
+        # For calendar-based sites, handle date range parameters
         urls_to_process = [url]
-        if not use_structural_parsing and soup.find("table"):
+
+        # Check if URL has startDate/endDate parameters (e.g., Lowndes County)
+        if 'startDate=' in url and 'enddate=' in url:
+            from dateutil.relativedelta import relativedelta
+            from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
+            # Parse URL and update date parameters
+            parsed = urlparse(url)
+            params = parse_qs(parsed.query)
+
+            current_date = datetime.now()
+            end_date = current_date + relativedelta(months=6)
+
+            # Update parameters with 6-month range
+            params['startDate'] = [current_date.strftime('%m/%d/%Y')]
+            params['enddate'] = [end_date.strftime('%m/%d/%Y')]
+
+            # Rebuild URL with updated parameters
+            new_query = urlencode(params, doseq=True)
+            updated_url = urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
+
+            print(f"[Two-Stage] Detected date range calendar, fetching {current_date.strftime('%m/%d/%Y')} to {end_date.strftime('%m/%d/%Y')}")
+
+            # Re-fetch with date range
+            resp = requests.get(updated_url, headers=headers, timeout=15)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
+            urls_to_process = [updated_url]
+
+        # For other calendar-based sites (e.g., valdostacity.com, chamber), fetch multiple months
+        elif not use_structural_parsing and soup.find("table"):
             from dateutil.relativedelta import relativedelta
             current_date = datetime.now()
             for i in range(1, 7):  # Get next 6 months

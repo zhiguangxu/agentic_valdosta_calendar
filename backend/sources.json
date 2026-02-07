@@ -23,7 +23,7 @@
       "name": "Valdosta Lowndes Chamber of Commerce",
       "url": "https://business.valdostachamber.com/events",
       "type": "events",
-      "enabled": false,
+      "enabled": true,
       "scraping_method": "ai_twostage",
       "added_date": "2025-01-10T00:00:00Z"
     },
@@ -32,7 +32,7 @@
       "name": "Valdosta State University Concert",
       "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
       "type": "events",
-      "enabled": false,
+      "enabled": true,
       "scraping_method": "ai_twostage",
       "added_date": "2025-01-10T00:00:00Z"
     },
@@ -44,10 +44,28 @@
       "scraping_method": "ai_twostage",
       "id": "5",
       "added_date": "2026-02-07T21:10:43.588601Z"
+    },
+    {
+      "name": "City of Valdosta",
+      "url": "https://www.valdostacity.com/city-council/agendas-minutes",
+      "type": "meetings",
+      "enabled": true,
+      "scraping_method": "ai_twostage",
+      "id": "6",
+      "added_date": "2026-02-07T22:58:57.448850Z"
+    },
+    {
+      "name": "Lowndes County \u2013 Board of Commissioners",
+      "url": "https://lowndescounty.com/calendar.aspx?CID=23&Keywords=&startDate=&enddate=&",
+      "type": "meetings",
+      "enabled": true,
+      "scraping_method": "ai_twostage",
+      "id": "7",
+      "added_date": "2026-02-07T22:59:37.388684Z"
     }
   ],
   "settings": {
     "passcode_hash": "0d4a67cd480b8bc2b2805f48bbd44be60efc64b488788a774d0428f2be0973ce",
-    "last_updated": "2026-02-07T22:41:05.945372Z"
+    "last_updated": "2026-02-07T23:33:14.906393Z"
   }
 }

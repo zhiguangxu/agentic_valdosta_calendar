@@ -23,7 +23,7 @@ function Settings({ onBack }) {
     url: "",
     type: "events",
     enabled: true,
-    scraping_method: "auto",
+    scraping_method: "ai_twostage", // Always use two-stage scraping
   });
 
   const handlePasscodeSubmit = async (e) => {
@@ -140,7 +140,7 @@ function Settings({ onBack }) {
       url: source.url,
       type: source.type,
       enabled: source.enabled,
-      scraping_method: source.scraping_method || "auto",
+      scraping_method: "ai_twostage", // Always use two-stage scraping
     });
     // Don't show the top form when editing
     setShowAddForm(false);
@@ -152,7 +152,7 @@ function Settings({ onBack }) {
       url: "",
       type: "events",
       enabled: true,
-      scraping_method: "auto",
+      scraping_method: "ai_twostage", // Always use two-stage scraping
     });
     setEditingSource(null);
   };
@@ -428,47 +428,25 @@ function Settings({ onBack }) {
                 }}
               />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-              <div>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                  Type
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <option value="events">Events</option>
-                  <option value="attractions">Attractions</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                  Scraping Method
-                </label>
-                <select
-                  value={formData.scraping_method}
-                  onChange={(e) =>
-                    setFormData({ ...formData, scraping_method: e.target.value })
-                  }
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                  }}
-                >
-                  <option value="auto">Auto-detect</option>
-                  <option value="ai">AI-powered</option>
-                </select>
-              </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                Type
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value })
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                }}
+              >
+                <option value="events">Events</option>
+                <option value="attractions">Attractions</option>
+              </select>
             </div>
             <div>
               <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -576,47 +554,25 @@ function Settings({ onBack }) {
                       }}
                     />
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-                    <div>
-                      <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                        Type
-                      </label>
-                      <select
-                        value={formData.type}
-                        onChange={(e) =>
-                          setFormData({ ...formData, type: e.target.value })
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "10px",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        <option value="events">Events</option>
-                        <option value="attractions">Attractions</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
-                        Scraping Method
-                      </label>
-                      <select
-                        value={formData.scraping_method}
-                        onChange={(e) =>
-                          setFormData({ ...formData, scraping_method: e.target.value })
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "10px",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        <option value="auto">Auto-detect</option>
-                        <option value="ai">AI-powered</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>
+                      Type
+                    </label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) =>
+                        setFormData({ ...formData, type: e.target.value })
+                      }
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      <option value="events">Events</option>
+                      <option value="attractions">Attractions</option>
+                    </select>
                   </div>
                   <div>
                     <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -712,16 +668,6 @@ function Settings({ onBack }) {
                       }}
                     >
                       {source.type === "events" ? "📅 Events" : "🏛️ Attractions"}
-                    </span>
-                    <span
-                      style={{
-                        backgroundColor: "#e8f8f5",
-                        padding: "4px 10px",
-                        borderRadius: "4px",
-                        color: "#2c3e50",
-                      }}
-                    >
-                      {source.scraping_method || "auto"}
                     </span>
                   </div>
                 </div>

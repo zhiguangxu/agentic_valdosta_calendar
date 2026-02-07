@@ -384,8 +384,14 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
 
     print(f"[Two-Stage] Starting two-stage scraping for {url}")
 
-    # Stage 1: Extract event titles and URLs from listing page using STRUCTURAL PARSING
-    print(f"[Two-Stage] Stage 1: Extracting events from listing page (using BeautifulSoup)")
+    # Stage 1: Extract event titles and URLs from listing page
+    # Use different strategies based on site structure
+    use_ai_extraction = "valdostacity.com" in url
+
+    if use_ai_extraction:
+        print(f"[Two-Stage] Stage 1: Extracting events from listing page (using AI)")
+    else:
+        print(f"[Two-Stage] Stage 1: Extracting events from listing page (using BeautifulSoup)")
 
     try:
         headers = {
@@ -398,89 +404,190 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        # Parse events structurally from HTML
-        event_containers = soup.find_all("article", class_="event")
-        print(f"[Two-Stage] Found {len(event_containers)} event containers")
-
         event_urls = []
         current_year = datetime.now().year
 
-        for container in event_containers:
-            try:
-                # Extract date (day number)
-                date_elem = container.find("div", class_="date")
-                day = date_elem.find("span").get_text(strip=True) if date_elem else None
-
-                # Extract month
-                txt_elem = container.find("div", class_="txt")
-                month_elem = txt_elem.find("span") if txt_elem else None
-                month = month_elem.get_text(strip=True) if month_elem else None
-
-                # Extract title from h3
-                title_elem = txt_elem.find("h3") if txt_elem else None
-                title = title_elem.get_text(strip=True) if title_elem else None
-
-                # Extract URL from parent <a> tag
-                parent_link = container.find_parent("a", href=True)
-                event_url = parent_link.get("href") if parent_link else None
-
-                # Extract time from description if available
-                desc_elem = container.find("p")
-                desc_text = desc_elem.get_text() if desc_elem else ""
-
-                # Look for time in description
-                time_match = re.search(r'(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)', desc_text, re.I)
-                if time_match:
-                    hour = int(time_match.group(1))
-                    minute = time_match.group(2)
-                    am_pm = time_match.group(3).upper()
-                    if am_pm == "PM" and hour != 12:
-                        hour += 12
-                    elif am_pm == "AM" and hour == 12:
-                        hour = 0
-                    event_time = f"{hour:02d}:{minute}"
+        # For calendar-based sites (valdostacity.com), fetch multiple months
+        urls_to_process = [url]
+        if use_ai_extraction and soup.find("table"):
+            from dateutil.relativedelta import relativedelta
+            current_date = datetime.now()
+            for i in range(1, 7):  # Get next 6 months
+                month_date = current_date + relativedelta(months=i)
+                month_str = month_date.strftime("%Y-%m")
+                if '?' in url:
+                    month_url = f"{url.split('?')[0]}?month={month_str}"
                 else:
-                    # Look for "Noon" or other time indicators
-                    if "noon" in desc_text.lower():
-                        event_time = "12:00"
-                    else:
-                        event_time = "19:00"
+                    month_url = f"{url}?month={month_str}"
+                urls_to_process.append(month_url)
+            print(f"[Two-Stage] Detected calendar site, will process {len(urls_to_process)} months")
 
-                # Parse date
-                if day and month and title:
-                    try:
-                        # Convert month name to number
-                        date_str = f"{day} {month} {current_year}"
-                        parsed_date = dateparser.parse(date_str)
-                        if parsed_date:
-                            # If date is in the past, assume next year
-                            if parsed_date.date() < datetime.now().date():
-                                parsed_date = parsed_date.replace(year=current_year + 1)
+        # Process each URL (current month + future months if calendar)
+        for process_url in urls_to_process:
+            if process_url != url:
+                resp = requests.get(process_url, headers=headers, timeout=15)
+                resp.raise_for_status()
+                soup = BeautifulSoup(resp.text, "html.parser")
 
-                            formatted_date = parsed_date.strftime("%Y-%m-%d")
+            if use_ai_extraction:
+                # AI-based extraction for calendar sites
+                # Remove unnecessary elements
+                for element in soup(["script", "style", "nav", "footer", "header"]):
+                    element.decompose()
 
-                            # Check if URL is external (not visitvaldosta.org)
-                            has_external_url = event_url and "visitvaldosta.org" not in event_url if event_url else False
+                # Get main content
+                main_content = soup.find(["main", "article"]) or soup.find("div", class_=re.compile(r"main|content", re.I))
+                html_content = str(main_content)[:30000] if main_content else str(soup.body)[:30000]
 
-                            event_data = {
+                stage1_prompt = f"""
+Extract event information from this calendar page. For each event, extract:
+1. The event title
+2. The URL where full event details can be found (look for /event/ URLs)
+3. The date (YYYY-MM-DD format)
+4. The time if available (HH:MM format)
+
+IMPORTANT:
+- Extract the actual event page URL (usually /event/event-name)
+- For calendar tables, look for links within table cells
+- Each event should have a unique URL
+
+Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "..."}}]
+"""
+
+                ai_response = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": stage1_prompt + "\n\nHTML:\n" + html_content}],
+                    temperature=0.1
+                )
+
+                ai_raw = ai_response.choices[0].message.content.strip()
+                if ai_raw.startswith("```json"):
+                    ai_raw = ai_raw[7:]
+                if ai_raw.startswith("```"):
+                    ai_raw = ai_raw[3:]
+                if ai_raw.endswith("```"):
+                    ai_raw = ai_raw[:-3]
+                ai_raw = ai_raw.strip()
+
+                try:
+                    extracted_events = json.loads(ai_raw)
+                    print(f"  AI extracted {len(extracted_events)} items from {process_url}")
+                    if extracted_events:
+                        print(f"  Sample item: {extracted_events[0]}")
+
+                    for event in extracted_events:
+                        title = event.get('title', '')
+                        event_url = event.get('url', '')
+                        event_date = event.get('date') or ''
+                        event_time = event.get('time') or '19:00'
+
+                        # Make URL absolute
+                        if event_url and not event_url.startswith('http'):
+                            from urllib.parse import urljoin
+                            event_url = urljoin(url, event_url)
+
+                        # Check if this needs Stage 2 scraping:
+                        # - External URLs (not valdostacity.com) always need Stage 2
+                        # - Internal event pages (/event/...) need Stage 2 for descriptions
+                        needs_stage2 = event_url and ("valdostacity.com" not in event_url or "/event/" in event_url)
+
+                        if title and event_url:
+                            event_urls.append({
                                 "title": title,
-                                "url": event_url or url,
-                                "has_external_url": has_external_url,
-                                "date": formatted_date,
+                                "url": event_url,
+                                "has_external_url": needs_stage2,
+                                "date": event_date,
                                 "time": event_time,
-                                "description": desc_text[:200] if desc_text else ""
-                            }
-                            event_urls.append(event_data)
-                            print(f"[Two-Stage]   Extracted: {title} on {formatted_date} at {event_time}")
+                                "description": ""
+                            })
+                            print(f"    Adding: {title} on {event_date}")
+                except Exception as e:
+                    print(f"  Error parsing AI response: {e}")
+                    continue
+            else:
+                # Structural parsing for visitvaldosta.org
+                event_containers = soup.find_all("article", class_="event")
+                print(f"[Two-Stage] Found {len(event_containers)} event containers")
+
+                for container in event_containers:
+                    try:
+                        # Extract date (day number)
+                        date_elem = container.find("div", class_="date")
+                        day = date_elem.find("span").get_text(strip=True) if date_elem else None
+
+                        # Extract month
+                        txt_elem = container.find("div", class_="txt")
+                        month_elem = txt_elem.find("span") if txt_elem else None
+                        month = month_elem.get_text(strip=True) if month_elem else None
+
+                        # Extract title from h3
+                        title_elem = txt_elem.find("h3") if txt_elem else None
+                        title = title_elem.get_text(strip=True) if title_elem else None
+
+                        # Extract URL from parent <a> tag
+                        parent_link = container.find_parent("a", href=True)
+                        event_url = parent_link.get("href") if parent_link else None
+
+                        # Extract time from description if available
+                        desc_elem = container.find("p")
+                        desc_text = desc_elem.get_text() if desc_elem else ""
+
+                        # Look for time in description
+                        time_match = re.search(r'(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)', desc_text, re.I)
+                        if time_match:
+                            hour = int(time_match.group(1))
+                            minute = time_match.group(2)
+                            am_pm = time_match.group(3).upper()
+                            if am_pm == "PM" and hour != 12:
+                                hour += 12
+                            elif am_pm == "AM" and hour == 12:
+                                hour = 0
+                            event_time = f"{hour:02d}:{minute}"
+                        else:
+                            # Look for "Noon" or other time indicators
+                            if "noon" in desc_text.lower():
+                                event_time = "12:00"
+                            else:
+                                event_time = "19:00"
+
+                        # Parse date
+                        if day and month and title:
+                            try:
+                                # Convert month name to number
+                                date_str = f"{day} {month} {current_year}"
+                                parsed_date = dateparser.parse(date_str)
+                                if parsed_date:
+                                    # If date is in the past, assume next year
+                                    if parsed_date.date() < datetime.now().date():
+                                        parsed_date = parsed_date.replace(year=current_year + 1)
+
+                                    formatted_date = parsed_date.strftime("%Y-%m-%d")
+
+                                    # Check if URL is external (not visitvaldosta.org)
+                                    has_external_url = event_url and "visitvaldosta.org" not in event_url if event_url else False
+
+                                    event_data = {
+                                        "title": title,
+                                        "url": event_url or url,
+                                        "has_external_url": has_external_url,
+                                        "date": formatted_date,
+                                        "time": event_time,
+                                        "description": desc_text[:200] if desc_text else ""
+                                    }
+                                    event_urls.append(event_data)
+                                    print(f"[Two-Stage]   Extracted: {title} on {formatted_date} at {event_time}")
+                            except Exception as e:
+                                print(f"[Two-Stage]   Error parsing date for {title}: {e}")
+                                continue
+
                     except Exception as e:
-                        print(f"[Two-Stage]   Error parsing date for {title}: {e}")
+                        print(f"[Two-Stage]   Error parsing container: {e}")
                         continue
 
-            except Exception as e:
-                print(f"[Two-Stage]   Error parsing container: {e}")
-                continue
+                print(f"[Two-Stage] Stage 1: Successfully extracted {len(event_urls)} events using structural parsing")
 
-        print(f"[Two-Stage] Stage 1: Successfully extracted {len(event_urls)} events using structural parsing")
+        # After processing all URLs
+        print(f"[Two-Stage] Stage 1 completed: {len(event_urls)} events extracted total")
 
         # Separate events into two groups:
         # 1. Events with external URLs - need Stage 2 scraping
@@ -513,8 +620,8 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
         all_results = []
         for event in events_without_external_urls:
             event_title = event.get('title', 'Untitled')
-            event_date = event.get('date', '')
-            event_time = event.get('time', '19:00')
+            event_date = event.get('date') or ''
+            event_time = event.get('time') or '19:00'
             event_url = event.get('url', url)  # Use listing page URL if no specific URL
 
             # Fix common typos in title
@@ -651,8 +758,15 @@ HTML content:
                     status = event_data.get('status', 'unknown')
                     dates = event_data.get('dates', [])
                     time_str = event_data.get('time', '19:00')
-                    description = _truncate_description(event_data.get('description', ''))
+                    raw_description = event_data.get('description', '')
+                    description = _truncate_description(raw_description)
                     corrected_title = event_data.get('corrected_title', '')
+
+                    # Debug logging for description
+                    if raw_description:
+                        print(f"[Two-Stage]   AI extracted description ({len(raw_description)} chars): {raw_description[:80]}...")
+                    else:
+                        print(f"[Two-Stage]   AI returned empty description")
 
                     # Use corrected title if provided
                     if corrected_title and corrected_title.strip():
@@ -668,10 +782,19 @@ HTML content:
                         print(f"[Two-Stage]   Skipping {event_title} - Status: {status}")
                         continue
 
-                    # If no dates found in Stage 2, use fallback from Stage 1 (listing page)
-                    if not dates:
-                        fallback_date = event.get('date', '')
-                        fallback_time = event.get('time', '19:00')
+                    # For internal valdostacity.com URLs, always use calendar dates (source of truth)
+                    # For external URLs, prefer Stage 2 dates if found, otherwise use fallback
+                    is_internal_valdosta = "valdostacity.com/event/" in event_url
+                    fallback_date = event.get('date', '')
+                    fallback_time = event.get('time', '19:00')
+
+                    if is_internal_valdosta and fallback_date:
+                        # Always use calendar dates for valdostacity.com internal pages
+                        print(f"[Two-Stage]   Using calendar date for internal page: {event_title} on {fallback_date}")
+                        dates = [fallback_date]
+                        time_str = fallback_time
+                    elif not dates:
+                        # No dates in Stage 2, use fallback from Stage 1 (listing page)
                         if fallback_date:
                             print(f"[Two-Stage]   No dates in Stage 2, using fallback: {event_title} on {fallback_date}")
                             dates = [fallback_date]
@@ -797,12 +920,70 @@ HTML content:
                 deduplicated_results.append(event)
 
         print(f"[Two-Stage] After final deduplication: {len(deduplicated_results)} events")
-        print(f"[Two-Stage] Completed: Found {len(deduplicated_results)} valid events")
-        return deduplicated_results
+
+        # Expand recurring events
+        expanded_results = _expand_recurring_events(deduplicated_results)
+        print(f"[Two-Stage] After expanding recurring events: {len(expanded_results)} events")
+
+        print(f"[Two-Stage] Completed: Found {len(expanded_results)} valid events")
+        return expanded_results
 
     except Exception as e:
         print(f"[Two-Stage] ERROR in two-stage scraping: {e}")
         return []
+
+
+def _expand_recurring_events(results: List[Dict]) -> List[Dict]:
+    """Detect and expand recurring events into multiple occurrences"""
+    from dateutil.relativedelta import relativedelta
+    from calendar import monthrange
+
+    expanded = []
+    for event in results:
+        title = event.get('title', '').lower()
+
+        # Detect "First Friday" pattern
+        if 'first friday' in title:
+            print(f"  Detected recurring event: {event['title']}")
+
+            # Get the original event's time
+            original_start = event.get('start', '')
+            try:
+                # Extract time from original event (default to 19:00)
+                if 'T' in original_start:
+                    event_time = original_start.split('T')[1]
+                else:
+                    event_time = '19:00:00'
+
+                # Generate first Friday of each month for next 6 months
+                current_date = datetime.now()
+                for i in range(6):
+                    target_month = current_date + relativedelta(months=i)
+                    year = target_month.year
+                    month = target_month.month
+
+                    # Find first Friday of the month
+                    # Get the first day of the month
+                    first_day = datetime(year, month, 1)
+                    # Friday is weekday 4 (0=Monday, 4=Friday)
+                    days_until_friday = (4 - first_day.weekday()) % 7
+                    first_friday = first_day + timedelta(days=days_until_friday)
+
+                    # Only add if it's in the future
+                    if first_friday.date() >= datetime.now().date():
+                        recurring_event = event.copy()
+                        recurring_event['start'] = f"{first_friday.strftime('%Y-%m-%d')}T{event_time}"
+                        expanded.append(recurring_event)
+                        print(f"    Generated: {event['title']} on {first_friday.strftime('%Y-%m-%d')}")
+            except Exception as e:
+                print(f"    Error expanding recurring event: {e}")
+                # If expansion fails, just add the original event
+                expanded.append(event)
+        else:
+            # Not a recurring event, add as-is
+            expanded.append(event)
+
+    return expanded
 
 
 def _post_process_ai_results(results: List[Dict], source_type: str, base_url: str) -> List[Dict]:
@@ -817,7 +998,7 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
         # Remove leading numbers BUT NOT ordinals (1st, 2nd, 3rd, 4th, etc.)
         if not re.match(r'^\d+(st|nd|rd|th)\s', title, re.IGNORECASE):
             title = re.sub(r'^\d+\s+', '', title)  # Remove leading numbers with space
-        title = re.sub(r'^\d{1,2}[A-Za-z]+', '', title)  # Remove date prefixes like "13November"
+            title = re.sub(r'^\d{1,2}[A-Za-z]+', '', title)  # Remove date prefixes like "13November"
         # Remove month names at the beginning
         title = re.sub(r'^(January|February|March|April|May|June|July|August|September|October|November|December)', '', title, flags=re.IGNORECASE)
         title = title.strip()

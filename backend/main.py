@@ -261,8 +261,8 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
     if not events:
         return []
 
-    unique_events = []
-    seen_keys = set()
+    # Use dict to store best event for each dedup_key
+    best_events = {}
 
     for event in events:
         # Create key from date + normalized title
@@ -293,11 +293,26 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
         # Create deduplication key
         dedup_key = f"{event_date}_{normalized[:50]}"  # First 50 chars of normalized title
 
-        if dedup_key not in seen_keys:
-            seen_keys.add(dedup_key)
-            unique_events.append(event)
+        # If we haven't seen this event before, or if this event is better, keep it
+        if dedup_key not in best_events:
+            best_events[dedup_key] = event
+        else:
+            # Compare: prefer event with description, then longer title
+            existing = best_events[dedup_key]
+            existing_desc = existing.get('description', '').strip()
+            current_desc = event.get('description', '').strip()
 
-    return unique_events
+            # Prefer event with non-empty description
+            if current_desc and not existing_desc:
+                best_events[dedup_key] = event
+            elif not current_desc and existing_desc:
+                pass  # Keep existing
+            else:
+                # Both have descriptions or both don't - prefer longer/more specific title
+                if len(event.get('title', '')) > len(existing.get('title', '')):
+                    best_events[dedup_key] = event
+
+    return list(best_events.values())
 
 
 def normalize_title(title: str) -> str:
@@ -406,7 +421,8 @@ async def generate_events_stream():
             # Get the event loop
             loop = asyncio.get_event_loop()
 
-            # Scrape event sources
+            # Scrape event sources and collect them for deduplication
+            all_events = []
             for source in event_sources:
                 try:
                     print(f"Scraping event source: {source['name']} ({source['url']})")
@@ -415,14 +431,35 @@ async def generate_events_stream():
                     events = await loop.run_in_executor(executor, scrape_source, source)
                     current += 1
 
-                    # Send events and progress update
-                    yield f"data: {json.dumps({'type': 'events', 'events': events, 'source': source['name'], 'current': current, 'total': total_sources})}\n\n"
+                    all_events.extend(events)
+
+                    # Send progress update (but not events yet - we'll deduplicate first)
+                    progress_data = {
+                        'type': 'progress',
+                        'message': f'Scraped {len(events)} events from {source["name"]}',
+                        'source': source['name'],
+                        'current': current,
+                        'total': total_sources
+                    }
+                    yield f"data: {json.dumps(progress_data)}\n\n"
                     print(f"  Found {len(events)} events")
                 except Exception as e:
                     print(f"Error scraping {source['name']}: {e}")
                     current += 1
                     # Send error update
                     yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+
+            # Deduplicate and send all events at once
+            if all_events:
+                print(f"Total events before deduplication: {len(all_events)}")
+                unique_events = deduplicate_events(all_events)
+                print(f"Total events after deduplication: {len(unique_events)}")
+
+                # Sort events by start date
+                unique_events.sort(key=lambda x: x["start"])
+
+                # Send deduplicated events
+                yield f"data: {json.dumps({'type': 'events', 'events': unique_events, 'source': 'All Sources (Deduplicated)', 'current': current, 'total': total_sources})}\n\n"
 
             # Scrape attraction sources and collect them for deduplication
             all_attractions = []

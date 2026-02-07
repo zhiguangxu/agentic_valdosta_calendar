@@ -90,14 +90,14 @@ class SourceRequest(BaseModel):
     url: str
     type: str  # "events" or "attractions"
     enabled: Optional[bool] = True
-    scraping_method: Optional[str] = "auto"  # Only "auto" or "ai"
+    scraping_method: Optional[str] = "auto"  # "auto", "ai", or "ai_twostage"
 
 class SourceUpdateRequest(BaseModel):
     name: Optional[str] = None
     url: Optional[str] = None
     type: Optional[str] = None
     enabled: Optional[bool] = None
-    scraping_method: Optional[str] = None  # Only "auto" or "ai"
+    scraping_method: Optional[str] = None  # "auto", "ai", or "ai_twostage"
 
 # -----------------------------
 # OLD: Approved websites (now managed via sources.json)
@@ -120,17 +120,17 @@ class SourceUpdateRequest(BaseModel):
 def scrape_source(source: Dict) -> List[Dict]:
     """
     Scrape a single source using the appropriate method.
-    Only supports 'auto' (default, generic pattern matching) and 'ai' (AI-powered scraping).
+    Supports 'auto' (generic pattern matching), 'ai' (AI-powered), and 'ai_twostage' (two-stage AI scraping).
     """
     url = source['url']
     source_type = source['type']
     scraping_method = source.get('scraping_method', 'auto')
 
     try:
-        # Method 1: AI-powered scraping (only if explicitly set to 'ai')
-        if scraping_method == 'ai' and client is not None:
-            print(f"  Using AI scraping for {url}")
-            return generic_scraper.scrape_with_ai(url, source_type, client)
+        # Method 1: AI-powered scraping (including two-stage)
+        if scraping_method in ['ai', 'ai_twostage'] and client is not None:
+            print(f"  Using {scraping_method} scraping for {url}")
+            return generic_scraper.scrape_with_ai(url, source_type, client, scraping_method)
 
         # Method 2: Generic auto-detection (default for 'auto' method or fallback)
         else:

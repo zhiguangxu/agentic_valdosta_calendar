@@ -83,6 +83,12 @@ def add_source(source: Dict) -> Dict:
     if is_blocked_url(url):
         raise ValueError("This source is not supported due to scraping restrictions. Please use an alternative source.")
 
+    # Validate scraping method
+    scraping_method = source.get('scraping_method', 'auto')
+    valid_methods = ['auto', 'ai', 'ai_twostage']
+    if scraping_method not in valid_methods:
+        raise ValueError(f"Invalid scraping_method. Must be one of: {', '.join(valid_methods)}")
+
     data = load_sources()
     sources = data.get('sources', [])
 
@@ -117,6 +123,13 @@ def update_source(source_id: str, updates: Dict) -> Optional[Dict]:
     # Check if trying to update URL to a blocked domain
     if 'url' in updates and is_blocked_url(updates['url']):
         raise ValueError("This source is not supported due to scraping restrictions. Please use an alternative source.")
+
+    # Validate scraping method if provided
+    if 'scraping_method' in updates:
+        scraping_method = updates['scraping_method']
+        valid_methods = ['auto', 'ai', 'ai_twostage']
+        if scraping_method not in valid_methods:
+            raise ValueError(f"Invalid scraping_method. Must be one of: {', '.join(valid_methods)}")
 
     data = load_sources()
     sources = data.get('sources', [])

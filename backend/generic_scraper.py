@@ -13,11 +13,16 @@ import os
 import json
 
 
-def scrape_with_ai(url: str, source_type: str, openai_client: Optional[OpenAI]) -> List[Dict]:
+def scrape_with_ai(url: str, source_type: str, openai_client: Optional[OpenAI],
+                   scraping_method: str = "ai") -> List[Dict]:
     """Use AI to intelligently scrape any website with post-processing for consistency"""
     if not openai_client:
         print(f"OpenAI client not available for AI scraping {url}")
         return []
+
+    # Two-stage scraping for problematic listing pages
+    if scraping_method == "ai_twostage" and source_type == "events":
+        return _scrape_twostage(url, openai_client)
 
     try:
         from dateutil.relativedelta import relativedelta
@@ -345,6 +350,458 @@ ITEMS:
 
     except Exception as e:
         print(f"Error in AI scraping for {url}: {e}")
+        return []
+
+
+def _truncate_description(desc: str, max_length: int = 150) -> str:
+    """
+    Truncate description to max_length, preferring to end at sentence boundary.
+    """
+    if not desc or len(desc) <= max_length:
+        return desc
+
+    # Try to truncate at sentence boundary (., !, ?)
+    truncated = desc[:max_length]
+    last_period = max(truncated.rfind('.'), truncated.rfind('!'), truncated.rfind('?'))
+
+    if last_period > max_length * 0.6:  # If sentence boundary is > 60% through, use it
+        return desc[:last_period + 1].strip()
+    else:
+        # Otherwise truncate at last space and add ellipsis
+        last_space = truncated.rfind(' ')
+        if last_space > 0:
+            return truncated[:last_space].strip() + '...'
+        return truncated + '...'
+
+
+def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
+    """
+    Two-stage scraping for event listing pages with unreliable dates.
+    Stage 1: Extract event titles and external URLs from listing page
+    Stage 2: Scrape each external URL for accurate date information
+    """
+    import time
+
+    print(f"[Two-Stage] Starting two-stage scraping for {url}")
+
+    # Stage 1: Extract event titles and URLs from listing page using STRUCTURAL PARSING
+    print(f"[Two-Stage] Stage 1: Extracting events from listing page (using BeautifulSoup)")
+
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5"
+        }
+
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Parse events structurally from HTML
+        event_containers = soup.find_all("article", class_="event")
+        print(f"[Two-Stage] Found {len(event_containers)} event containers")
+
+        event_urls = []
+        current_year = datetime.now().year
+
+        for container in event_containers:
+            try:
+                # Extract date (day number)
+                date_elem = container.find("div", class_="date")
+                day = date_elem.find("span").get_text(strip=True) if date_elem else None
+
+                # Extract month
+                txt_elem = container.find("div", class_="txt")
+                month_elem = txt_elem.find("span") if txt_elem else None
+                month = month_elem.get_text(strip=True) if month_elem else None
+
+                # Extract title from h3
+                title_elem = txt_elem.find("h3") if txt_elem else None
+                title = title_elem.get_text(strip=True) if title_elem else None
+
+                # Extract URL from parent <a> tag
+                parent_link = container.find_parent("a", href=True)
+                event_url = parent_link.get("href") if parent_link else None
+
+                # Extract time from description if available
+                desc_elem = container.find("p")
+                desc_text = desc_elem.get_text() if desc_elem else ""
+
+                # Look for time in description
+                time_match = re.search(r'(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)', desc_text, re.I)
+                if time_match:
+                    hour = int(time_match.group(1))
+                    minute = time_match.group(2)
+                    am_pm = time_match.group(3).upper()
+                    if am_pm == "PM" and hour != 12:
+                        hour += 12
+                    elif am_pm == "AM" and hour == 12:
+                        hour = 0
+                    event_time = f"{hour:02d}:{minute}"
+                else:
+                    # Look for "Noon" or other time indicators
+                    if "noon" in desc_text.lower():
+                        event_time = "12:00"
+                    else:
+                        event_time = "19:00"
+
+                # Parse date
+                if day and month and title:
+                    try:
+                        # Convert month name to number
+                        date_str = f"{day} {month} {current_year}"
+                        parsed_date = dateparser.parse(date_str)
+                        if parsed_date:
+                            # If date is in the past, assume next year
+                            if parsed_date.date() < datetime.now().date():
+                                parsed_date = parsed_date.replace(year=current_year + 1)
+
+                            formatted_date = parsed_date.strftime("%Y-%m-%d")
+
+                            # Check if URL is external (not visitvaldosta.org)
+                            has_external_url = event_url and "visitvaldosta.org" not in event_url if event_url else False
+
+                            event_data = {
+                                "title": title,
+                                "url": event_url or url,
+                                "has_external_url": has_external_url,
+                                "date": formatted_date,
+                                "time": event_time,
+                                "description": desc_text[:200] if desc_text else ""
+                            }
+                            event_urls.append(event_data)
+                            print(f"[Two-Stage]   Extracted: {title} on {formatted_date} at {event_time}")
+                    except Exception as e:
+                        print(f"[Two-Stage]   Error parsing date for {title}: {e}")
+                        continue
+
+            except Exception as e:
+                print(f"[Two-Stage]   Error parsing container: {e}")
+                continue
+
+        print(f"[Two-Stage] Stage 1: Successfully extracted {len(event_urls)} events using structural parsing")
+
+        # Separate events into two groups:
+        # 1. Events with external URLs - need Stage 2 scraping
+        # 2. Events without external URLs - use dates from listing page
+        events_with_external_urls = []
+        events_without_external_urls = []
+        seen_keys = set()  # Deduplicate by title + date
+
+        for event in event_urls:
+            event_title = event.get('title', 'Untitled')
+            event_date = event.get('date', '')
+            has_external_url = event.get('has_external_url', False)
+
+            # Create deduplication key
+            dedup_key = f"{event_title.lower().strip()}_{event_date}"
+
+            if dedup_key in seen_keys:
+                continue
+
+            seen_keys.add(dedup_key)
+
+            if has_external_url and event.get('url'):
+                events_with_external_urls.append(event)
+            else:
+                events_without_external_urls.append(event)
+
+        print(f"[Two-Stage] Stage 1: {len(events_with_external_urls)} events with external URLs, {len(events_without_external_urls)} events without")
+
+        # Process events WITHOUT external URLs (use listing page dates)
+        all_results = []
+        for event in events_without_external_urls:
+            event_title = event.get('title', 'Untitled')
+            event_date = event.get('date', '')
+            event_time = event.get('time', '19:00')
+            event_url = event.get('url', url)  # Use listing page URL if no specific URL
+
+            # Fix common typos in title
+            if "Galentine's" in event_title or "galentine's" in event_title.lower():
+                event_title = event_title.replace("Galentine's", "Valentine's").replace("galentine's", "Valentine's")
+
+            # Validate date format
+            try:
+                parsed_date = datetime.fromisoformat(event_date).date()
+                if parsed_date >= datetime.now().date():
+                    # Validate time format
+                    if not re.match(r'^\d{2}:\d{2}$', event_time):
+                        event_time = '19:00'
+
+                    result_item = {
+                        "title": event_title,
+                        "url": event_url,
+                        "description": _truncate_description(event.get('description', '')),
+                        "start": f"{event_date}T{event_time}:00",
+                        "allDay": False
+                    }
+                    all_results.append(result_item)
+                    print(f"[Two-Stage]   Added (no external URL): {event_title} on {event_date}")
+            except Exception as e:
+                print(f"[Two-Stage]   Skipping event with invalid date: {event_title} - {e}")
+                continue
+
+        # Stage 2: Scrape pages for events WITH external URLs
+        if events_with_external_urls:
+            print(f"[Two-Stage] Stage 2: Scraping {len(events_with_external_urls)} external event pages")
+
+        for idx, event in enumerate(events_with_external_urls, 1):
+            event_title = event.get('title', 'Untitled')
+            event_url = event.get('url', '')
+
+            if not event_url:
+                continue
+
+            print(f"[Two-Stage] Stage 2 ({idx}/{len(events_with_external_urls)}): Scraping {event_title}")
+
+            try:
+                # Fetch event page
+                event_resp = requests.get(event_url, headers=headers, timeout=15)
+                event_resp.raise_for_status()
+                event_soup = BeautifulSoup(event_resp.text, "html.parser")
+
+                # Remove script, style, nav, footer, and header elements
+                for element in event_soup(["script", "style", "nav", "footer", "header"]):
+                    element.decompose()
+
+                # Get event page content
+                event_content = str(event_soup.body)[:30000] if event_soup.body else str(event_soup)[:30000]
+
+                # Stage 2 AI prompt - MORE SPECIFIC
+                stage2_prompt = f"""
+Extract ACCURATE event date information from this event details page.
+
+Event Title: {event_title}
+Today's Date: {datetime.now().strftime("%Y-%m-%d")} (Thursday, February 6, 2026)
+
+CRITICAL INSTRUCTIONS:
+
+1. DATE EXTRACTION - FIND THE PRIMARY EVENT DATE:
+   - Look for patterns like "Saturday, February 7, 2026" or "Friday, February 7"
+   - Look for date-time patterns like "February 7, 2026 - 12:00pm"
+   - Day-of-week + date is usually the PRIMARY event date (not article publication dates)
+   - IGNORE article metadata dates like "Published:", "Updated:", "Modified:"
+   - IGNORE navigation/header dates
+   - For multi-day events, list EACH date separately: ["2026-03-06", "2026-03-07", "2026-03-08"]
+   - Use YYYY-MM-DD format
+
+   Example: "Saturday, February 7, 2026 - 12:00pm" → date is "2026-02-07"
+
+2. POSTPONEMENT/CANCELLATION DETECTION:
+   - Search for: "postponed", "cancelled", "canceled", "rescheduled", "delayed", "moved to", "new date"
+   - If event was originally scheduled but now postponed, set status: "postponed"
+   - If you see phrases like "originally scheduled" or "was scheduled" it means it's NOT happening on that date
+   - If status is postponed/cancelled, you can still extract the NEW dates if mentioned
+
+3. TIME EXTRACTION:
+   - Extract time like "7:00 PM" → "19:00" (24-hour format)
+   - "12:00 PM" → "12:00", "12:00 AM" → "00:00"
+   - Default to "19:00" if no time found
+
+4. DESCRIPTION EXTRACTION:
+   - Extract a brief, informative summary (100-150 characters ideal)
+   - Focus on the key highlights: what the event is, what to expect
+   - NO marketing fluff, NO long sentences
+   - Example GOOD: "Comedy show featuring Vanessa Fraction and Marvin Hunter with BBQ and laughs"
+   - Example BAD: "Join us for an unforgettable night of entertainment where you'll experience the best comedy..."
+
+5. TITLE CORRECTION:
+   - If the external page has a DIFFERENT or MORE COMPLETE title than the listing page, use the external page title
+   - Example: If listing says "Event @ Venue" but external page says "Full Event Name", use the full name
+
+Return ONLY valid JSON with no markdown formatting:
+{{
+  "status": "active|cancelled|postponed|unknown",
+  "dates": ["2026-02-14"],
+  "time": "19:00",
+  "description": "Brief event description",
+  "corrected_title": "Use this if external page has better title, otherwise omit this field"
+}}
+
+If postponed/cancelled, still set status but dates can be empty: {{"status": "postponed", "dates": [], ...}}
+If you cannot find any date information, return {{"status": "unknown", "dates": [], "time": "19:00", "description": ""}}.
+
+HTML content:
+{event_content}
+"""
+
+                # Use GPT-4o-mini for Stage 2 (GPT-4o for Stage 1 is more critical)
+                stage2_response = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": stage2_prompt}],
+                    temperature=0.1
+                )
+
+                stage2_raw = stage2_response.choices[0].message.content.strip()
+
+                # Clean JSON markers
+                if stage2_raw.startswith("```json"):
+                    stage2_raw = stage2_raw[7:]
+                if stage2_raw.startswith("```"):
+                    stage2_raw = stage2_raw[3:]
+                if stage2_raw.endswith("```"):
+                    stage2_raw = stage2_raw[:-3]
+                stage2_raw = stage2_raw.strip()
+
+                # Parse JSON
+                try:
+                    event_data = json.loads(stage2_raw)
+
+                    status = event_data.get('status', 'unknown')
+                    dates = event_data.get('dates', [])
+                    time_str = event_data.get('time', '19:00')
+                    description = _truncate_description(event_data.get('description', ''))
+                    corrected_title = event_data.get('corrected_title', '')
+
+                    # Use corrected title if provided
+                    if corrected_title and corrected_title.strip():
+                        event_title = corrected_title.strip()
+
+                    # Fix common typos in title
+                    if "Galentine's" in event_title or "galentine's" in event_title.lower():
+                        event_title = event_title.replace("Galentine's", "Valentine's").replace("galentine's", "Valentine's")
+                        print(f"[Two-Stage]   Fixed typo: Galentine's → Valentine's")
+
+                    # Skip cancelled/postponed events
+                    if status in ['cancelled', 'postponed']:
+                        print(f"[Two-Stage]   Skipping {event_title} - Status: {status}")
+                        continue
+
+                    # If no dates found in Stage 2, use fallback from Stage 1 (listing page)
+                    if not dates:
+                        fallback_date = event.get('date', '')
+                        fallback_time = event.get('time', '19:00')
+                        if fallback_date:
+                            print(f"[Two-Stage]   No dates in Stage 2, using fallback: {event_title} on {fallback_date}")
+                            dates = [fallback_date]
+                            time_str = fallback_time
+                            # Use listing page description if Stage 2 description is empty
+                            if not description:
+                                description = _truncate_description(event.get('description', ''))
+                        else:
+                            print(f"[Two-Stage]   Skipping {event_title} - No dates found in Stage 2 or fallback")
+                            continue
+
+                    # Validate time format
+                    if not re.match(r'^\d{2}:\d{2}$', time_str):
+                        time_str = '19:00'
+
+                    # Create calendar entry for EACH date (multi-day support)
+                    for date_str in dates:
+                        # Validate date format and ensure it's not in the past
+                        try:
+                            event_date = datetime.fromisoformat(date_str).date()
+                            if event_date >= datetime.now().date():
+                                result_item = {
+                                    "title": event_title,
+                                    "url": event_url,
+                                    "description": _truncate_description(description),
+                                    "start": f"{date_str}T{time_str}:00",
+                                    "allDay": False
+                                }
+                                all_results.append(result_item)
+                                print(f"[Two-Stage]   Added: {event_title} on {date_str}")
+                            else:
+                                print(f"[Two-Stage]   Skipping past date: {event_title} on {date_str}")
+                        except Exception as e:
+                            print(f"[Two-Stage]   Invalid date format: {date_str} - {e}")
+                            continue
+
+                except json.JSONDecodeError as e:
+                    print(f"[Two-Stage]   ERROR: Failed to parse Stage 2 response for {event_title}: {e}")
+                    print(f"[Two-Stage]   Raw output: {stage2_raw[:200]}...")
+                    continue
+
+                # Rate limiting: 1 second between requests
+                if idx < len(events_with_external_urls):
+                    time.sleep(1)
+
+            except requests.exceptions.HTTPError as e:
+                print(f"[Two-Stage]   HTTP error for {event_title}: {e.response.status_code}")
+                # Fallback: Use listing page date
+                fallback_date = event.get('date', '')
+                fallback_time = event.get('time', '19:00')
+
+                # Fix common typos in title
+                fallback_title = event_title
+                if "Galentine's" in fallback_title or "galentine's" in fallback_title.lower():
+                    fallback_title = fallback_title.replace("Galentine's", "Valentine's").replace("galentine's", "Valentine's")
+
+                if fallback_date:
+                    try:
+                        parsed_date = datetime.fromisoformat(fallback_date).date()
+                        if parsed_date >= datetime.now().date():
+                            if not re.match(r'^\d{2}:\d{2}$', fallback_time):
+                                fallback_time = '19:00'
+                            fallback_desc = _truncate_description(event.get('description', ''))
+                            result_item = {
+                                "title": fallback_title,
+                                "url": event_url,
+                                "description": fallback_desc,
+                                "start": f"{fallback_date}T{fallback_time}:00",
+                                "allDay": False
+                            }
+                            all_results.append(result_item)
+                            print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
+                    except Exception:
+                        pass
+                continue
+            except requests.exceptions.Timeout:
+                print(f"[Two-Stage]   Timeout for {event_title}")
+                # Fallback: Use listing page date
+                fallback_date = event.get('date', '')
+                fallback_time = event.get('time', '19:00')
+
+                # Fix common typos in title
+                fallback_title = event_title
+                if "Galentine's" in fallback_title or "galentine's" in fallback_title.lower():
+                    fallback_title = fallback_title.replace("Galentine's", "Valentine's").replace("galentine's", "Valentine's")
+
+                if fallback_date:
+                    try:
+                        parsed_date = datetime.fromisoformat(fallback_date).date()
+                        if parsed_date >= datetime.now().date():
+                            if not re.match(r'^\d{2}:\d{2}$', fallback_time):
+                                fallback_time = '19:00'
+                            fallback_desc = _truncate_description(event.get('description', ''))
+                            result_item = {
+                                "title": fallback_title,
+                                "url": event_url,
+                                "description": fallback_desc,
+                                "start": f"{fallback_date}T{fallback_time}:00",
+                                "allDay": False
+                            }
+                            all_results.append(result_item)
+                            print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
+                    except Exception:
+                        pass
+                continue
+            except Exception as e:
+                print(f"[Two-Stage]   Error scraping {event_title}: {e}")
+                continue
+
+        # Final deduplication based on URL + date
+        print(f"[Two-Stage] Before final deduplication: {len(all_results)} events")
+        deduplicated_results = []
+        seen_keys = set()
+
+        for event in all_results:
+            event_date = event['start'].split('T')[0]
+            event_url = event['url']
+            # Create key from URL + date
+            dedup_key = f"{event_url}_{event_date}"
+
+            if dedup_key not in seen_keys:
+                seen_keys.add(dedup_key)
+                deduplicated_results.append(event)
+
+        print(f"[Two-Stage] After final deduplication: {len(deduplicated_results)} events")
+        print(f"[Two-Stage] Completed: Found {len(deduplicated_results)} valid events")
+        return deduplicated_results
+
+    except Exception as e:
+        print(f"[Two-Stage] ERROR in two-stage scraping: {e}")
         return []
 
 

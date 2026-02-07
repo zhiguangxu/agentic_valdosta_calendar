@@ -938,9 +938,9 @@ HTML:
             try:
                 parsed_date = datetime.fromisoformat(event_date).date()
                 event_recurring = event.get('recurring_pattern', '')
-                is_recurring = bool(event_recurring and event_recurring.strip())
+                is_recurring = _is_supported_recurring_pattern(event_recurring)
 
-                # Skip past dates UNLESS it's a recurring event
+                # Skip past dates UNLESS it's a supported recurring event
                 if parsed_date >= datetime.now().date() or is_recurring:
                     # Validate time format
                     if not re.match(r'^\d{2}:\d{2}$', event_time):
@@ -1085,12 +1085,12 @@ HTML:
                     # Create calendar entry for EACH date (multi-day support)
                     for date_str in dates:
                         # Validate date format and ensure it's not in the past
-                        # UNLESS it's a recurring event (which will be expanded to future dates)
+                        # UNLESS it's a SUPPORTED recurring event (which will be expanded to future dates)
                         try:
                             event_date = datetime.fromisoformat(date_str).date()
-                            is_recurring = bool(recurring_pattern and recurring_pattern.strip())
+                            is_recurring = _is_supported_recurring_pattern(recurring_pattern)
 
-                            # Skip past dates UNLESS it's a recurring event
+                            # Skip past dates UNLESS it's a supported recurring event
                             if event_date >= datetime.now().date() or is_recurring:
                                 result_item = {
                                     "title": event_title,
@@ -1135,9 +1135,9 @@ HTML:
                     try:
                         parsed_date = datetime.fromisoformat(fallback_date).date()
                         fallback_recurring = event.get('recurring_pattern', '')
-                        is_recurring = bool(fallback_recurring and fallback_recurring.strip())
+                        is_recurring = _is_supported_recurring_pattern(fallback_recurring)
 
-                        # Skip past dates UNLESS it's a recurring event
+                        # Skip past dates UNLESS it's a supported recurring event
                         if parsed_date >= datetime.now().date() or is_recurring:
                             if not re.match(r'^\d{2}:\d{2}$', fallback_time):
                                 fallback_time = '19:00'
@@ -1173,9 +1173,9 @@ HTML:
                     try:
                         parsed_date = datetime.fromisoformat(fallback_date).date()
                         fallback_recurring = event.get('recurring_pattern', '')
-                        is_recurring = bool(fallback_recurring and fallback_recurring.strip())
+                        is_recurring = _is_supported_recurring_pattern(fallback_recurring)
 
-                        # Skip past dates UNLESS it's a recurring event
+                        # Skip past dates UNLESS it's a supported recurring event
                         if parsed_date >= datetime.now().date() or is_recurring:
                             if not re.match(r'^\d{2}:\d{2}$', fallback_time):
                                 fallback_time = '19:00'
@@ -1229,6 +1229,26 @@ HTML:
     except Exception as e:
         print(f"[Two-Stage] ERROR in two-stage scraping: {e}")
         return []
+
+
+def _is_supported_recurring_pattern(recurring_pattern: str) -> bool:
+    """
+    Check if a recurring pattern is actually supported for expansion.
+    Only return True for patterns we can actually expand.
+    """
+    if not recurring_pattern:
+        return False
+
+    pattern_lower = recurring_pattern.lower()
+
+    # Supported patterns
+    supported = [
+        'first friday', '1st friday',
+        'second saturday', '2nd saturday',
+        'third tuesday', '3rd tuesday',
+    ]
+
+    return any(p in pattern_lower for p in supported)
 
 
 def _expand_recurring_events(results: List[Dict]) -> List[Dict]:

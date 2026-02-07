@@ -937,7 +937,11 @@ HTML:
             # Validate date format
             try:
                 parsed_date = datetime.fromisoformat(event_date).date()
-                if parsed_date >= datetime.now().date():
+                event_recurring = event.get('recurring_pattern', '')
+                is_recurring = bool(event_recurring and event_recurring.strip())
+
+                # Skip past dates UNLESS it's a recurring event
+                if parsed_date >= datetime.now().date() or is_recurring:
                     # Validate time format
                     if not re.match(r'^\d{2}:\d{2}$', event_time):
                         event_time = '19:00'
@@ -948,10 +952,13 @@ HTML:
                         "description": _truncate_description(event.get('description', '')),
                         "start": f"{event_date}T{event_time}:00",
                         "allDay": False,
-                        "recurring_pattern": event.get('recurring_pattern', '')  # Store recurring pattern if available
+                        "recurring_pattern": event_recurring  # Store recurring pattern if available
                     }
                     all_results.append(result_item)
-                    print(f"[Two-Stage]   Added (no external URL): {event_title} on {event_date}")
+                    if is_recurring:
+                        print(f"[Two-Stage]   Added recurring event (no external URL): {event_title} on {event_date} (will expand)")
+                    else:
+                        print(f"[Two-Stage]   Added (no external URL): {event_title} on {event_date}")
             except Exception as e:
                 print(f"[Two-Stage]   Skipping event with invalid date: {event_title} - {e}")
                 continue
@@ -1078,9 +1085,13 @@ HTML:
                     # Create calendar entry for EACH date (multi-day support)
                     for date_str in dates:
                         # Validate date format and ensure it's not in the past
+                        # UNLESS it's a recurring event (which will be expanded to future dates)
                         try:
                             event_date = datetime.fromisoformat(date_str).date()
-                            if event_date >= datetime.now().date():
+                            is_recurring = bool(recurring_pattern and recurring_pattern.strip())
+
+                            # Skip past dates UNLESS it's a recurring event
+                            if event_date >= datetime.now().date() or is_recurring:
                                 result_item = {
                                     "title": event_title,
                                     "url": event_url,
@@ -1090,7 +1101,10 @@ HTML:
                                     "recurring_pattern": recurring_pattern  # Store recurring pattern for detection
                                 }
                                 all_results.append(result_item)
-                                print(f"[Two-Stage]   Added: {event_title} on {date_str}")
+                                if is_recurring:
+                                    print(f"[Two-Stage]   Added recurring event: {event_title} on {date_str} (will expand)")
+                                else:
+                                    print(f"[Two-Stage]   Added: {event_title} on {date_str}")
                             else:
                                 print(f"[Two-Stage]   Skipping past date: {event_title} on {date_str}")
                         except Exception as e:
@@ -1120,7 +1134,11 @@ HTML:
                 if fallback_date:
                     try:
                         parsed_date = datetime.fromisoformat(fallback_date).date()
-                        if parsed_date >= datetime.now().date():
+                        fallback_recurring = event.get('recurring_pattern', '')
+                        is_recurring = bool(fallback_recurring and fallback_recurring.strip())
+
+                        # Skip past dates UNLESS it's a recurring event
+                        if parsed_date >= datetime.now().date() or is_recurring:
                             if not re.match(r'^\d{2}:\d{2}$', fallback_time):
                                 fallback_time = '19:00'
                             fallback_desc = _truncate_description(event.get('description', ''))
@@ -1130,10 +1148,13 @@ HTML:
                                 "description": fallback_desc,
                                 "start": f"{fallback_date}T{fallback_time}:00",
                                 "allDay": False,
-                                "recurring_pattern": event.get('recurring_pattern', '')
+                                "recurring_pattern": fallback_recurring
                             }
                             all_results.append(result_item)
-                            print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
+                            if is_recurring:
+                                print(f"[Two-Stage]   Fallback: Added recurring event {fallback_title} on {fallback_date} (will expand)")
+                            else:
+                                print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
                     except Exception:
                         pass
                 continue
@@ -1151,7 +1172,11 @@ HTML:
                 if fallback_date:
                     try:
                         parsed_date = datetime.fromisoformat(fallback_date).date()
-                        if parsed_date >= datetime.now().date():
+                        fallback_recurring = event.get('recurring_pattern', '')
+                        is_recurring = bool(fallback_recurring and fallback_recurring.strip())
+
+                        # Skip past dates UNLESS it's a recurring event
+                        if parsed_date >= datetime.now().date() or is_recurring:
                             if not re.match(r'^\d{2}:\d{2}$', fallback_time):
                                 fallback_time = '19:00'
                             fallback_desc = _truncate_description(event.get('description', ''))
@@ -1161,10 +1186,13 @@ HTML:
                                 "description": fallback_desc,
                                 "start": f"{fallback_date}T{fallback_time}:00",
                                 "allDay": False,
-                                "recurring_pattern": event.get('recurring_pattern', '')
+                                "recurring_pattern": fallback_recurring
                             }
                             all_results.append(result_item)
-                            print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
+                            if is_recurring:
+                                print(f"[Two-Stage]   Fallback: Added recurring event {fallback_title} on {fallback_date} (will expand)")
+                            else:
+                                print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
                     except Exception:
                         pass
                 continue

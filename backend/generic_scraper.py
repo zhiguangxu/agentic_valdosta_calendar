@@ -465,8 +465,10 @@ INSTRUCTIONS:
 
 1. RECURRING SCHEDULE DETECTION:
    - Look for recurring patterns like "First Friday", "Every Monday", "Monthly"
-   - If found, generate ALL dates for the next 6 months
-   - Return ALL generated dates in the "dates" array
+   - If found:
+     * Return ONLY ONE date (the next occurrence or the date shown on listing page)
+     * Describe the pattern in recurring_pattern field
+     * DO NOT generate multiple dates - the system will expand recurring events automatically
 
 2. SPECIFIC DATE EXTRACTION (FOR ONE-TIME EVENTS):
    - Look for specific dates like "Saturday, February 7, 2026"
@@ -512,12 +514,14 @@ CLASSES-SPECIFIC INSTRUCTIONS:
 1. RECURRING SCHEDULE (VERY IMPORTANT FOR CLASSES):
    - Classes often meet weekly or multiple times
    - Look for patterns like: "Every Wednesday", "Tuesdays and Thursdays", "Weekly on Monday"
-   - GENERATE ALL CLASS DATES for the next 6 months if recurring
-   - Example: "Every Monday" → ["2026-02-10", "2026-02-17", "2026-02-24", ...]
+   - If recurring:
+     * Return ONLY ONE date (the next class or the date shown on listing page)
+     * Describe the pattern in recurring_pattern field
+     * DO NOT generate multiple dates - the system will expand recurring classes automatically
 
 2. CLASS SERIES / MULTI-WEEK:
    - Look for "6-week class", "8-session workshop"
-   - Generate all session dates if weekly schedule is mentioned
+   - Return the start date and describe the series in recurring_pattern
 
 3. TIME EXTRACTION:
    - Extract exact class time (e.g., "2:00 PM - 4:00 PM" → "14:00")
@@ -562,7 +566,9 @@ MEETINGS-SPECIFIC INSTRUCTIONS:
 
 1. RECURRING MEETINGS:
    - Look for patterns like "Monthly meeting", "Every 3rd Tuesday"
-   - Generate ALL meeting dates for the next 6 months
+   - Return ONLY ONE date (the next occurrence or listing page date)
+   - Describe the pattern in recurring_pattern field
+   - DO NOT generate multiple dates - the system will expand recurring events automatically
 
 2. EXACT DATE AND TIME:
    - Meetings usually have precise dates and times
@@ -644,9 +650,15 @@ def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events
         # Process each URL (current month + future months if calendar)
         for process_url in urls_to_process:
             if process_url != url:
-                resp = requests.get(process_url, headers=headers, timeout=15)
-                resp.raise_for_status()
-                soup = BeautifulSoup(resp.text, "html.parser")
+                # Try to fetch additional months, but don't fail if the URL format doesn't work
+                try:
+                    resp = requests.get(process_url, headers=headers, timeout=15)
+                    resp.raise_for_status()
+                    soup = BeautifulSoup(resp.text, "html.parser")
+                except Exception as e:
+                    print(f"  [Two-Stage] Could not fetch {process_url}: {e}")
+                    print(f"  [Two-Stage] Continuing with events from previous months...")
+                    continue
 
             if not use_structural_parsing:
                 # AI-based extraction for sites with unknown structure

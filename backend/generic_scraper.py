@@ -386,12 +386,14 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
 
     # Stage 1: Extract event titles and URLs from listing page
     # Use different strategies based on site structure
-    use_ai_extraction = "valdostacity.com" in url
+    # BeautifulSoup structural parsing only for visitvaldosta.org (known structure)
+    # AI extraction for all other sites (flexible, works with any structure)
+    use_structural_parsing = "visitvaldosta.org" in url
 
-    if use_ai_extraction:
-        print(f"[Two-Stage] Stage 1: Extracting events from listing page (using AI)")
-    else:
+    if use_structural_parsing:
         print(f"[Two-Stage] Stage 1: Extracting events from listing page (using BeautifulSoup)")
+    else:
+        print(f"[Two-Stage] Stage 1: Extracting events from listing page (using AI)")
 
     try:
         headers = {
@@ -407,9 +409,9 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
         event_urls = []
         current_year = datetime.now().year
 
-        # For calendar-based sites (valdostacity.com), fetch multiple months
+        # For calendar-based sites (e.g., valdostacity.com, chamber), fetch multiple months
         urls_to_process = [url]
-        if use_ai_extraction and soup.find("table"):
+        if not use_structural_parsing and soup.find("table"):
             from dateutil.relativedelta import relativedelta
             current_date = datetime.now()
             for i in range(1, 7):  # Get next 6 months
@@ -429,29 +431,49 @@ def _scrape_twostage(url: str, openai_client: OpenAI) -> List[Dict]:
                 resp.raise_for_status()
                 soup = BeautifulSoup(resp.text, "html.parser")
 
-            if use_ai_extraction:
-                # AI-based extraction for calendar sites
+            if not use_structural_parsing:
+                # AI-based extraction for sites with unknown structure
                 # Remove unnecessary elements
                 for element in soup(["script", "style", "nav", "footer", "header"]):
                     element.decompose()
 
                 # Get main content
                 main_content = soup.find(["main", "article"]) or soup.find("div", class_=re.compile(r"main|content", re.I))
-                html_content = str(main_content)[:30000] if main_content else str(soup.body)[:30000]
+                # If main_content is too small (< 5000 chars), it's probably just navigation
+                # Use full body instead to capture all event content
+                if main_content and len(str(main_content)) < 5000:
+                    print(f"  HTML extraction: Main container too small ({len(str(main_content))} chars), using full body")
+                    # For sites with content deep in the page, use more content (up to 60000 chars)
+                    html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
+                elif main_content:
+                    html_content = str(main_content)[:30000]
+                else:
+                    html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
 
                 stage1_prompt = f"""
 Extract event information from this calendar page. For each event, extract:
 1. The event title
-2. The URL where full event details can be found (look for /event/ URLs)
+2. The URL where full event details can be found (if available, otherwise leave empty)
 3. The date (YYYY-MM-DD format)
-4. The time if available (HH:MM format)
+4. The time if available (HH:MM 24-hour format)
 
-IMPORTANT:
-- Extract the actual event page URL (usually /event/event-name)
-- For calendar tables, look for links within table cells
-- Each event should have a unique URL
+INSTRUCTIONS:
+- Look for structured events (in tables, divs, or plain text lists)
+- For plain-text calendars, look for patterns like:
+  * "Day, Month Date" followed by event titles
+  * "Event Title | Time | Venue"
+  * Event listings under month headings
+- If events don't have individual URLs, set url to empty string ""
+- For calendar tables, look for links within cells
+- Parse times: "7:00pm" → "19:00", "10:00am" → "10:00"
+- Use current or upcoming year (2026) for dates
+- Extract ALL future events from ALL months (February, March, April, May, etc.)
+- Only skip events that are clearly in the past (before February 7, 2026)
+- If multiple events occur on the same day, extract ALL of them
 
 Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "..."}}]
+
+If no events found, return: []
 """
 
                 ai_response = openai_client.chat.completions.create(
@@ -485,13 +507,17 @@ Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "..."
                         if event_url and not event_url.startswith('http'):
                             from urllib.parse import urljoin
                             event_url = urljoin(url, event_url)
+                        elif not event_url:
+                            # If no specific event URL, use the main page URL
+                            event_url = process_url
 
                         # Check if this needs Stage 2 scraping:
                         # - External URLs (not valdostacity.com) always need Stage 2
                         # - Internal event pages (/event/...) need Stage 2 for descriptions
-                        needs_stage2 = event_url and ("valdostacity.com" not in event_url or "/event/" in event_url)
+                        # - Events without specific URLs (using main page URL) don't need Stage 2
+                        needs_stage2 = event_url != process_url and event_url and ("valdostacity.com" not in event_url or "/event/" in event_url)
 
-                        if title and event_url:
+                        if title:
                             event_urls.append({
                                 "title": title,
                                 "url": event_url,
@@ -686,14 +712,19 @@ CRITICAL INSTRUCTIONS:
 
 1. DATE EXTRACTION - FIND THE PRIMARY EVENT DATE:
    - Look for patterns like "Saturday, February 7, 2026" or "Friday, February 7"
-   - Look for date-time patterns like "February 7, 2026 - 12:00pm"
-   - Day-of-week + date is usually the PRIMARY event date (not article publication dates)
+   - YEAR IS CRITICAL: If dates mention "2025" or earlier, those are PAST events - do NOT extract them
+   - If dates don't specify year, look for context clues:
+     * "2020-2021 season", "last year", "past event" = OLD, skip these
+     * Dates in Jan-Feb when we're in Feb may be from 2025 (past) - be cautious
+   - Only extract dates that are clearly FUTURE events (after Feb 6, 2026)
+   - If the page has NO future event dates, return empty dates: []
+   - Day-of-week + date is usually the PRIMARY event date (not article metadata)
    - IGNORE article metadata dates like "Published:", "Updated:", "Modified:"
-   - IGNORE navigation/header dates
    - For multi-day events, list EACH date separately: ["2026-03-06", "2026-03-07", "2026-03-08"]
-   - Use YYYY-MM-DD format
+   - Use YYYY-MM-DD format with year 2026 or later
 
    Example: "Saturday, February 7, 2026 - 12:00pm" → date is "2026-02-07"
+   Example: "January 22" on a page mentioning "2020-2021 season" → SKIP (past event)
 
 2. POSTPONEMENT/CANCELLATION DETECTION:
    - Search for: "postponed", "cancelled", "canceled", "rescheduled", "delayed", "moved to", "new date"
@@ -904,7 +935,8 @@ HTML content:
                 print(f"[Two-Stage]   Error scraping {event_title}: {e}")
                 continue
 
-        # Final deduplication based on URL + date
+        # Final deduplication based on URL + date + title
+        # Include title to allow multiple events on same day at same venue
         print(f"[Two-Stage] Before final deduplication: {len(all_results)} events")
         deduplicated_results = []
         seen_keys = set()
@@ -912,8 +944,9 @@ HTML content:
         for event in all_results:
             event_date = event['start'].split('T')[0]
             event_url = event['url']
-            # Create key from URL + date
-            dedup_key = f"{event_url}_{event_date}"
+            event_title = event.get('title', '').lower()[:50]  # First 50 chars, lowercase
+            # Create key from URL + date + title
+            dedup_key = f"{event_url}_{event_date}_{event_title}"
 
             if dedup_key not in seen_keys:
                 seen_keys.add(dedup_key)

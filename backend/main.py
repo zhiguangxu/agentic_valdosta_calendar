@@ -421,7 +421,7 @@ async def generate_events_stream():
             # Get the event loop
             loop = asyncio.get_event_loop()
 
-            # Scrape event sources and collect them for deduplication
+            # Scrape event sources with progress updates
             all_events = []
             for source in event_sources:
                 try:
@@ -433,7 +433,7 @@ async def generate_events_stream():
 
                     all_events.extend(events)
 
-                    # Send progress update (but not events yet - we'll deduplicate first)
+                    # Send progress update (events will be sent after deduplication at the end)
                     progress_data = {
                         'type': 'progress',
                         'message': f'Scraped {len(events)} events from {source["name"]}',

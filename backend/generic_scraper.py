@@ -538,13 +538,16 @@ CLASSES-SPECIFIC INSTRUCTIONS:
 Return ONLY valid JSON:
 {{
   "status": "active|cancelled|full|unknown",
-  "dates": ["2026-02-10", "2026-02-17", ...],
+  "dates": ["2026-02-10"],
   "recurring_pattern": "Every Monday 2-4pm",
   "time": "14:00",
   "description": "Class description with instructor, skill level, what you'll learn",
   "instructor": "Instructor Name",
   "corrected_title": "Only if page has BETTER title"
 }}
+
+CRITICAL: If the class is recurring (weekly, monthly, etc.), return ONLY ONE date in the "dates" array.
+The system will automatically generate all future occurrences based on the recurring_pattern.
 
 HTML content:
 {class_content}
@@ -1288,6 +1291,9 @@ def _is_supported_recurring_pattern(recurring_pattern: str) -> bool:
         'first friday', '1st friday',
         'second saturday', '2nd saturday',
         'third tuesday', '3rd tuesday',
+        # Weekly patterns for classes
+        'every monday', 'every tuesday', 'every wednesday', 'every thursday',
+        'every friday', 'every saturday', 'every sunday',
     ]
 
     return any(p in pattern_lower for p in supported)
@@ -1422,6 +1428,69 @@ def _expand_recurring_events(results: List[Dict]) -> List[Dict]:
             except Exception as e:
                 print(f"    [RECURRING] Error expanding: {e}")
                 expanded.append(event)
+
+        # Pattern 4: Every [Weekday] - for weekly recurring classes
+        # Matches: "Every Monday", "Every Tuesday", "Every Wednesday", etc.
+        elif any(day in search_text for day in ['every monday', 'every tuesday', 'every wednesday', 'every thursday', 'every friday', 'every saturday', 'every sunday']):
+            # Determine which weekday
+            weekday_map = {
+                'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3,
+                'friday': 4, 'saturday': 5, 'sunday': 6
+            }
+
+            target_weekday = None
+            target_weekday_name = None
+            for day_name, day_num in weekday_map.items():
+                if f'every {day_name}' in search_text:
+                    target_weekday = day_num
+                    target_weekday_name = day_name.capitalize()
+                    break
+
+            if target_weekday is not None:
+                print(f"  [RECURRING] Detected 'Every {target_weekday_name}' pattern: {event['title']}")
+                if recurring_pattern:
+                    print(f"    Pattern field: {recurring_pattern}")
+                is_recurring = True
+
+                original_start = event.get('start', '')
+                try:
+                    if 'T' in original_start:
+                        event_time = original_start.split('T')[1]
+                    else:
+                        event_time = '14:00:00'  # Default to 2pm for classes
+
+                    # Generate occurrences for next 6 months (approx 26 weeks)
+                    current_date = datetime.now().date()
+
+                    # Find the next occurrence of this weekday
+                    days_ahead = target_weekday - current_date.weekday()
+                    if days_ahead <= 0:  # Target day already happened this week
+                        days_ahead += 7
+
+                    next_occurrence = current_date + timedelta(days=days_ahead)
+
+                    # Generate 26 weekly occurrences (6 months)
+                    for week in range(26):
+                        occurrence_date = next_occurrence + timedelta(weeks=week)
+
+                        # Stop if we've gone beyond 6 months from now
+                        if (occurrence_date - current_date).days > 180:
+                            break
+
+                        recurring_event = event.copy()
+                        recurring_event['start'] = f"{occurrence_date.strftime('%Y-%m-%d')}T{event_time}"
+                        expanded.append(recurring_event)
+
+                        # Only print first few to avoid spam
+                        if week < 3:
+                            print(f"    [RECURRING] Generated: {event['title']} on {occurrence_date.strftime('%Y-%m-%d')}")
+
+                    if week >= 3:
+                        print(f"    [RECURRING] Generated {week + 1} total occurrences")
+
+                except Exception as e:
+                    print(f"    [RECURRING] Error expanding: {e}")
+                    expanded.append(event)
 
         # If not a recurring event, add as-is
         if not is_recurring:

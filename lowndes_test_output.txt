@@ -1,0 +1,283 @@
+/Users/zhiguangxu/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+================================================================================
+LOWNDES COUNTY MEETINGS CONSISTENCY TEST
+================================================================================
+URL: https://lowndescounty.com/calendar.aspx?CID=23&Keywords=&startDate=&enddate=&
+Type: meetings
+Running 3 scraping attempts to check for consistency...
+
+
+================================================================================
+ATTEMPT 1
+================================================================================
+[Two-Stage] Starting two-stage scraping for https://lowndescounty.com/calendar.aspx?CID=23&Keywords=&startDate=&enddate=&
+[Two-Stage] Stage 1: Extracting events from listing page (using AI)
+[Two-Stage] Detected date range calendar, fetching 02/08/2026 to 08/08/2026
+  HTML extraction: Main container too small (64 chars), using full body
+  AI extracted 8 items from https://lowndescounty.com/calendar.aspx?CID=23&startDate=02%2F08%2F2026&enddate=08%2F08%2F2026
+  Sample item: {'title': 'Lowndes County Board of Commissioners Work Session Meeting', 'url': '/Calendar.aspx?EID=765&amp;month=2&amp;year=2026&amp;day=8&amp;calType=0', 'date': '2026-02-09', 'time': '08:30', 'recurring_pattern': ''}
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24
+[Two-Stage] Stage 1 completed: 8 events extracted total
+[Two-Stage] Stage 1: 8 events with external URLs, 0 events without
+[Two-Stage] Stage 2: Scraping 8 external event pages
+[Two-Stage] Stage 2 (1/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-09
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09
+[Two-Stage] Stage 2 (2/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-10
+[Two-Stage]   AI extracted description (118 chars): Regular session meeting of the Lowndes County Board of Commissioners. All intere...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10
+[Two-Stage] Stage 2 (3/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-23
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23
+[Two-Stage] Stage 2 (4/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-24
+[Two-Stage]   AI extracted description (111 chars): Lowndes County Board of Commissioners Regular Session Meeting. All interested pa...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24
+[Two-Stage] Stage 2 (5/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-09
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09
+[Two-Stage] Stage 2 (6/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-10
+[Two-Stage]   AI extracted description (111 chars): Lowndes County Board of Commissioners Regular Session Meeting. All interested pa...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10
+[Two-Stage] Stage 2 (7/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-23
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23
+[Two-Stage] Stage 2 (8/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-24
+[Two-Stage]   AI extracted description (118 chars): Regular session meeting of the Lowndes County Board of Commissioners. All intere...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24
+[Two-Stage] Before final deduplication: 8 events
+[Two-Stage] After final deduplication: 8 events
+[Two-Stage] After expanding recurring events: 8 events
+[Two-Stage] Completed: Found 8 valid events
+
+[ATTEMPT 1] Total meetings found: 8
+
+[ATTEMPT 1] Meeting titles:
+  1. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-02-09T08:30:00
+     Recurring: None
+  2. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-02-10T17:30:00
+     Recurring: None
+  3. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-02-23T08:30:00
+     Recurring: unknown
+  4. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-02-24T17:30:00
+     Recurring: None
+  5. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-03-09T08:30:00
+     Recurring: None
+  6. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-03-10T17:30:00
+     Recurring: None
+  7. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-03-23T08:30:00
+     Recurring: unknown
+  8. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-03-24T17:30:00
+     Recurring: None
+
+================================================================================
+ATTEMPT 2
+================================================================================
+[Two-Stage] Starting two-stage scraping for https://lowndescounty.com/calendar.aspx?CID=23&Keywords=&startDate=&enddate=&
+[Two-Stage] Stage 1: Extracting events from listing page (using AI)
+[Two-Stage] Detected date range calendar, fetching 02/08/2026 to 08/08/2026
+  HTML extraction: Main container too small (64 chars), using full body
+  AI extracted 8 items from https://lowndescounty.com/calendar.aspx?CID=23&startDate=02%2F08%2F2026&enddate=08%2F08%2F2026
+  Sample item: {'title': 'Lowndes County Board of Commissioners Work Session Meeting', 'url': '/Calendar.aspx?EID=765&month=2&year=2026&day=8&calType=0', 'date': '2026-02-09', 'time': '08:30', 'recurring_pattern': ''}
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24
+[Two-Stage] Stage 1 completed: 8 events extracted total
+[Two-Stage] Stage 1: 8 events with external URLs, 0 events without
+[Two-Stage] Stage 2: Scraping 8 external event pages
+[Two-Stage] Stage 2 (1/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-09
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09
+[Two-Stage] Stage 2 (2/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-10
+[Two-Stage]   AI extracted description (118 chars): Regular session meeting of the Lowndes County Board of Commissioners. All intere...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10
+[Two-Stage] Stage 2 (3/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-23
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23
+[Two-Stage] Stage 2 (4/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-24
+[Two-Stage]   AI extracted description (118 chars): Regular session meeting of the Lowndes County Board of Commissioners. All intere...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24
+[Two-Stage] Stage 2 (5/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-09
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09
+[Two-Stage] Stage 2 (6/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-10
+[Two-Stage]   AI extracted description (111 chars): Lowndes County Board of Commissioners Regular Session Meeting. All interested pa...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10
+[Two-Stage] Stage 2 (7/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-23
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23
+[Two-Stage] Stage 2 (8/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-24
+[Two-Stage]   AI extracted description (118 chars): Regular session meeting of the Lowndes County Board of Commissioners. All intere...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24
+[Two-Stage] Before final deduplication: 8 events
+[Two-Stage] After final deduplication: 8 events
+[Two-Stage] After expanding recurring events: 8 events
+[Two-Stage] Completed: Found 8 valid events
+
+[ATTEMPT 2] Total meetings found: 8
+
+[ATTEMPT 2] Meeting titles:
+  1. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-02-09T08:30:00
+     Recurring: None
+  2. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-02-10T17:30:00
+     Recurring: None
+  3. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-02-23T08:30:00
+     Recurring: unknown
+  4. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-02-24T17:30:00
+     Recurring: None
+  5. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-03-09T08:30:00
+     Recurring: None
+  6. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-03-10T17:30:00
+     Recurring: None
+  7. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-03-23T08:30:00
+     Recurring: unknown
+  8. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-03-24T17:30:00
+     Recurring: None
+
+================================================================================
+ATTEMPT 3
+================================================================================
+[Two-Stage] Starting two-stage scraping for https://lowndescounty.com/calendar.aspx?CID=23&Keywords=&startDate=&enddate=&
+[Two-Stage] Stage 1: Extracting events from listing page (using AI)
+[Two-Stage] Detected date range calendar, fetching 02/08/2026 to 08/08/2026
+  HTML extraction: Main container too small (64 chars), using full body
+  AI extracted 8 items from https://lowndescounty.com/calendar.aspx?CID=23&startDate=02%2F08%2F2026&enddate=08%2F08%2F2026
+  Sample item: {'title': 'Lowndes County Board of Commissioners Work Session Meeting', 'url': '/Calendar.aspx?EID=765&month=2&year=2026&day=8&calType=0', 'date': '2026-02-09', 'time': '08:30', 'recurring_pattern': ''}
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10
+    Adding: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23
+    Adding: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24
+[Two-Stage] Stage 1 completed: 8 events extracted total
+[Two-Stage] Stage 1: 8 events with external URLs, 0 events without
+[Two-Stage] Stage 2: Scraping 8 external event pages
+[Two-Stage] Stage 2 (1/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-09
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09
+[Two-Stage] Stage 2 (2/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-10
+[Two-Stage]   AI extracted description (118 chars): Regular session meeting of the Lowndes County Board of Commissioners. All intere...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10
+[Two-Stage] Stage 2 (3/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-23
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23
+[Two-Stage] Stage 2 (4/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-02-24
+[Two-Stage]   AI extracted description (111 chars): Lowndes County Board of Commissioners Regular Session Meeting. All interested pa...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24
+[Two-Stage] Stage 2 (5/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-09
+[Two-Stage]   AI extracted description (108 chars): Lowndes County Board of Commissioners Work Session Meeting. All interested parti...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09
+[Two-Stage] Stage 2 (6/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-10
+[Two-Stage]   AI extracted description (61 chars): Lowndes County Board of Commissioners Regular Session Meeting...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10
+[Two-Stage] Stage 2 (7/8): Scraping Lowndes County Board of Commissioners Work Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-23
+[Two-Stage]   AI extracted description (58 chars): Lowndes County Board of Commissioners Work Session Meeting...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23
+[Two-Stage] Stage 2 (8/8): Scraping Lowndes County Board of Commissioners Regular Session Meeting
+[Two-Stage]   Hint: Listing page showed date 2026-03-24
+[Two-Stage]   AI extracted description (111 chars): Lowndes County Board of Commissioners Regular Session Meeting. All interested pa...
+[Two-Stage]   Added: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24
+[Two-Stage] Before final deduplication: 8 events
+[Two-Stage] After final deduplication: 8 events
+[Two-Stage] After expanding recurring events: 8 events
+[Two-Stage] Completed: Found 8 valid events
+
+[ATTEMPT 3] Total meetings found: 8
+
+[ATTEMPT 3] Meeting titles:
+  1. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-02-09T08:30:00
+     Recurring: None
+  2. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-02-10T17:30:00
+     Recurring: None
+  3. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-02-23T08:30:00
+     Recurring: None
+  4. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-02-24T17:30:00
+     Recurring: None
+  5. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-03-09T08:30:00
+     Recurring: None
+  6. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-03-10T17:30:00
+     Recurring: None
+  7. Lowndes County Board of Commissioners Work Session Meeting
+     Date: 2026-03-23T08:30:00
+     Recurring: unknown
+  8. Lowndes County Board of Commissioners Regular Session Meeting
+     Date: 2026-03-24T17:30:00
+     Recurring: unknown
+
+================================================================================
+ANALYSIS
+================================================================================
+Counts per attempt: [8, 8, 8]
+Min: 8, Max: 8, Avg: 8.0
+
+✅ CONSISTENT: Same count across all attempts
+
+
+Title frequency across all attempts:
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-10T17:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Regular Session Meeting on 2026-02-24T17:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-10T17:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Regular Session Meeting on 2026-03-24T17:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-09T08:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Work Session Meeting on 2026-02-23T08:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-09T08:30:00
+  ✅ Appears 3/3 times: Lowndes County Board of Commissioners Work Session Meeting on 2026-03-23T08:30:00

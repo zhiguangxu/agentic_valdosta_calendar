@@ -762,11 +762,115 @@ function App() {
 
       {/* Tab Content */}
       {activeTab === "events" && renderCalendar(events, "events")}
-      {activeTab === "classes" && renderCalendar(classes, "classes")}
+      {activeTab === "classes" && (
+        <>
+          {renderCalendar(classes, "classes")}
+          <div
+            style={{
+              margin: "20px",
+              padding: "15px",
+              backgroundColor: "#f8f9fa",
+              borderLeft: "4px solid #3498db",
+              borderRadius: "4px",
+              fontSize: "14px",
+              color: "#495057",
+            }}
+          >
+            <strong>Note:</strong> This calendar shows a subset of available classes
+            with confirmed dates. For a complete list of all classes and workshops,
+            please visit the{" "}
+            <a
+              href="https://turnercenter.org/classes"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#3498db",
+                textDecoration: "none",
+                fontWeight: "600",
+              }}
+            >
+              Turner Center for the Arts website
+            </a>
+            .
+          </div>
+        </>
+      )}
       {activeTab === "meetings" && renderCalendar(meetings, "meetings")}
 
-      {/* Attractions Tab Content */}
+      {/* Visit Valdosta Tab Content */}
       {activeTab === "attractions" && (
+        <div
+          style={{
+            maxWidth: "900px",
+            margin: "0 auto",
+            padding: "40px 20px",
+          }}
+        >
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px 30px",
+              backgroundColor: "#fff8e1",
+              borderRadius: "12px",
+              border: "2px solid #ffd54f",
+            }}
+          >
+            <h2
+              style={{
+                color: "#2c3e50",
+                margin: "0 0 15px 0",
+                fontSize: "28px",
+                fontWeight: "600",
+              }}
+            >
+              🏨 Plan Your Stay in Valdosta
+            </h2>
+            <p
+              style={{
+                color: "#495057",
+                fontSize: "18px",
+                lineHeight: "1.7",
+                margin: "0 0 25px 0",
+              }}
+            >
+              Your ultimate destination with entertainment for everyone and adventure around every corner!
+              Whether you're visiting for a weekend getaway or an extended stay,
+              Valdosta offers comfortable accommodations, warm Southern hospitality,
+              and endless opportunities to create lasting memories.
+            </p>
+            <a
+              href="https://visitvaldosta.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                padding: "14px 36px",
+                fontSize: "18px",
+                fontWeight: "600",
+                backgroundColor: "#ffd54f",
+                color: "#2c3e50",
+                textDecoration: "none",
+                borderRadius: "8px",
+                transition: "all 0.3s ease",
+                border: "2px solid #ffc107",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#ffc107";
+                e.target.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "#ffd54f";
+                e.target.style.transform = "translateY(0)";
+              }}
+            >
+              Visit Valdosta Website →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Remove all the old attractions content below */}
+      {activeTab === "attractions-old" && (
         <div>
           <h2
             style={{
@@ -776,7 +880,7 @@ function App() {
               marginBottom: "20px",
             }}
           >
-            🏛️ Places to Visit in Valdosta
+            🏛️ Places to Visit in Valdosta (OLD)
           </h2>
 
           {/* Refresh Button */}
@@ -1146,25 +1250,7 @@ function App() {
             </>
           )}
 
-          {/* No Content Message */}
-          {!loading.attractions && attractions.length === 0 && (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                backgroundColor: "#f8f9fa",
-                borderRadius: "8px",
-                border: "1px solid #e9ecef",
-              }}
-            >
-              <h3 style={{ color: "#6c757d", margin: "0 0 10px 0" }}>
-                🏛️ No Attractions Found
-              </h3>
-              <p style={{ color: "#6c757d", margin: 0 }}>
-                No attractions are currently available. Click "Refresh Data" to load them.
-              </p>
-            </div>
-          )}
+          {/* Old attractions code kept for reference but never shown */}
         </div>
       )}
 

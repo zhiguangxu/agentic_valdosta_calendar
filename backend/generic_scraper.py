@@ -505,49 +505,123 @@ def _generate_stage2_classes_prompt(class_title: str, class_content: str, listin
     return f"""
 Extract ACCURATE schedule and class information from this class/workshop details page.
 
-Class Title: {class_title}{date_hint}
+Category: {class_title}{date_hint}
 Today's Date: {today.strftime("%Y-%m-%d")}
 Extract dates through: {six_months_later.strftime("%Y-%m-%d")} (next 6 months)
 
+IMPORTANT PAGE STRUCTURE:
+- This page may contain a CATEGORY heading (e.g., "DRAWING | MIXED MEDIA | 2D" or "ACTIVE ARTS")
+- Under that category, there are multiple INDIVIDUAL CLASSES (e.g., "Youth Drawing Class", "Craft Academy")
+- Extract ALL individual classes from this page
+
 CLASSES-SPECIFIC INSTRUCTIONS:
 
-1. RECURRING SCHEDULE (VERY IMPORTANT FOR CLASSES):
-   - Classes often meet weekly or multiple times
-   - Look for patterns like: "Every Wednesday", "Tuesdays and Thursdays", "Weekly on Monday"
-   - If recurring:
-     * Return ONLY ONE date (the next class or the date shown on listing page)
-     * Describe the pattern in recurring_pattern field
-     * DO NOT generate multiple dates - the system will expand recurring classes automatically
+1. CATEGORY IDENTIFICATION:
+   - Find the main category heading (usually first H4 with "|" separators or all caps)
+   - Examples: "DRAWING | MIXED MEDIA | 2D", "ACTIVE ARTS", "CERAMICS & POTTERY"
 
-2. CLASS SERIES / MULTI-WEEK:
-   - Look for "6-week class", "8-session workshop"
-   - Return the start date and describe the series in recurring_pattern
+2. INDIVIDUAL CLASS EXTRACTION (CRITICAL - EXTRACT ALL CLASSES):
+   - Look for ALL H4 headings on the page
+   - The FIRST H4 is usually the category name
+   - ALL SUBSEQUENT H4 headings are individual class names - extract EVERY SINGLE ONE
+   - For EACH class (each H4 after the first), extract: title, schedule, description, instructor
+   - DO NOT skip classes for ANY reason - EXTRACT EVERY SINGLE CLASS:
+     * If dates are clear, extract them
+     * If dates are unclear, confusing, or complex, return empty dates array []
+     * Extract classes with "OR" patterns - figure out the dates or return []
+     * Extract classes with "&" patterns - figure out the dates or return []
+     * Extract classes with "TBD" - return dates: []
+     * IT IS BETTER TO EXTRACT A CLASS WITH NO DATES THAN TO SKIP IT ENTIRELY
+     * If you see 5 H4 headings after the category, you MUST return 5 classes (even if some have dates: [])
 
-3. TIME EXTRACTION:
+3. DATE EXTRACTION (CRITICAL - READ THIS CAREFULLY):
+
+   ⚠️  ABSOLUTE RULE: EXTRACT ONLY THE IMMEDIATE NEXT OCCURRENCE(S) ⚠️
+
+   DO NOT extract dates for multiple months. DO NOT generate recurring dates.
+   Extract ONLY what is happening in the immediate next occurrence.
+
+   - EXPLICIT date lists (e.g., "Class dates: February 2, 9, 16"):
+     * Extract ALL those specific dates ONLY
+
+   - ORDINAL PATTERNS (e.g., "1st Friday each month", "2nd Saturday each month"):
+     * Extract ONLY ONE DATE - the very next occurrence
+     * "1st Friday each month" → ONE date: next 1st Friday only (e.g., ["2026-02-07"])
+     * "2nd Saturday each month" → ONE date: next 2nd Saturday only (e.g., ["2026-02-14"])
+     * DO NOT generate dates for March, April, May, etc. - ONLY the immediate next one!
+
+   - MULTIPLE ORDINALS (e.g., "3rd & 4th Saturday each month"):
+     * Extract TWO dates: next 3rd Saturday AND next 4th Saturday (e.g., ["2026-02-21", "2026-02-28"])
+     * DO NOT generate dates for future months!
+
+   - MULTIPLE DAY OPTIONS (e.g., "Mondays OR Tuesdays OR Wednesdays"):
+     * Extract FIRST occurrence of EACH day in NEXT month (3 dates total)
+     * Example: ["2026-03-02", "2026-03-03", "2026-03-04"]
+
+   - ALWAYS leave recurring_pattern empty ("")
+   - NEVER generate dates beyond the immediate next occurrence(s)
+
+4. TIME EXTRACTION:
    - Extract exact class time (e.g., "2:00 PM - 4:00 PM" → "14:00")
-   - Default to "10:00" for morning, "14:00" for afternoon
+   - If multiple time options (e.g., "10am OR 5:30pm"), use the FIRST option
+   - Default to "14:00" if not specified
 
-4. DETAILED DESCRIPTION FOR CLASSES:
-   - MUST include: instructor name, skill level, what students will learn
-   - Include: materials needed, age group if specified
-   - Example: "Learn watercolor techniques with Jane Smith. Beginner-friendly. Materials provided."
-
-5. INSTRUCTOR:
-   - Extract instructor name if mentioned
+5. DETAILED DESCRIPTION:
+   - Include: instructor name, skill level, what students will learn, age group
+   - Example: "Learn drawing techniques with Christine Cabral. Ages 9-15."
 
 Return ONLY valid JSON:
 {{
-  "status": "active|cancelled|full|unknown",
-  "dates": ["2026-02-10"],
-  "recurring_pattern": "Every Monday 2-4pm",
-  "time": "14:00",
-  "description": "Class description with instructor, skill level, what you'll learn",
-  "instructor": "Instructor Name",
-  "corrected_title": "Only if page has BETTER title"
+  "category": "CATEGORY NAME (with | separators if present)",
+  "classes": [
+    {{
+      "title": "Class with specific dates (e.g., Feb 2, 9, 16)",
+      "status": "active",
+      "dates": ["2026-02-02", "2026-02-09", "2026-02-16"],
+      "recurring_pattern": "",
+      "time": "14:00",
+      "description": "Class description with instructor, age group, what you'll learn",
+      "instructor": "Instructor Name"
+    }},
+    {{
+      "title": "Class on 2nd Saturday each month",
+      "status": "active",
+      "dates": ["2026-02-14"],
+      "recurring_pattern": "",
+      "time": "10:00",
+      "description": "Offered 2nd Saturday each month.",
+      "instructor": ""
+    }},
+    {{
+      "title": "Class on 3rd & 4th Saturday",
+      "status": "active",
+      "dates": ["2026-02-21", "2026-02-28"],
+      "recurring_pattern": "",
+      "time": "12:00",
+      "description": "Offered 3rd & 4th Saturday each month.",
+      "instructor": ""
+    }},
+    {{
+      "title": "Class with day options (Mon OR Tue OR Wed)",
+      "status": "active",
+      "dates": ["2026-03-02", "2026-03-03", "2026-03-04"],
+      "recurring_pattern": "",
+      "time": "10:00",
+      "description": "4-week series. Choose Monday, Tuesday, or Wednesday option.",
+      "instructor": ""
+    }}
+  ]
 }}
 
-CRITICAL: If the class is recurring (weekly, monthly, etc.), return ONLY ONE date in the "dates" array.
-The system will automatically generate all future occurrences based on the recurring_pattern.
+⚠️  CRITICAL - DO NOT IGNORE ⚠️ :
+- ALWAYS leave recurring_pattern empty ("")
+- DO NOT generate dates for multiple months
+- "1st Friday each month" → ONLY ["2026-02-07"] - NOT Feb, Mar, Apr, May, Jun, Jul
+- "2nd Saturday each month" → ONLY ["2026-02-14"] - NOT Feb, Mar, Apr, May, Jun, Jul
+- "3rd & 4th Saturday each month" → ONLY ["2026-02-21", "2026-02-28"] - NOT future months
+- Extract ALL individual classes from the page
+
+IF YOU GENERATE DATES FOR MULTIPLE MONTHS, YOU ARE DOING IT WRONG!
 
 HTML content:
 {class_content}
@@ -1049,7 +1123,7 @@ HTML:
                 else:  # events (default)
                     stage2_prompt = _generate_stage2_events_prompt(event_title, event_content, listing_date, today, six_months_later)
 
-                # Use GPT-4o-mini for Stage 2 (GPT-4o for Stage 1 is more critical)
+                # Use gpt-4o-mini for all Stage 2 processing
                 stage2_response = openai_client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[{"role": "user", "content": stage2_prompt}],
@@ -1071,6 +1145,79 @@ HTML:
                 try:
                     event_data = json.loads(stage2_raw)
 
+                    # Special handling for CLASSES: multiple classes per page
+                    if source_type == 'classes' and 'classes' in event_data:
+                        category_name = event_data.get('category', event_title)
+                        classes_list = event_data.get('classes', [])
+
+                        print(f"[Two-Stage]   Category: {category_name}")
+                        print(f"[Two-Stage]   Found {len(classes_list)} individual classes")
+
+                        # DEBUG: Show all class titles returned by AI
+                        if classes_list:
+                            print(f"[Two-Stage]   AI returned classes: {[c.get('title') for c in classes_list]}")
+
+                        for class_item in classes_list:
+                            class_title = class_item.get('title', 'Untitled')
+                            # Build hierarchical name: "CATEGORY: Class Name"
+                            full_title = f"{category_name}: {class_title}"
+
+                            status = class_item.get('status', 'unknown')
+                            dates = class_item.get('dates', [])
+                            time_str = class_item.get('time', '14:00')
+                            raw_description = class_item.get('description', '')
+                            description = _truncate_description(raw_description)
+                            recurring_pattern = class_item.get('recurring_pattern', '')
+
+                            # Skip cancelled classes
+                            if status in ['cancelled', 'postponed']:
+                                print(f"[Two-Stage]   Skipping {full_title} - Status: {status}")
+                                continue
+
+                            # Use fallback date if no dates found
+                            if not dates:
+                                fallback_date = event.get('date', '')
+                                if fallback_date:
+                                    dates = [fallback_date]
+                                else:
+                                    print(f"[Two-Stage]   Skipping {full_title} - No dates found")
+                                    continue
+
+                            # Validate time format
+                            if not re.match(r'^\d{2}:\d{2}$', time_str):
+                                time_str = '14:00'
+
+                            # Create calendar entry for each date
+                            for date_str in dates:
+                                try:
+                                    event_date = datetime.fromisoformat(date_str).date()
+                                    is_recurring = _is_supported_recurring_pattern(recurring_pattern)
+
+                                    # Skip past dates UNLESS it's a supported recurring class
+                                    if event_date >= datetime.now().date() or is_recurring:
+                                        result_item = {
+                                            "title": full_title,
+                                            "url": event_url,
+                                            "description": _truncate_description(description),
+                                            "start": f"{date_str}T{time_str}:00",
+                                            "allDay": False,
+                                            "recurring_pattern": recurring_pattern
+                                        }
+                                        all_results.append(result_item)
+                                        if is_recurring:
+                                            print(f"[Two-Stage]   Added recurring class: {full_title} on {date_str} (will expand)")
+                                        else:
+                                            print(f"[Two-Stage]   Added class: {full_title} on {date_str}")
+                                    else:
+                                        print(f"[Two-Stage]   Skipping past date: {full_title} on {date_str}")
+                                except Exception as e:
+                                    print(f"[Two-Stage]   Invalid date format: {date_str} - {e}")
+                                    continue
+
+                        # Continue to next event (skip the old-format processing below)
+                        continue
+
+                    # Standard processing for events/meetings (old format)
                     status = event_data.get('status', 'unknown')
                     dates = event_data.get('dates', [])
                     time_str = event_data.get('time', '19:00')
@@ -1264,8 +1411,8 @@ HTML:
 
         print(f"[Two-Stage] After final deduplication: {len(deduplicated_results)} events")
 
-        # Expand recurring events
-        expanded_results = _expand_recurring_events(deduplicated_results)
+        # Expand recurring events (but NOT for classes)
+        expanded_results = _expand_recurring_events(deduplicated_results, source_type)
         print(f"[Two-Stage] After expanding recurring events: {len(expanded_results)} events")
 
         print(f"[Two-Stage] Completed: Found {len(expanded_results)} valid events")
@@ -1299,10 +1446,19 @@ def _is_supported_recurring_pattern(recurring_pattern: str) -> bool:
     return any(p in pattern_lower for p in supported)
 
 
-def _expand_recurring_events(results: List[Dict]) -> List[Dict]:
-    """Detect and expand recurring events into multiple occurrences"""
+def _expand_recurring_events(results: List[Dict], source_type: str = "events") -> List[Dict]:
+    """Detect and expand recurring events into multiple occurrences
+
+    IMPORTANT: Classes are NEVER expanded - they should provide specific dates only.
+    Only events and meetings use recurring pattern expansion.
+    """
     from dateutil.relativedelta import relativedelta
     from calendar import monthrange
+
+    # SAFEGUARD: Never expand classes, even if AI accidentally sets recurring_pattern
+    if source_type == 'classes':
+        print(f"  [RECURRING] Skipping expansion for classes (classes should have specific dates only)")
+        return results
 
     expanded = []
     for event in results:

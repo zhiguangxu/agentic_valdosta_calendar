@@ -62,10 +62,19 @@
       "scraping_method": "ai_twostage",
       "id": "7",
       "added_date": "2026-02-07T22:59:37.388684Z"
+    },
+    {
+      "name": "Visit Valdosta",
+      "url": "https://visitvaldosta.org/",
+      "type": "attractions",
+      "enabled": true,
+      "scraping_method": "ai_twostage",
+      "id": "8",
+      "added_date": "2026-02-08T02:12:56.377326Z"
     }
   ],
   "settings": {
     "passcode_hash": "0d4a67cd480b8bc2b2805f48bbd44be60efc64b488788a774d0428f2be0973ce",
-    "last_updated": "2026-02-07T23:33:14.906393Z"
+    "last_updated": "2026-02-08T02:12:56.377332Z"
   }
 }

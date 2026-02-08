@@ -54,6 +54,7 @@ function App() {
     }));
 
     // Clear previous data for this category
+    console.log(`[${new Date().toISOString()}] 🧹 Clearing ${category} state before fetch`);
     if (category === "events") setEvents([]);
     if (category === "classes") setClasses([]);
     if (category === "meetings") setMeetings([]);
@@ -90,19 +91,23 @@ function App() {
             },
           }));
         } else if (data.type === category && (data.type === "events" || data.type === "classes" || data.type === "meetings")) {
-          // Add calendar items ONLY if data.type matches the requested category
-          // This prevents cross-contamination between categories
+          // Replace calendar items (backend sends ALL deduplicated items at once)
+          // This prevents accumulation from multiple SSE messages or stale state
           console.log(
-            `[${timestamp}] 📅 Adding ${data.events?.length || 0} ${category} from "${data.source}" (${data.current}/${data.total})`
+            `[${timestamp}] 📅 Received ${data.events?.length || 0} ${category} from "${data.source}" (${data.current}/${data.total})`
           );
           const items = data.events || [];
 
+          // REPLACE state instead of appending to prevent duplicates
           if (category === "events") {
-            setEvents((prev) => [...prev, ...items]);
+            setEvents(items);
+            console.log(`[${timestamp}] ✅ Set events state: ${items.length} items`);
           } else if (category === "classes") {
-            setClasses((prev) => [...prev, ...items]);
+            setClasses(items);
+            console.log(`[${timestamp}] ✅ Set classes state: ${items.length} items`);
           } else if (category === "meetings") {
-            setMeetings((prev) => [...prev, ...items]);
+            setMeetings(items);
+            console.log(`[${timestamp}] ✅ Set meetings state: ${items.length} items`);
           }
         } else if ((data.type === "events" || data.type === "classes" || data.type === "meetings") && data.type !== category) {
           // Category mismatch - log warning but don't add data

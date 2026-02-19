@@ -22,10 +22,12 @@ try:
     # Try relative imports first (when run as module: uvicorn backend.main:app)
     from . import source_manager
     from . import generic_scraper
+    from . import cache_manager
 except ImportError:
     # Fall back to direct imports (when run from backend directory)
     import source_manager
     import generic_scraper
+    import cache_manager
 
 # Try to load environment variables from .env file
 try:
@@ -330,145 +332,114 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
                 else:
                     print(f"    → Keeping existing (longer or same title)")
 
-    # Second pass: Deduplicate events on same DATE with similar titles/descriptions
-    # More flexible than exact time matching - catches events with slightly different times
-    # (e.g., 7:00 PM vs 7:30 PM for the same show from different sources)
-    date_dedup = {}
-    for event in best_events.values():
-        event_datetime = event.get('start', '')  # Full datetime: YYYY-MM-DDTHH:MM:SS
+    # Second pass: Conservative time-window deduplication
+    # Only catches events within 1 hour with strong similarity evidence
+    from datetime import datetime, timedelta
 
-        # Extract just the date (YYYY-MM-DD) for flexible matching
-        event_date = event_datetime[:10] if len(event_datetime) >= 10 else event_datetime
-
-        # Group events by date for comparison
-        if event_date not in date_dedup:
-            date_dedup[event_date] = [event]
-        else:
-            date_dedup[event_date].append(event)
-
-    # Now check each date's events for duplicates
     final_events = []
-    for date, events_on_date in date_dedup.items():
-        if len(events_on_date) == 1:
-            # Only one event on this date, keep it
-            final_events.append(events_on_date[0])
-        else:
-            # Multiple events on same date - check for duplicates
-            kept_events = []
-            skip_indices = set()
+    skip_indices = set()
+    events_list = list(best_events.values())
 
-            for i, event in enumerate(events_on_date):
-                if i in skip_indices:
-                    continue
+    for i, event in enumerate(events_list):
+        if i in skip_indices:
+            continue
 
-                # Check against all other events on the same date
-                is_duplicate = False
-                for j, other_event in enumerate(events_on_date):
-                    if i >= j or j in skip_indices:
-                        continue
+        event_datetime_str = event.get('start', '')
+        if not event_datetime_str or len(event_datetime_str) < 16:
+            final_events.append(event)
+            continue
 
-                    # Check if they're likely the same event
-                    existing_title = other_event.get('title', '').lower()
-                    current_title = event.get('title', '').lower()
-                    existing_desc = other_event.get('description', '').lower().strip()
-                    current_desc = event.get('description', '').lower().strip()
+        try:
+            event_dt = datetime.fromisoformat(event_datetime_str[:16])
+        except:
+            final_events.append(event)
+            continue
 
-                    # Check if one title is generic (like "Presenter Series")
-                    # or if titles share significant words (suggesting same event)
-                    is_generic_existing = any(phrase in existing_title for phrase in [
-                        'presenter series', 'show of the season', 'concert series'
-                    ])
-                    is_generic_current = any(phrase in current_title for phrase in [
-                        'presenter series', 'show of the season', 'concert series'
-                    ])
+        # Check only nearby events (within ±90 minutes on same date)
+        is_duplicate = False
+        for j in range(i + 1, len(events_list)):
+            if j in skip_indices:
+                continue
 
-                    # Calculate word overlap for titles (simple similarity check)
-                    existing_words = set(existing_title.split())
-                    current_words = set(current_title.split())
-                    # Remove common stop words
-                    stop_words = {'the', 'a', 'an', 'at', 'in', 'on', 'of', 'and', 'or', 'for', 'to', 'with'}
-                    existing_words = existing_words - stop_words
-                    current_words = current_words - stop_words
+            other_event = events_list[j]
+            other_datetime_str = other_event.get('start', '')
 
-                    if existing_words and current_words:
-                        overlap = len(existing_words & current_words)
-                        title_similarity = overlap / min(len(existing_words), len(current_words))
-                    else:
-                        title_similarity = 0
+            if not other_datetime_str or len(other_datetime_str) < 16:
+                continue
 
-                    # ALSO check description similarity - parse descriptions to find common content
-                    desc_similarity = 0
-                    desc_suggests_same = False
+            try:
+                other_dt = datetime.fromisoformat(other_datetime_str[:16])
+            except:
+                continue
 
-                    if existing_desc and current_desc:
-                        # Check if one description mentions the other event's title
-                        if existing_title in current_desc or current_title in existing_desc:
-                            desc_suggests_same = True
+            # Check if within 90-minute window
+            time_diff = abs((event_dt - other_dt).total_seconds() / 60)
+            if time_diff > 90:
+                continue
 
-                        # Check if descriptions share significant content
-                        existing_desc_words = set(existing_desc.split()) - stop_words
-                        current_desc_words = set(current_desc.split()) - stop_words
+            # Within time window - check similarity
+            event_title = event.get('title', '').lower()
+            other_title = other_event.get('title', '').lower()
+            event_desc = event.get('description', '').lower().strip()
+            other_desc = other_event.get('description', '').lower().strip()
 
-                        if existing_desc_words and current_desc_words:
-                            desc_overlap = len(existing_desc_words & current_desc_words)
-                            desc_similarity = desc_overlap / min(len(existing_desc_words), len(current_desc_words))
+            # Generic title check (very specific patterns)
+            is_generic = any(phrase in event_title or phrase in other_title for phrase in [
+                'presenter series', 'show of the season'
+            ])
 
-                            # If descriptions are very similar (>50% overlap), likely same event
-                            if desc_similarity > 0.5:
-                                desc_suggests_same = True
+            # Calculate title similarity (stricter threshold)
+            stop_words = {'the', 'a', 'an', 'at', 'in', 'on', 'of', 'and', 'or', 'for', 'to', 'with', 'by'}
+            event_words = set(event_title.split()) - stop_words
+            other_words = set(other_title.split()) - stop_words
 
-                    # Only deduplicate if evidence suggests same event
-                    should_deduplicate = (
-                        is_generic_existing or is_generic_current or  # Generic title like "Presenter Series"
-                        title_similarity > 0.3 or                      # Similar titles
-                        desc_suggests_same or                          # Descriptions suggest same event
-                        desc_similarity > 0.5                          # Very similar descriptions
-                    )
+            if event_words and other_words:
+                overlap = len(event_words & other_words)
+                title_similarity = overlap / min(len(event_words), len(other_words))
+            else:
+                title_similarity = 0
 
-                    if should_deduplicate:
-                        # These are duplicates - mark current as duplicate
-                        is_duplicate = True
+            # Calculate description similarity (stricter threshold)
+            desc_similarity = 0
+            if event_desc and other_desc:
+                event_desc_words = set(event_desc.split()) - stop_words
+                other_desc_words = set(other_desc.split()) - stop_words
 
-                        print(f"  [DEDUP-DATE] Same date found - likely duplicate:")
-                        print(f"    Event 1: {existing_title[:60]} at {other_event.get('start', '')[:16]}")
-                        print(f"    Event 2: {current_title[:60]} at {event.get('start', '')[:16]}")
-                        print(f"    Title similarity: {title_similarity:.2f}, Generic: {is_generic_existing or is_generic_current}")
-                        print(f"    Description similarity: {desc_similarity:.2f}, Desc suggests same: {desc_suggests_same}")
+                if event_desc_words and other_desc_words:
+                    desc_overlap = len(event_desc_words & other_desc_words)
+                    desc_similarity = desc_overlap / min(len(event_desc_words), len(other_desc_words))
 
-                        # Decide which one to keep
-                        existing_desc_str = other_event.get('description', '').strip()
-                        current_desc_str = event.get('description', '').strip()
+            # CONSERVATIVE: Only deduplicate with strong evidence
+            should_deduplicate = (
+                (is_generic and time_diff <= 60) or  # Generic title within 1 hour
+                (title_similarity >= 0.6 and time_diff <= 60) or  # High title similarity within 1 hour
+                (desc_similarity >= 0.7 and time_diff <= 60)  # Very high desc similarity within 1 hour
+            )
 
-                        # Prefer event with description, then longer description
-                        if current_desc_str and not existing_desc_str:
-                            print(f"    → Keeping Event 2 (has description)")
-                            skip_indices.add(j)  # Skip the other event
-                        elif not current_desc_str and existing_desc_str:
-                            print(f"    → Keeping Event 1 (has description)")
-                            skip_indices.add(i)  # Skip current event
-                            break  # Current event is duplicate, no need to check further
-                        elif current_desc_str and existing_desc_str:
-                            if len(current_desc_str) > len(existing_desc_str):
-                                print(f"    → Keeping Event 2 (longer description)")
-                                skip_indices.add(j)
-                            else:
-                                print(f"    → Keeping Event 1 (longer description)")
-                                skip_indices.add(i)
-                                break
-                        else:
-                            # Neither has description - prefer longer title
-                            if len(event.get('title', '')) > len(other_event.get('title', '')):
-                                print(f"    → Keeping Event 2 (longer title)")
-                                skip_indices.add(j)
-                            else:
-                                print(f"    → Keeping Event 1 (longer title)")
-                                skip_indices.add(i)
-                                break
+            if should_deduplicate:
+                is_duplicate = True
+                skip_indices.add(j)
 
-                if not is_duplicate:
-                    kept_events.append(event)
+                print(f"  [DEDUP-TIMEWINDOW] Duplicate found:")
+                print(f"    Event 1: {event_title[:60]} at {event_datetime_str[:16]}")
+                print(f"    Event 2: {other_title[:60]} at {other_datetime_str[:16]}")
+                print(f"    Time diff: {time_diff:.0f} min, Title sim: {title_similarity:.2f}, Desc sim: {desc_similarity:.2f}")
 
-            final_events.extend(kept_events)
+                # Keep event with better description
+                event_desc_str = event.get('description', '').strip()
+                other_desc_str = other_event.get('description', '').strip()
+
+                if len(other_desc_str) > len(event_desc_str):
+                    print(f"    → Keeping Event 2 (better description)")
+                    skip_indices.add(i)
+                    skip_indices.remove(j)
+                    is_duplicate = False  # Current is duplicate, other is kept
+                    break
+                else:
+                    print(f"    → Keeping Event 1 (better/same description)")
+
+        if not is_duplicate:
+            final_events.append(event)
 
     return final_events
 
@@ -718,6 +689,40 @@ async def generate_events_stream(category: str = "events"):
             print(f"# STARTING STREAM FOR CATEGORY: {category.upper()}")
             print(f"{'#'*80}\n")
 
+            # Check if caching is enabled for this category
+            cache_settings = source_manager.get_cache_settings()
+            cache_enabled = cache_settings.get(category, False)
+
+            print(f"Cache enabled for {category}: {cache_enabled}")
+
+            # Try to load from cache if enabled
+            if cache_enabled and cache_manager.is_cache_valid(category):
+                print(f"[CACHE] Loading {category} from cache")
+                cached_data = cache_manager.load_from_cache(category)
+
+                if cached_data:
+                    # Send cache data to frontend
+                    cache_age = cache_manager.get_cache_age_hours(category)
+                    print(f"[CACHE] Sending {len(cached_data)} items from cache (age: {cache_age:.1f}h)")
+
+                    yield f"data: {json.dumps({'type': 'init', 'total': 1, 'current': 0})}\n\n"
+                    yield f"data: {json.dumps({
+                        'type': 'progress',
+                        'message': f'Loading from cache (age: {cache_age:.1f}h)',
+                        'source': 'Cache',
+                        'current': 1,
+                        'total': 1
+                    })}\n\n"
+                    yield f"data: {json.dumps({
+                        'type': category,
+                        'events': cached_data,
+                        'source': 'Cache',
+                        'current': 1,
+                        'total': 1
+                    })}\n\n"
+                    yield f"data: {json.dumps({'type': 'complete'})}\n\n"
+                    return
+
             # Load sources for the requested category
             sources = source_manager.get_sources_by_type(category)
 
@@ -794,6 +799,10 @@ async def generate_events_stream(category: str = "events"):
 
                     # Sort by start date
                     unique_items.sort(key=lambda x: x["start"])
+
+                    # Save to cache if enabled
+                    if cache_enabled:
+                        cache_manager.save_to_cache(category, unique_items)
 
                     # Send deduplicated items with the correct type for the category
                     print(f"[{category.upper()}] Sending {len(unique_items)} items to frontend")
@@ -964,6 +973,43 @@ def update_passcode_endpoint(old_passcode: str, new_passcode: str):
         return {"message": "Passcode updated successfully"}
     except HTTPException as he:
         raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class CacheSettingRequest(BaseModel):
+    type: str  # "classes", "events", or "meetings"
+    enabled: bool
+
+
+@app.get("/api/cache-settings")
+def get_cache_settings_endpoint(passcode: str):
+    """Get cache settings for all types (requires passcode)"""
+    try:
+        if not source_manager.verify_passcode(passcode):
+            raise HTTPException(status_code=403, detail="Invalid passcode")
+
+        settings = source_manager.get_cache_settings()
+        return settings
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/cache-settings")
+def update_cache_settings_endpoint(request: CacheSettingRequest, passcode: str):
+    """Update cache setting for a specific type (requires passcode)"""
+    try:
+        if not source_manager.verify_passcode(passcode):
+            raise HTTPException(status_code=403, detail="Invalid passcode")
+
+        source_manager.update_cache_setting(request.type, request.enabled)
+        return {"message": f"Cache setting for {request.type} updated successfully"}
+    except HTTPException as he:
+        raise he
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

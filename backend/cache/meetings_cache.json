@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-02-19T13:01:37.252693Z",
+  "data": [
+    {
+      "title": "Valdosta City Council Meeting",
+      "url": "https://www.valdostacity.com/agenda-minute/valdosta-city-council-meeting-120",
+      "description": "",
+      "start": "2026-02-19T00:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Lowndes County Board of Commissioners Work Session Meeting",
+      "url": "https://lowndescounty.com/Calendar.aspx?EID=767&amp;month=2&amp;year=2026&amp;day=19&amp;calType=0",
+      "description": "Lowndes County Board of Commissioners Work Session Meeting. All interested parties are encouraged to attend.",
+      "start": "2026-02-23T08:30:00",
+      "allDay": false,
+      "recurring_pattern": "unknown"
+    },
+    {
+      "title": "Lowndes County Board of Commissioners Regular Session Meeting",
+      "url": "https://lowndescounty.com/Calendar.aspx?EID=768&amp;month=2&amp;year=2026&amp;day=19&amp;calType=0",
+      "description": "Lowndes County Board of Commissioners Regular Session Meeting. All interested parties are encouraged to attend.",
+      "start": "2026-02-24T17:30:00",
+      "allDay": false,
+      "recurring_pattern": "Monthly on 3rd Tuesday"
+    },
+    {
+      "title": "Lowndes County Board of Commissioners Work Session Meeting",
+      "url": "https://lowndescounty.com/Calendar.aspx?EID=769&amp;month=2&amp;year=2026&amp;day=19&amp;calType=0",
+      "description": "Lowndes County Board of Commissioners Work Session Meeting. All interested parties are encouraged to attend.",
+      "start": "2026-03-09T08:30:00",
+      "allDay": false,
+      "recurring_pattern": "None"
+    },
+    {
+      "title": "Lowndes County Board of Commissioners Regular Session Meeting",
+      "url": "https://lowndescounty.com/Calendar.aspx?EID=770&amp;month=2&amp;year=2026&amp;day=19&amp;calType=0",
+      "description": "Lowndes County Board of Commissioners Regular Session Meeting. All interested parties are encouraged to attend.",
+      "start": "2026-03-10T17:30:00",
+      "allDay": false,
+      "recurring_pattern": "Monthly on 3rd Tuesday"
+    },
+    {
+      "title": "Lowndes County Board of Commissioners Work Session Meeting",
+      "url": "https://lowndescounty.com/Calendar.aspx?EID=771&amp;month=2&amp;year=2026&amp;day=19&amp;calType=0",
+      "description": "Lowndes County Board of Commissioners Work Session Meeting. All interested parties are encouraged to attend.",
+      "start": "2026-03-23T08:30:00",
+      "allDay": false,
+      "recurring_pattern": "unknown"
+    },
+    {
+      "title": "Lowndes County Board of Commissioners Regular Session Meeting",
+      "url": "https://lowndescounty.com/Calendar.aspx?EID=772&amp;month=2&amp;year=2026&amp;day=19&amp;calType=0",
+      "description": "Regular session meeting of the Lowndes County Board of Commissioners. All interested parties are encouraged to attend.",
+      "start": "2026-03-24T17:30:00",
+      "allDay": false,
+      "recurring_pattern": "Monthly on 3rd Tuesday"
+    }
+  ],
+  "count": 7
+}

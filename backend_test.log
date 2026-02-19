@@ -1,0 +1,473 @@
+INFO:     Will watch for changes in these directories: ['/Users/zhiguangxu/Documents/workspace/AgenticAI/agents/agentic_valdosta_calendar']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [17128] using StatReload
+INFO:     Started server process [17130]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:58073 - "GET /generate_events_stream?category=events HTTP/1.1" 200 OK
+
+################################################################################
+# STARTING STREAM FOR CATEGORY: EVENTS
+################################################################################
+
+Loaded 5 sources for category 'events'
+
+================================================================================
+SCRAPING CATEGORY: EVENTS
+================================================================================
+[EVENTS] (1/5) Scraping: Visit Valdosta
+[EVENTS]   URL: https://visitvaldosta.org/events/
+[EVENTS]   Type: events
+  Using ai_twostage scraping for https://visitvaldosta.org/events/
+[Two-Stage] Starting two-stage scraping for https://visitvaldosta.org/events/
+[Two-Stage] Stage 1: Extracting events from listing page (using BeautifulSoup)
+[Two-Stage] Found 11 event containers
+[Two-Stage]   Extracted: The Doo Wop Project on 2026-02-26 at 19:30
+[Two-Stage]   Extracted: South Georgia Film Festival on 2026-03-06 at 19:00
+[Two-Stage]   Extracted: South Georgia Film Festival on 2026-03-07 at 19:00
+[Two-Stage]   Extracted: South Georgia Film Festival on 2026-03-08 at 19:00
+[Two-Stage]   Extracted: The Broadway Boys on 2026-03-19 at 19:30
+[Two-Stage]   Extracted: 2026 Bluesberry Festival on 2026-04-10 at 19:00
+[Two-Stage]   Extracted: 2026 Bluesberry Festival on 2026-04-11 at 19:00
+[Two-Stage]   Extracted: Unity Park Spring Fest on 2026-04-25 at 19:00
+[Two-Stage]   Extracted: Valdosta Comic Con on 2026-07-24 at 19:00
+[Two-Stage]   Extracted: Valdosta Comic Con on 2026-07-25 at 19:00
+[Two-Stage]   Extracted: Valdosta Comic Con on 2026-07-26 at 19:00
+[Two-Stage] Stage 1: Successfully extracted 11 events using structural parsing
+[Two-Stage] Stage 1 completed: 11 events extracted total
+[Two-Stage] Stage 1: 11 events with external URLs, 0 events without
+[Two-Stage] Stage 2: Scraping 11 external event pages
+[Two-Stage] Stage 2 (1/11): Scraping The Doo Wop Project
+[Two-Stage]   Hint: Listing page showed date 2026-02-26
+[Two-Stage]   AI extracted description (298 chars): The Doo Wop Project is a vibrant musical experience that celebrates the classic ...
+[Two-Stage]   Added: The Doo Wop Project on 2026-02-26
+[Two-Stage] Stage 2 (2/11): Scraping South Georgia Film Festival
+[Two-Stage]   Hint: Listing page showed date 2026-03-06
+[Two-Stage]   AI extracted description (390 chars): The South Georgia Film Festival is a vibrant celebration of independent cinema, ...
+[Two-Stage]   Added: South Georgia Film Festival on 2026-03-06
+[Two-Stage] Stage 2 (3/11): Scraping South Georgia Film Festival
+[Two-Stage]   Hint: Listing page showed date 2026-03-07
+[Two-Stage]   AI extracted description (276 chars): The South Georgia Film Festival is an exciting event showcasing independent film...
+[Two-Stage]   Added: South Georgia Film Festival on 2026-03-07
+[Two-Stage] Stage 2 (4/11): Scraping South Georgia Film Festival
+[Two-Stage]   Hint: Listing page showed date 2026-03-08
+[Two-Stage]   AI extracted description (329 chars): The South Georgia Film Festival is an exciting event showcasing independent film...
+[Two-Stage]   Added: South Georgia Film Festival on 2026-03-08
+[Two-Stage] Stage 2 (5/11): Scraping The Broadway Boys
+[Two-Stage]   Hint: Listing page showed date 2026-03-19
+[Two-Stage]   AI extracted description (349 chars): The Broadway Boys is an electrifying performance that showcases the best of Broa...
+[Two-Stage]   Added: The Broadway Boys on 2026-03-19
+[Two-Stage] Stage 2 (6/11): Scraping 2026 Bluesberry Festival
+[Two-Stage]   Hint: Listing page showed date 2026-04-10
+[Two-Stage]   HTTP error for 2026 Bluesberry Festival: 400
+[Two-Stage]   Fallback: Added 2026 Bluesberry Festival on 2026-04-10 (from listing page)
+[Two-Stage] Stage 2 (7/11): Scraping 2026 Bluesberry Festival
+[Two-Stage]   Hint: Listing page showed date 2026-04-11
+[Two-Stage]   HTTP error for 2026 Bluesberry Festival: 400
+[Two-Stage]   Fallback: Added 2026 Bluesberry Festival on 2026-04-11 (from listing page)
+[Two-Stage] Stage 2 (8/11): Scraping Unity Park Spring Fest
+[Two-Stage]   Hint: Listing page showed date 2026-04-25
+[Two-Stage]   HTTP error for Unity Park Spring Fest: 400
+[Two-Stage]   Fallback: Added Unity Park Spring Fest on 2026-04-25 (from listing page)
+[Two-Stage] Stage 2 (9/11): Scraping Valdosta Comic Con
+[Two-Stage]   Hint: Listing page showed date 2026-07-24
+[Two-Stage]   AI extracted description (246 chars): Valdosta Comic Con is a three-day event celebrating comics, games, and anime at ...
+[Two-Stage]   Added: Valdosta Comic Con on 2026-07-24
+[Two-Stage] Stage 2 (10/11): Scraping Valdosta Comic Con
+[Two-Stage]   Hint: Listing page showed date 2026-07-25
+[Two-Stage]   AI extracted description (339 chars): Valdosta Comic Con is a three-day event celebrating comics, games, and anime at ...
+[Two-Stage]   Added: Valdosta Comic Con on 2026-07-25
+[Two-Stage] Stage 2 (11/11): Scraping Valdosta Comic Con
+[Two-Stage]   Hint: Listing page showed date 2026-07-26
+[Two-Stage]   AI extracted description (299 chars): Valdosta Comic Con is a three-day event at Valdosta State University celebrating...
+[Two-Stage]   Added: Valdosta Comic Con on 2026-07-24
+[Two-Stage] Before final deduplication: 11 events
+[Two-Stage] After final deduplication: 10 events
+[Two-Stage] After expanding recurring events: 10 events
+[Two-Stage] Completed: Found 10 valid events
+[EVENTS]   ✅ Found 10 items
+[EVENTS] (2/5) Scraping: Valdosta City
+[EVENTS]   URL: https://www.valdostacity.com/calendar
+[EVENTS]   Type: events
+  Using ai_twostage scraping for https://www.valdostacity.com/calendar
+[Two-Stage] Starting two-stage scraping for https://www.valdostacity.com/calendar
+[Two-Stage] Stage 1: Extracting events from listing page (using AI)
+[Two-Stage] Detected calendar site, will process 7 months
+  AI extracted 6 items from https://www.valdostacity.com/calendar
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+  AI extracted 6 items from https://www.valdostacity.com/calendar?month=2026-03
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+  AI extracted 6 items from https://www.valdostacity.com/calendar?month=2026-04
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+  AI extracted 6 items from https://www.valdostacity.com/calendar?month=2026-05
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+  AI extracted 6 items from https://www.valdostacity.com/calendar?month=2026-06
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+  AI extracted 6 items from https://www.valdostacity.com/calendar?month=2026-07
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+  AI extracted 6 items from https://www.valdostacity.com/calendar?month=2026-08
+  Sample item: {'title': 'First Friday', 'url': '/event/first-friday', 'date': '2026-02-06', 'time': '', 'recurring_pattern': 'first friday of each month'}
+    Adding: First Friday on 2026-02-06
+      Recurring: first friday of each month
+    Adding: 2nd Annual Black History Month Parade on 2026-02-07
+    Adding: 2026 Bird Supper on 2026-02-11
+    Adding: Georgia Arbor Day Celebration on 2026-02-20
+    Adding: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+    Adding: Coffee with the Chiefs on 2026-02-25
+[Two-Stage] Stage 1 completed: 42 events extracted total
+[Two-Stage] Stage 1: 6 events with external URLs, 0 events without
+[Two-Stage] Stage 2: Scraping 6 external event pages
+[Two-Stage] Stage 2 (1/6): Scraping First Friday
+[Two-Stage]   Hint: Listing page showed date 2026-02-06
+[Two-Stage]   AI extracted description (296 chars): Join us for First Friday, a vibrant community event held on the first Friday of ...
+[Two-Stage]   Using calendar date for internal page: First Friday on 2026-02-06
+[Two-Stage]   Added recurring event: First Friday on 2026-02-06 (will expand)
+[Two-Stage] Stage 2 (2/6): Scraping 2nd Annual Black History Month Parade
+[Two-Stage]   Hint: Listing page showed date 2026-02-07
+[Two-Stage]   AI extracted description (333 chars): The 2nd Annual Black History Month Parade is a vibrant celebration honoring the ...
+[Two-Stage]   Using calendar date for internal page: 2nd Annual Black History Month Parade on 2026-02-07
+[Two-Stage]   Skipping past date: 2nd Annual Black History Month Parade on 2026-02-07
+[Two-Stage] Stage 2 (3/6): Scraping 2026 Bird Supper
+[Two-Stage]   Hint: Listing page showed date 2026-02-11
+[Two-Stage]   AI extracted description (278 chars): Join us for the 2026 Bird Supper, an exciting event celebrating the beauty of bi...
+[Two-Stage]   Using calendar date for internal page: 2026 Bird Supper on 2026-02-11
+[Two-Stage]   Skipping past date: 2026 Bird Supper on 2026-02-11
+[Two-Stage] Stage 2 (4/6): Scraping Georgia Arbor Day Celebration
+[Two-Stage]   Hint: Listing page showed date 2026-02-20
+[Two-Stage]   AI extracted description (333 chars): Join us for the Georgia Arbor Day Celebration, a special event dedicated to prom...
+[Two-Stage]   Using calendar date for internal page: Georgia Arbor Day Celebration on 2026-02-20
+[Two-Stage]   Added: Georgia Arbor Day Celebration on 2026-02-20
+[Two-Stage] Stage 2 (5/6): Scraping Tree Commission Tree Give Away Pick-Up
+[Two-Stage]   Hint: Listing page showed date 2026-02-21
+[Two-Stage]   AI extracted description (317 chars): The Tree Commission Tree Give Away Pick-Up event offers community members the op...
+[Two-Stage]   Using calendar date for internal page: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+[Two-Stage]   Added: Tree Commission Tree Give Away Pick-Up on 2026-02-21
+[Two-Stage] Stage 2 (6/6): Scraping Coffee with the Chiefs
+[Two-Stage]   Hint: Listing page showed date 2026-02-25
+[Two-Stage]   AI extracted description (338 chars): Join us for 'Coffee with the Chiefs', an engaging event where community members ...
+[Two-Stage]   Using calendar date for internal page: Coffee with the Chiefs on 2026-02-25
+[Two-Stage]   Added: Coffee with the Chiefs on 2026-02-25
+[Two-Stage] Before final deduplication: 4 events
+[Two-Stage] After final deduplication: 4 events
+  [RECURRING] Detected 'First Friday' pattern: First Friday
+    Pattern field: first friday of every month
+    [RECURRING] Generated: First Friday on 2026-03-06
+    [RECURRING] Generated: First Friday on 2026-04-03
+    [RECURRING] Generated: First Friday on 2026-05-01
+    [RECURRING] Generated: First Friday on 2026-06-05
+    [RECURRING] Generated: First Friday on 2026-07-03
+[Two-Stage] After expanding recurring events: 8 events
+[Two-Stage] Completed: Found 8 valid events
+[EVENTS]   ✅ Found 8 items
+[EVENTS] (3/5) Scraping: Valdosta Lowndes Chamber of Commerce
+[EVENTS]   URL: https://business.valdostachamber.com/events
+[EVENTS]   Type: events
+  Using ai_twostage scraping for https://business.valdostachamber.com/events
+[Two-Stage] Starting two-stage scraping for https://business.valdostachamber.com/events
+[Two-Stage] Stage 1: Extracting events from listing page (using AI)
+  AI extracted 2 items from https://business.valdostachamber.com/events
+  Sample item: {'title': '2026 Chamber Annual Awards', 'url': 'https://business.valdostachamber.com/events/Details/2026-chamber-annual-awards-1587292?sourceTypeId=Website', 'date': '2026-02-26', 'time': '17:00', 'recurring_pattern': ''}
+    Adding: 2026 Chamber Annual Awards on 2026-02-26
+    Adding: March Business After Hours- Valdosta State University Foundation on 2026-03-05
+[Two-Stage] Stage 1 completed: 2 events extracted total
+[Two-Stage] Stage 1: 2 events with external URLs, 0 events without
+[Two-Stage] Stage 2: Scraping 2 external event pages
+[Two-Stage] Stage 2 (1/2): Scraping 2026 Chamber Annual Awards
+[Two-Stage]   Hint: Listing page showed date 2026-02-26
+[Two-Stage]   AI extracted description (414 chars): All Chamber members are cordially invited to celebrate the achievements of the p...
+[Two-Stage]   Added: 2026 Chamber Annual Awards on 2026-02-26
+[Two-Stage] Stage 2 (2/2): Scraping March Business After Hours- Valdosta State University Foundation
+[Two-Stage]   Hint: Listing page showed date 2026-03-05
+[Two-Stage]   AI extracted description (272 chars): The Valdosta State University Foundation invites Chamber members and community l...
+[Two-Stage]   Added: March Business After Hours- Valdosta State University Foundation on 2026-03-05
+[Two-Stage] Before final deduplication: 2 events
+[Two-Stage] After final deduplication: 2 events
+[Two-Stage] After expanding recurring events: 2 events
+[Two-Stage] Completed: Found 2 valid events
+[EVENTS]   ✅ Found 2 items
+[EVENTS] (4/5) Scraping: Valdosta State University Concert
+[EVENTS]   URL: https://www.valdosta.edu/colleges/arts/music/concert-calendar.php
+[EVENTS]   Type: events
+  Using ai_twostage scraping for https://www.valdosta.edu/colleges/arts/music/concert-calendar.php
+[Two-Stage] Starting two-stage scraping for https://www.valdosta.edu/colleges/arts/music/concert-calendar.php
+[Two-Stage] Stage 1: Extracting events from listing page (using AI)
+  HTML extraction: Main container too small (1212 chars), using full body
+  AI extracted 67 items from https://www.valdosta.edu/colleges/arts/music/concert-calendar.php
+  Sample item: {'title': 'Tunes for Tots', 'url': '', 'date': '2026-01-24', 'time': '10:00', 'recurring_pattern': ''}
+    Adding: Tunes for Tots on 2026-01-24
+    Adding: Opera: Green Eggs and Ham | Bastien and Bastienna on 2026-01-24
+    Adding: Opera: Green Eggs and Ham | Bastien and Bastienna on 2026-01-25
+    Adding: Valdosta Symphony Orchestra Honors Recital on 2026-02-01
+    Adding: Faculty Recital: Matthew Monroe, horn & Guest Recital: Kelly Langenberg, horn on 2026-02-03
+    Adding: Valdosta Symphony Orchestra: Traditions on 2026-02-14
+    Adding: Titletown Jazz Concert on 2026-02-17
+    Adding: Graduate Recital: Sam Jones, trumpet on 2026-02-18
+    Adding: Faculty Recital: Ryan Sorenson, tuba/euphonium on 2026-02-19
+    Adding: Student Recital: Ella Stephenson, clarinet on 2026-02-22
+    Adding: Student Recital: Lance Thigpen, saxophone & Isai Perez, jazz guitar on 2026-02-22
+    Adding: Lift Every Voice: A Legacy of Harmony on 2026-02-24
+    Adding: Concert Band and Wind Ensemble on 2026-02-25
+    Adding: Student Recital: Tyress McGauley, jazz percussion on 2026-02-26
+    Adding: Student Recital: Ramiyah Fulton, jazz percussion & Aidan Lee, jazz percussion on 2026-02-27
+    Adding: Student Recital: Oscar Suy-Perez, jazz piano on 2026-02-28
+    Adding: Student Recital: Jada Sanders, soprano & Johnny Dixon, trumpet on 2026-02-28
+    Adding: Student Recital: Kayla Griffin, mezzo-soprano & Michael Lurie, bass trombone on 2026-03-01
+    Adding: Graduate Recital: Ashley Acksen, soprano on 2026-03-01
+    Adding: Flute Studio Recital: Flutes & Friends on 2026-03-01
+    Adding: Student Recital: Alysia Johnson, violin on 2026-03-03
+    Adding: Student Recital: Riley Carr, trombone on 2026-03-04
+    Adding: Student Recital: Natalie Savoie, trombone on 2026-03-07
+    Adding: Faculty Jazz Combo on 2026-03-10
+    Adding: Student Recital: Theo Horton, horn & Rebekah McCord, flute on 2026-03-11
+    Adding: Low Brass Ensembles on 2026-03-24
+    Adding: Graduate Recital: Justin McKinney, tuba on 2026-03-25
+    Adding: Student Recital: Shanya Garnett Bradshaw, soprano on 2026-03-26
+    Adding: Student Recital: Elle Perryman, soprano on 2026-03-27
+    Adding: Student Recital: Britney White, soprano & Joely Myrick, euphonium on 2026-03-28
+    Adding: Student Recital: Christina Kato, tuba on 2026-03-28
+    Adding: Valdosta Symphony Orchestra: Progression on 2026-03-28
+    Adding: Percussion Ensemble & Steel Band on 2026-03-31
+    Adding: Student Recital: Matthew Seebran, saxophone & Seth Lee, jazz saxophone on 2026-04-02
+    Adding: Student Recital: Sergio Sabillon, violin on 2026-04-03
+    Adding: Student Recital: Kenzie Taylor, flute on 2026-04-04
+    Adding: Student Recital: Danarieza Villa Nuñez, soprano on 2026-04-04
+    Adding: Student Recital: Benjamin Suarez, viola on 2026-04-04
+    Adding: Student Jazz Combos on 2026-04-07
+    Adding: High Brass Ensembles on 2026-04-08
+    Adding: District 8 Honor Jazz Ensemble on 2026-04-09
+    Adding: Opera After Dark on 2026-04-09
+    Adding: Faculty Recital: Laurel Yu, viola on 2026-04-10
+    Adding: Student Recital: Ana Ribot Rodriguez, flute on 2026-04-11
+    Adding: String Ensemble on 2026-04-12
+    Adding: Student Recital: Brody Johnson, jazz trumpet & Tirik Williams, jazz trombone on 2026-04-12
+    Adding: Faculty Recital: Bradley Sowell, baritone on 2026-04-12
+    Adding: New Jazz Ensemble featuring Mike Kamuf, composer/arranger/trumpet on 2026-04-14
+    Adding: Graduate Recital: Alex Burch, horn on 2026-04-15
+    Adding: Jazz Ensemble featuring Ellen Rowe, composer/arranger/piano on 2026-04-16
+    Adding: Voce Vita & Spotlighters on 2026-04-17
+    Adding: Guest Artist Recital: The Moanin’ Frogs (saxophone sextet) on 2026-04-17
+    Adding: Dancing with the Stars on 2026-04-18
+    Adding: Student Recital: Zachary Whitesides, percussion & Chris Singleton, percussion on 2026-04-19
+    Adding: Doug Farwell & Friends on 2026-04-19
+    Adding: Wind Ensemble on 2026-04-20
+    Adding: Student Recital: Larry Hon, saxophone on 2026-04-21
+    Adding: Student Recital: Jakalin Bryant, percussion on 2026-04-21
+    Adding: Guitar Ensemble on 2026-04-22
+    Adding: Undergraduate & Graduate Chamber Music on 2026-04-25
+    Adding: Concert Band on 2026-04-26
+    Adding: Joint Piano and Dance Concert on 2026-04-26
+    Adding: Chamber Singers on 2026-04-27
+    Adding: Concert Choir & Musical Union on 2026-04-28
+    Adding: Woodwind Showcase on 2026-04-28
+    Adding: Valdosta Symphony Orchestra: Made in America on 2026-05-02
+    Adding: South Georgia String Project on 2026-05-05
+[Two-Stage] Stage 1 completed: 67 events extracted total
+[Two-Stage] Stage 1: 3 events with external URLs, 64 events without
+[Two-Stage]   Added (no external URL): Faculty Recital: Ryan Sorenson, tuba/euphonium on 2026-02-19
+[Two-Stage]   Added (no external URL): Student Recital: Ella Stephenson, clarinet on 2026-02-22
+[Two-Stage]   Added (no external URL): Student Recital: Lance Thigpen, saxophone & Isai Perez, jazz guitar on 2026-02-22
+[Two-Stage]   Added (no external URL): Lift Every Voice: A Legacy of Harmony on 2026-02-24
+[Two-Stage]   Added (no external URL): Concert Band and Wind Ensemble on 2026-02-25
+[Two-Stage]   Added (no external URL): Student Recital: Tyress McGauley, jazz percussion on 2026-02-26
+[Two-Stage]   Added (no external URL): Student Recital: Ramiyah Fulton, jazz percussion & Aidan Lee, jazz percussion on 2026-02-27
+[Two-Stage]   Added (no external URL): Student Recital: Oscar Suy-Perez, jazz piano on 2026-02-28
+[Two-Stage]   Added (no external URL): Student Recital: Jada Sanders, soprano & Johnny Dixon, trumpet on 2026-02-28
+[Two-Stage]   Added (no external URL): Student Recital: Kayla Griffin, mezzo-soprano & Michael Lurie, bass trombone on 2026-03-01
+[Two-Stage]   Added (no external URL): Graduate Recital: Ashley Acksen, soprano on 2026-03-01
+[Two-Stage]   Added (no external URL): Flute Studio Recital: Flutes & Friends on 2026-03-01
+[Two-Stage]   Added (no external URL): Student Recital: Alysia Johnson, violin on 2026-03-03
+[Two-Stage]   Added (no external URL): Student Recital: Riley Carr, trombone on 2026-03-04
+[Two-Stage]   Added (no external URL): Student Recital: Natalie Savoie, trombone on 2026-03-07
+[Two-Stage]   Added (no external URL): Faculty Jazz Combo on 2026-03-10
+[Two-Stage]   Added (no external URL): Student Recital: Theo Horton, horn & Rebekah McCord, flute on 2026-03-11
+[Two-Stage]   Added (no external URL): Low Brass Ensembles on 2026-03-24
+[Two-Stage]   Added (no external URL): Graduate Recital: Justin McKinney, tuba on 2026-03-25
+[Two-Stage]   Added (no external URL): Student Recital: Shanya Garnett Bradshaw, soprano on 2026-03-26
+[Two-Stage]   Added (no external URL): Student Recital: Elle Perryman, soprano on 2026-03-27
+[Two-Stage]   Added (no external URL): Student Recital: Britney White, soprano & Joely Myrick, euphonium on 2026-03-28
+[Two-Stage]   Added (no external URL): Student Recital: Christina Kato, tuba on 2026-03-28
+[Two-Stage]   Added (no external URL): Percussion Ensemble & Steel Band on 2026-03-31
+[Two-Stage]   Added (no external URL): Student Recital: Matthew Seebran, saxophone & Seth Lee, jazz saxophone on 2026-04-02
+[Two-Stage]   Added (no external URL): Student Recital: Sergio Sabillon, violin on 2026-04-03
+[Two-Stage]   Added (no external URL): Student Recital: Kenzie Taylor, flute on 2026-04-04
+[Two-Stage]   Added (no external URL): Student Recital: Danarieza Villa Nuñez, soprano on 2026-04-04
+[Two-Stage]   Added (no external URL): Student Recital: Benjamin Suarez, viola on 2026-04-04
+[Two-Stage]   Added (no external URL): Student Jazz Combos on 2026-04-07
+[Two-Stage]   Added (no external URL): High Brass Ensembles on 2026-04-08
+[Two-Stage]   Added (no external URL): District 8 Honor Jazz Ensemble on 2026-04-09
+[Two-Stage]   Added (no external URL): Opera After Dark on 2026-04-09
+[Two-Stage]   Added (no external URL): Faculty Recital: Laurel Yu, viola on 2026-04-10
+[Two-Stage]   Added (no external URL): Student Recital: Ana Ribot Rodriguez, flute on 2026-04-11
+[Two-Stage]   Added (no external URL): String Ensemble on 2026-04-12
+[Two-Stage]   Added (no external URL): Student Recital: Brody Johnson, jazz trumpet & Tirik Williams, jazz trombone on 2026-04-12
+[Two-Stage]   Added (no external URL): Faculty Recital: Bradley Sowell, baritone on 2026-04-12
+[Two-Stage]   Added (no external URL): New Jazz Ensemble featuring Mike Kamuf, composer/arranger/trumpet on 2026-04-14
+[Two-Stage]   Added (no external URL): Graduate Recital: Alex Burch, horn on 2026-04-15
+[Two-Stage]   Added (no external URL): Jazz Ensemble featuring Ellen Rowe, composer/arranger/piano on 2026-04-16
+[Two-Stage]   Added (no external URL): Voce Vita & Spotlighters on 2026-04-17
+[Two-Stage]   Added (no external URL): Guest Artist Recital: The Moanin’ Frogs (saxophone sextet) on 2026-04-17
+[Two-Stage]   Added (no external URL): Dancing with the Stars on 2026-04-18
+[Two-Stage]   Added (no external URL): Student Recital: Zachary Whitesides, percussion & Chris Singleton, percussion on 2026-04-19
+[Two-Stage]   Added (no external URL): Doug Farwell & Friends on 2026-04-19
+[Two-Stage]   Added (no external URL): Wind Ensemble on 2026-04-20
+[Two-Stage]   Added (no external URL): Student Recital: Larry Hon, saxophone on 2026-04-21
+[Two-Stage]   Added (no external URL): Student Recital: Jakalin Bryant, percussion on 2026-04-21
+[Two-Stage]   Added (no external URL): Guitar Ensemble on 2026-04-22
+[Two-Stage]   Added (no external URL): Undergraduate & Graduate Chamber Music on 2026-04-25
+[Two-Stage]   Added (no external URL): Concert Band on 2026-04-26
+[Two-Stage]   Added (no external URL): Joint Piano and Dance Concert on 2026-04-26
+[Two-Stage]   Added (no external URL): Chamber Singers on 2026-04-27
+[Two-Stage]   Added (no external URL): Concert Choir & Musical Union on 2026-04-28
+[Two-Stage]   Added (no external URL): Woodwind Showcase on 2026-04-28
+[Two-Stage]   Added (no external URL): South Georgia String Project on 2026-05-05
+[Two-Stage] Stage 2: Scraping 3 external event pages
+[Two-Stage] Stage 2 (1/3): Scraping Valdosta Symphony Orchestra: Traditions
+[Two-Stage]   Hint: Listing page showed date 2026-02-14
+[Two-Stage]   AI extracted description (279 chars): Join the Valdosta Symphony Orchestra for a captivating evening of music celebrat...
+[Two-Stage]   Skipping past date: Valdosta Symphony Orchestra: Traditions on 2026-02-14
+[Two-Stage] Stage 2 (2/3): Scraping Valdosta Symphony Orchestra: Progression
+[Two-Stage]   Hint: Listing page showed date 2026-03-28
+[Two-Stage]   AI extracted description (302 chars): The Valdosta Symphony Orchestra presents 'Progression', an engaging concert that...
+[Two-Stage]   Added: Valdosta Symphony Orchestra: Progression on 2026-03-28
+[Two-Stage] Stage 2 (3/3): Scraping Valdosta Symphony Orchestra: Made in America
+[Two-Stage]   Hint: Listing page showed date 2026-05-02
+[Two-Stage]   AI extracted description (319 chars): The Valdosta Symphony Orchestra presents 'Made in America', a captivating concer...
+[Two-Stage]   Added: Valdosta Symphony Orchestra: Made in America on 2026-05-02
+[Two-Stage] Before final deduplication: 59 events
+[Two-Stage] After final deduplication: 59 events
+[Two-Stage] After expanding recurring events: 59 events
+[Two-Stage] Completed: Found 59 valid events
+[EVENTS]   ✅ Found 59 items
+[EVENTS] (5/5) Scraping: Turner Center for the Arts
+[EVENTS]   URL: https://turnercenter.org/events/
+[EVENTS]   Type: events
+  Using ai_twostage scraping for https://turnercenter.org/events/
+[Two-Stage] Detected Turner Center events, using REST API
+[Turner API] Scraping Turner Center events from REST API
+[Turner API] Fetching from 2026-02-19 to 2026-08-19
+[Turner API] Page 1: Received 50 items
+[Turner API] Page 2: Received 50 items
+[Turner API] Page 3: Received 18 items
+[Turner API] Filtered out 113 classes
+[Turner API] Total processed: 5 events
+[EVENTS]   ✅ Found 5 items
+
+[EVENTS] Total items before deduplication: 84
+  [DEDUP] New event: the doo wop project on 2026-02-26
+  [DEDUP] New event: south georgia film festival on 2026-03-06
+  [DEDUP] New event: south georgia film festival on 2026-03-07
+  [DEDUP] New event: south georgia film festival on 2026-03-08
+  [DEDUP] New event: the broadway boys on 2026-03-19
+  [DEDUP] New event: 2026 bluesberry festival on 2026-04-10
+  [DEDUP] New event: 2026 bluesberry festival on 2026-04-11
+  [DEDUP] New event: unity park spring fest on 2026-04-25
+  [DEDUP] New event: valdosta comic con on 2026-07-24
+  [DEDUP] New event: valdosta comic con on 2026-07-25
+  [DEDUP] New event: first friday on 2026-03-06
+  [DEDUP] New event: first friday on 2026-04-03
+  [DEDUP] New event: first friday on 2026-05-01
+  [DEDUP] New event: first friday on 2026-06-05
+  [DEDUP] New event: first friday on 2026-07-03
+  [DEDUP] New event: georgia arbor day celebration on 2026-02-20
+  [DEDUP] New event: tree commission tree give away pick-up on 2026-02-21
+  [DEDUP] New event: coffee with the chiefs on 2026-02-25
+  [DEDUP] New event: 2026 chamber annual awards on 2026-02-26
+  [DEDUP] New event: march business after hours- valdosta state university founda on 2026-03-05
+  [DEDUP] New event: faculty recital: ryan sorenson, tuba/euphonium on 2026-02-19
+  [DEDUP] New event: student recital: ella stephenson, clarinet on 2026-02-22
+  [DEDUP] New event: student recital: lance thigpen, saxophone & isai perez, jazz on 2026-02-22
+  [DEDUP] New event: lift every voice: a legacy of harmony on 2026-02-24
+  [DEDUP] New event: concert band and wind ensemble on 2026-02-25
+  [DEDUP] New event: student recital: tyress mcgauley, jazz percussion on 2026-02-26
+  [DEDUP] New event: student recital: ramiyah fulton, jazz percussion & aidan lee on 2026-02-27
+  [DEDUP] New event: student recital: oscar suy-perez, jazz piano on 2026-02-28
+  [DEDUP] New event: student recital: jada sanders, soprano & johnny dixon, trump on 2026-02-28
+  [DEDUP] New event: student recital: kayla griffin, mezzo-soprano & michael luri on 2026-03-01
+  [DEDUP] New event: graduate recital: ashley acksen, soprano on 2026-03-01
+  [DEDUP] New event: flute studio recital: flutes & friends on 2026-03-01
+  [DEDUP] New event: student recital: alysia johnson, violin on 2026-03-03
+  [DEDUP] New event: student recital: riley carr, trombone on 2026-03-04
+  [DEDUP] New event: student recital: natalie savoie, trombone on 2026-03-07
+  [DEDUP] New event: faculty jazz combo on 2026-03-10
+  [DEDUP] New event: student recital: theo horton, horn & rebekah mccord, flute on 2026-03-11
+  [DEDUP] New event: low brass ensembles on 2026-03-24
+  [DEDUP] New event: graduate recital: justin mckinney, tuba on 2026-03-25
+  [DEDUP] New event: student recital: shanya garnett bradshaw, soprano on 2026-03-26
+  [DEDUP] New event: student recital: elle perryman, soprano on 2026-03-27
+  [DEDUP] New event: student recital: britney white, soprano & joely myrick, euph on 2026-03-28
+  [DEDUP] New event: student recital: christina kato, tuba on 2026-03-28
+  [DEDUP] New event: percussion ensemble & steel band on 2026-03-31
+  [DEDUP] New event: student recital: matthew seebran, saxophone & seth lee, jazz on 2026-04-02
+  [DEDUP] New event: student recital: sergio sabillon, violin on 2026-04-03
+  [DEDUP] New event: student recital: kenzie taylor, flute on 2026-04-04
+  [DEDUP] New event: student recital: danarieza villa nuñez, soprano on 2026-04-04
+  [DEDUP] New event: student recital: benjamin suarez, viola on 2026-04-04
+  [DEDUP] New event: student jazz combos on 2026-04-07
+  [DEDUP] New event: high brass ensembles on 2026-04-08
+  [DEDUP] New event: district 8 honor jazz ensemble on 2026-04-09
+  [DEDUP] New event: opera after dark on 2026-04-09
+  [DEDUP] New event: faculty recital: laurel yu, viola on 2026-04-10
+  [DEDUP] New event: student recital: ana ribot rodriguez, flute on 2026-04-11
+  [DEDUP] New event: string ensemble on 2026-04-12
+  [DEDUP] New event: student recital: brody johnson, jazz trumpet & tirik william on 2026-04-12
+  [DEDUP] New event: faculty recital: bradley sowell, baritone on 2026-04-12
+  [DEDUP] New event: new jazz ensemble featuring mike kamuf, composer/arranger/tr on 2026-04-14
+  [DEDUP] New event: graduate recital: alex burch, horn on 2026-04-15
+  [DEDUP] New event: jazz ensemble featuring ellen rowe, composer/arranger/piano on 2026-04-16
+  [DEDUP] New event: voce vita & spotlighters on 2026-04-17
+  [DEDUP] New event: guest artist recital: the moanin’ frogs (saxophone sextet) on 2026-04-17
+  [DEDUP] New event: dancing with the stars on 2026-04-18
+  [DEDUP] New event: student recital: zachary whitesides, percussion & chris sing on 2026-04-19
+  [DEDUP] New event: doug farwell & friends on 2026-04-19
+  [DEDUP] New event: wind ensemble on 2026-04-20
+  [DEDUP] New event: student recital: larry hon, saxophone on 2026-04-21
+  [DEDUP] New event: student recital: jakalin bryant, percussion on 2026-04-21
+  [DEDUP] New event: guitar ensemble on 2026-04-22
+  [DEDUP] New event: undergraduate & graduate chamber music on 2026-04-25
+  [DEDUP] New event: concert band on 2026-04-26
+  [DEDUP] New event: joint piano and dance concert on 2026-04-26
+  [DEDUP] New event: chamber singers on 2026-04-27
+  [DEDUP] New event: concert choir & musical union on 2026-04-28
+  [DEDUP] New event: woodwind showcase on 2026-04-28

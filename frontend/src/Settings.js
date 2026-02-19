@@ -18,6 +18,11 @@ function Settings({ onBack }) {
     confirmPasscode: "",
   });
   const [passcodeChangeMessage, setPasscodeChangeMessage] = useState("");
+  const [cacheSettings, setCacheSettings] = useState({
+    classes: false,
+    events: false,
+    meetings: false,
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -38,6 +43,7 @@ function Settings({ onBack }) {
         setIsAuthenticated(true);
         localStorage.setItem("settings_passcode", passcode);
         loadSources(passcode);
+        loadCacheSettings(passcode);
       } else {
         setError("Invalid passcode");
       }
@@ -55,6 +61,29 @@ function Settings({ onBack }) {
       setSources(res.data.sources || []);
     } catch (err) {
       setError("Error loading sources");
+    }
+  };
+
+  const loadCacheSettings = async (pass) => {
+    try {
+      const res = await axios.get("/api/cache-settings", {
+        params: { passcode: pass || passcode },
+      });
+      setCacheSettings(res.data || { classes: false, events: false, meetings: false });
+    } catch (err) {
+      console.error("Error loading cache settings:", err);
+    }
+  };
+
+  const updateCacheSettings = async (type, enabled) => {
+    try {
+      await axios.post(`/api/cache-settings?passcode=${passcode}`, {
+        type,
+        enabled,
+      });
+      setCacheSettings({ ...cacheSettings, [type]: enabled });
+    } catch (err) {
+      setError("Error updating cache settings");
     }
   };
 
@@ -224,6 +253,14 @@ function Settings({ onBack }) {
             setSources(sourcesRes.data.sources || []);
           }).catch((err) => {
             console.error("Error loading sources:", err);
+          });
+          // Load cache settings
+          axios.get("/api/cache-settings", {
+            params: { passcode: savedPasscode },
+          }).then((cacheRes) => {
+            setCacheSettings(cacheRes.data || { classes: false, events: false, meetings: false });
+          }).catch((err) => {
+            console.error("Error loading cache settings:", err);
           });
         }
       }).catch((err) => {
@@ -462,6 +499,60 @@ function Settings({ onBack }) {
 
       {/* Tab Content */}
       <div>
+        {/* Cache Settings Section - Only for classes, events, and meetings */}
+        {(activeTab === "classes" || activeTab === "events" || activeTab === "meetings") && (
+          <div
+            style={{
+              backgroundColor: "#f0f8ff",
+              padding: "20px",
+              borderRadius: "8px",
+              marginBottom: "30px",
+              border: "2px solid #3498db",
+            }}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: "15px", color: "#2c3e50" }}>
+              ⚡ Performance Settings
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  position: "relative",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={cacheSettings[activeTab]}
+                  onChange={(e) => updateCacheSettings(activeTab, e.target.checked)}
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    cursor: "pointer",
+                    marginRight: "10px",
+                  }}
+                />
+                <span style={{ fontWeight: "600", fontSize: "15px", color: "#2c3e50" }}>
+                  Enable On-Demand Caching (recommended)
+                </span>
+              </label>
+            </div>
+            <p
+              style={{
+                margin: "10px 0 0 0",
+                fontSize: "14px",
+                color: "#555",
+                lineHeight: "1.6",
+              }}
+            >
+              When enabled, scraped data is cached for 24 hours. The first refresh will take 2-3 minutes
+              to scrape and cache the data. Subsequent refreshes within 24 hours will load instantly from
+              the cache instead of re-scraping, significantly improving performance.
+            </p>
+          </div>
+        )}
+
         <div
           style={{
             display: "flex",

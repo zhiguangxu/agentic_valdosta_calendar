@@ -184,3 +184,31 @@ def update_passcode(new_passcode: str) -> None:
         data['settings'] = {}
     data['settings']['passcode_hash'] = hash_passcode(new_passcode)
     save_sources(data)
+
+
+def get_cache_settings() -> Dict[str, bool]:
+    """Get cache settings for all types"""
+    data = load_sources()
+    cache_settings = data.get('settings', {}).get('cache', {})
+
+    # Return with defaults
+    return {
+        'classes': cache_settings.get('classes', False),
+        'events': cache_settings.get('events', False),
+        'meetings': cache_settings.get('meetings', False),
+    }
+
+
+def update_cache_setting(cache_type: str, enabled: bool) -> None:
+    """Update cache setting for a specific type"""
+    if cache_type not in ['classes', 'events', 'meetings']:
+        raise ValueError(f"Invalid cache type: {cache_type}")
+
+    data = load_sources()
+    if 'settings' not in data:
+        data['settings'] = {}
+    if 'cache' not in data['settings']:
+        data['settings']['cache'] = {}
+
+    data['settings']['cache'][cache_type] = enabled
+    save_sources(data)

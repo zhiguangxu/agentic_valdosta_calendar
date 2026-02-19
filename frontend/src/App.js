@@ -27,7 +27,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState("classes");
   const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
 
@@ -569,55 +569,6 @@ function App() {
         }}
       >
         <button
-          onClick={() => setActiveTab("events")}
-          style={{
-            flex: 1,
-            padding: "15px 20px",
-            border: "none",
-            backgroundColor:
-              activeTab === "events" ? "#3498db" : "transparent",
-            color: activeTab === "events" ? "white" : "#495057",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== "events") {
-              e.target.style.backgroundColor = "#e9ecef";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== "events") {
-              e.target.style.backgroundColor = "transparent";
-            }
-          }}
-        >
-          📅 Events
-          {events.length > 0 && (
-            <span
-              style={{
-                backgroundColor:
-                  activeTab === "events"
-                    ? "rgba(255,255,255,0.3)"
-                    : "#3498db",
-                color: "white",
-                padding: "2px 8px",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "500",
-              }}
-            >
-              {events.length}
-            </span>
-          )}
-        </button>
-
-        <button
           onClick={() => setActiveTab("classes")}
           style={{
             flex: 1,
@@ -662,6 +613,55 @@ function App() {
               }}
             >
               {classes.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab("events")}
+          style={{
+            flex: 1,
+            padding: "15px 20px",
+            border: "none",
+            backgroundColor:
+              activeTab === "events" ? "#3498db" : "transparent",
+            color: activeTab === "events" ? "white" : "#495057",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
+          onMouseEnter={(e) => {
+            if (activeTab !== "events") {
+              e.target.style.backgroundColor = "#e9ecef";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (activeTab !== "events") {
+              e.target.style.backgroundColor = "transparent";
+            }
+          }}
+        >
+          📅 Events
+          {events.length > 0 && (
+            <span
+              style={{
+                backgroundColor:
+                  activeTab === "events"
+                    ? "rgba(255,255,255,0.3)"
+                    : "#3498db",
+                color: "white",
+                padding: "2px 8px",
+                borderRadius: "12px",
+                fontSize: "12px",
+                fontWeight: "500",
+              }}
+            >
+              {events.length}
             </span>
           )}
         </button>

@@ -11,7 +11,7 @@ function Settings({ onBack }) {
   const [editingSource, setEditingSource] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showPasscodeChange, setShowPasscodeChange] = useState(false);
-  const [activeTab, setActiveTab] = useState("events");
+  const [activeTab, setActiveTab] = useState("classes");
   const [passcodeChangeData, setPasscodeChangeData] = useState({
     oldPasscode: "",
     newPasscode: "",
@@ -369,29 +369,6 @@ function Settings({ onBack }) {
       >
         <button
           onClick={() => {
-            setActiveTab("events");
-            resetForm();
-            setShowAddForm(false);
-            setEditingSource(null);
-          }}
-          style={{
-            flex: 1,
-            padding: "15px 20px",
-            border: "none",
-            backgroundColor:
-              activeTab === "events" ? "#3498db" : "transparent",
-            color: activeTab === "events" ? "white" : "#495057",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-          }}
-        >
-          📅 Events
-        </button>
-
-        <button
-          onClick={() => {
             setActiveTab("classes");
             resetForm();
             setShowAddForm(false);
@@ -411,6 +388,29 @@ function Settings({ onBack }) {
           }}
         >
           📚 Classes
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("events");
+            resetForm();
+            setShowAddForm(false);
+            setEditingSource(null);
+          }}
+          style={{
+            flex: 1,
+            padding: "15px 20px",
+            border: "none",
+            backgroundColor:
+              activeTab === "events" ? "#3498db" : "transparent",
+            color: activeTab === "events" ? "white" : "#495057",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          📅 Events
         </button>
 
         <button

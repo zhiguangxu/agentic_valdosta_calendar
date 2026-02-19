@@ -315,15 +315,162 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
             elif not current_desc and existing_desc:
                 print(f"    → Keeping existing (has description)")
                 pass  # Keep existing
+            elif current_desc and existing_desc:
+                # Both have descriptions - prefer longer description (more informative)
+                if len(current_desc) > len(existing_desc):
+                    print(f"    → Keeping current (longer description: {len(current_desc)} vs {len(existing_desc)} chars)")
+                    best_events[dedup_key] = event
+                else:
+                    print(f"    → Keeping existing (longer or same description: {len(existing_desc)} vs {len(current_desc)} chars)")
             else:
-                # Both have descriptions or both don't - prefer longer/more specific title
+                # Neither has description - prefer longer/more specific title
                 if len(event.get('title', '')) > len(existing.get('title', '')):
                     print(f"    → Keeping current (longer title)")
                     best_events[dedup_key] = event
                 else:
                     print(f"    → Keeping existing (longer or same title)")
 
-    return list(best_events.values())
+    # Second pass: Deduplicate events on same DATE with similar titles/descriptions
+    # More flexible than exact time matching - catches events with slightly different times
+    # (e.g., 7:00 PM vs 7:30 PM for the same show from different sources)
+    date_dedup = {}
+    for event in best_events.values():
+        event_datetime = event.get('start', '')  # Full datetime: YYYY-MM-DDTHH:MM:SS
+
+        # Extract just the date (YYYY-MM-DD) for flexible matching
+        event_date = event_datetime[:10] if len(event_datetime) >= 10 else event_datetime
+
+        # Group events by date for comparison
+        if event_date not in date_dedup:
+            date_dedup[event_date] = [event]
+        else:
+            date_dedup[event_date].append(event)
+
+    # Now check each date's events for duplicates
+    final_events = []
+    for date, events_on_date in date_dedup.items():
+        if len(events_on_date) == 1:
+            # Only one event on this date, keep it
+            final_events.append(events_on_date[0])
+        else:
+            # Multiple events on same date - check for duplicates
+            kept_events = []
+            skip_indices = set()
+
+            for i, event in enumerate(events_on_date):
+                if i in skip_indices:
+                    continue
+
+                # Check against all other events on the same date
+                is_duplicate = False
+                for j, other_event in enumerate(events_on_date):
+                    if i >= j or j in skip_indices:
+                        continue
+
+                    # Check if they're likely the same event
+                    existing_title = other_event.get('title', '').lower()
+                    current_title = event.get('title', '').lower()
+                    existing_desc = other_event.get('description', '').lower().strip()
+                    current_desc = event.get('description', '').lower().strip()
+
+                    # Check if one title is generic (like "Presenter Series")
+                    # or if titles share significant words (suggesting same event)
+                    is_generic_existing = any(phrase in existing_title for phrase in [
+                        'presenter series', 'show of the season', 'concert series'
+                    ])
+                    is_generic_current = any(phrase in current_title for phrase in [
+                        'presenter series', 'show of the season', 'concert series'
+                    ])
+
+                    # Calculate word overlap for titles (simple similarity check)
+                    existing_words = set(existing_title.split())
+                    current_words = set(current_title.split())
+                    # Remove common stop words
+                    stop_words = {'the', 'a', 'an', 'at', 'in', 'on', 'of', 'and', 'or', 'for', 'to', 'with'}
+                    existing_words = existing_words - stop_words
+                    current_words = current_words - stop_words
+
+                    if existing_words and current_words:
+                        overlap = len(existing_words & current_words)
+                        title_similarity = overlap / min(len(existing_words), len(current_words))
+                    else:
+                        title_similarity = 0
+
+                    # ALSO check description similarity - parse descriptions to find common content
+                    desc_similarity = 0
+                    desc_suggests_same = False
+
+                    if existing_desc and current_desc:
+                        # Check if one description mentions the other event's title
+                        if existing_title in current_desc or current_title in existing_desc:
+                            desc_suggests_same = True
+
+                        # Check if descriptions share significant content
+                        existing_desc_words = set(existing_desc.split()) - stop_words
+                        current_desc_words = set(current_desc.split()) - stop_words
+
+                        if existing_desc_words and current_desc_words:
+                            desc_overlap = len(existing_desc_words & current_desc_words)
+                            desc_similarity = desc_overlap / min(len(existing_desc_words), len(current_desc_words))
+
+                            # If descriptions are very similar (>50% overlap), likely same event
+                            if desc_similarity > 0.5:
+                                desc_suggests_same = True
+
+                    # Only deduplicate if evidence suggests same event
+                    should_deduplicate = (
+                        is_generic_existing or is_generic_current or  # Generic title like "Presenter Series"
+                        title_similarity > 0.3 or                      # Similar titles
+                        desc_suggests_same or                          # Descriptions suggest same event
+                        desc_similarity > 0.5                          # Very similar descriptions
+                    )
+
+                    if should_deduplicate:
+                        # These are duplicates - mark current as duplicate
+                        is_duplicate = True
+
+                        print(f"  [DEDUP-DATE] Same date found - likely duplicate:")
+                        print(f"    Event 1: {existing_title[:60]} at {other_event.get('start', '')[:16]}")
+                        print(f"    Event 2: {current_title[:60]} at {event.get('start', '')[:16]}")
+                        print(f"    Title similarity: {title_similarity:.2f}, Generic: {is_generic_existing or is_generic_current}")
+                        print(f"    Description similarity: {desc_similarity:.2f}, Desc suggests same: {desc_suggests_same}")
+
+                        # Decide which one to keep
+                        existing_desc_str = other_event.get('description', '').strip()
+                        current_desc_str = event.get('description', '').strip()
+
+                        # Prefer event with description, then longer description
+                        if current_desc_str and not existing_desc_str:
+                            print(f"    → Keeping Event 2 (has description)")
+                            skip_indices.add(j)  # Skip the other event
+                        elif not current_desc_str and existing_desc_str:
+                            print(f"    → Keeping Event 1 (has description)")
+                            skip_indices.add(i)  # Skip current event
+                            break  # Current event is duplicate, no need to check further
+                        elif current_desc_str and existing_desc_str:
+                            if len(current_desc_str) > len(existing_desc_str):
+                                print(f"    → Keeping Event 2 (longer description)")
+                                skip_indices.add(j)
+                            else:
+                                print(f"    → Keeping Event 1 (longer description)")
+                                skip_indices.add(i)
+                                break
+                        else:
+                            # Neither has description - prefer longer title
+                            if len(event.get('title', '')) > len(other_event.get('title', '')):
+                                print(f"    → Keeping Event 2 (longer title)")
+                                skip_indices.add(j)
+                            else:
+                                print(f"    → Keeping Event 1 (longer title)")
+                                skip_indices.add(i)
+                                break
+
+                if not is_duplicate:
+                    kept_events.append(event)
+
+            final_events.extend(kept_events)
+
+    return final_events
 
 
 def deduplicate_classes(classes: List[Dict]) -> List[Dict]:
@@ -339,8 +486,10 @@ def deduplicate_classes(classes: List[Dict]) -> List[Dict]:
     best_classes = {}
 
     for cls in classes:
-        # Create key from date + instructor + normalized title
-        class_date = cls.get('start', '').split('T')[0]  # Get date part (YYYY-MM-DD)
+        # Create key from date+time + instructor + normalized title
+        # IMPORTANT: Include time to preserve classes offered at different times on same day
+        class_datetime = cls.get('start', '')  # Get full datetime (YYYY-MM-DDTHH:MM:SS)
+        class_date = class_datetime.split('T')[0] if 'T' in class_datetime else class_datetime  # Date part for display
         class_title = cls.get('title', '').lower().strip()
 
         # Try to extract instructor from title or description
@@ -366,8 +515,9 @@ def deduplicate_classes(classes: List[Dict]) -> List[Dict]:
         normalized = ''.join(c for c in normalized if c.isalnum() or c.isspace())
         normalized = ' '.join(normalized.split())  # Normalize whitespace
 
-        # Create deduplication key: date + instructor + title
-        dedup_key = f"{class_date}_{instructor}_{normalized[:50]}"
+        # Create deduplication key: datetime + instructor + title
+        # Use full datetime to preserve different time slots on same day
+        dedup_key = f"{class_datetime}_{instructor}_{normalized[:50]}"
 
         # If we haven't seen this class before, or if this class is better, keep it
         if dedup_key not in best_classes:

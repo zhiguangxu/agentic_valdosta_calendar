@@ -11,6 +11,7 @@ from typing import List, Dict, Optional
 from openai import OpenAI
 import os
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def scrape_with_ai(url: str, source_type: str, openai_client: Optional[OpenAI],
@@ -403,18 +404,18 @@ TODAY'S DATE: {datetime.now().strftime("%Y-%m-%d")}
 CURRENT YEAR: {current_year}
 
 MEETINGS-SPECIFIC INSTRUCTIONS:
-1. Extract ALL meetings you can find
+1. Extract ALL meetings you can find with their EXACT scheduled dates
 2. For titles: Use exact meeting names - be precise (e.g., "City Council Meeting", "Board of Directors Meeting")
 3. For locations: Extract meeting location/venue (e.g., "City Hall Room 203")
 4. For dates: Use YYYY-MM-DD format. Current year is {current_year}
 5. For times: Use HH:MM 24-hour format. Meetings often have exact start times - extract them precisely
 6. For descriptions: Include agenda items, attendees, purpose of meeting (200 chars)
-7. Look for recurring patterns: "Monthly meeting", "Every 3rd Tuesday", "Quarterly review"
+7. IMPORTANT: Extract ONLY the specific meeting dates shown on the page - do NOT infer or generate recurring patterns
 8. IMPORTANT: Keep year prefixes if present (e.g., "2026 Annual Meeting")
 
 Return ONLY a valid JSON array with no markdown formatting. Format:
 [
-  {{"title": "Meeting Name", "date": "{current_year}-02-15", "time": "18:00", "description": "Meeting purpose and agenda", "url": "/meeting/123", "location": "Meeting Location", "recurring_pattern": "Monthly on 3rd Tuesday"}}
+  {{"title": "Meeting Name", "date": "{current_year}-02-15", "time": "18:00", "description": "Meeting purpose and agenda", "url": "/meeting/123", "location": "Meeting Location", "recurring_pattern": ""}}
 ]
 
 If you cannot find any meetings, return an empty array: []
@@ -674,6 +675,133 @@ HTML content:
 """
 
 
+def _scrape_turner_center_api(url: str, source_type: str = "classes") -> List[Dict]:
+    """
+    Scrape Turner Center classes or events using their REST API.
+    The Turner Center uses The Events Calendar plugin which provides a REST API.
+
+    For classes: Fetches only items in the "classes" category
+    For events: Fetches all items EXCEPT those in the "classes" category
+    """
+    from dateutil.relativedelta import relativedelta
+    from bs4 import BeautifulSoup
+    import html
+
+    print(f"[Turner API] Scraping Turner Center {source_type} from REST API")
+
+    # Calculate date range: today to 6 months from now
+    current_date = datetime.now()
+    end_date = current_date + relativedelta(months=6)
+
+    # API endpoint
+    api_url = "https://turnercenter.org/wp-json/tribe/events/v1/events"
+
+    print(f"[Turner API] Fetching from {current_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+
+        results = []
+        page = 1
+        max_pages = 20  # Safety limit
+        filtered_count = 0
+
+        # Paginate through all results
+        while page <= max_pages:
+            params = {
+                'per_page': 100,
+                'page': page,
+                'start_date': current_date.strftime('%Y-%m-%d'),
+                'end_date': end_date.strftime('%Y-%m-%d'),
+            }
+
+            # For classes, use category filter in API
+            # For events, fetch all and filter out classes in code
+            if source_type == 'classes':
+                params['categories'] = 'classes'
+
+            resp = requests.get(api_url, params=params, headers=headers, timeout=15)
+            resp.raise_for_status()
+
+            data = resp.json()
+            events_data = data.get('events', [])
+
+            if not events_data:
+                break  # No more events
+
+            print(f"[Turner API] Page {page}: Received {len(events_data)} items")
+
+            for event in events_data:
+                # For events mode, filter out classes and galleries closed events
+                if source_type == 'events':
+                    categories = event.get('categories', [])
+                    category_names = [c.get('name', '') for c in categories]
+
+                    # Skip if this is a class
+                    if 'Classes' in category_names:
+                        filtered_count += 1
+                        continue
+
+                # Decode HTML entities in title
+                title = html.unescape(event.get('title', ''))
+
+                # Filter out "Galleries Closed" events (administrative/internal events)
+                if source_type == 'events' and 'galleries closed' in title.lower():
+                    filtered_count += 1
+                    continue
+                event_url = event.get('url', '')
+
+                # Parse description to extract clean text
+                description_html = event.get('description', '')
+                if description_html:
+                    soup = BeautifulSoup(description_html, 'html.parser')
+                    description = soup.get_text(separator=' ', strip=True)[:200]
+                else:
+                    description = event.get('excerpt', '')[:200]
+
+                # Parse date and time
+                start_date = event.get('start_date', '')
+                if start_date:
+                    # Format: "2026-02-18 10:00:00"
+                    try:
+                        dt = datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S')
+                        iso_date = dt.strftime('%Y-%m-%dT%H:%M:%S')
+                    except:
+                        # Fallback: use as-is
+                        iso_date = start_date.replace(' ', 'T')
+                else:
+                    iso_date = current_date.strftime('%Y-%m-%dT10:00:00')
+
+                results.append({
+                    'title': title,
+                    'start': iso_date,
+                    'description': description,
+                    'url': event_url,
+                    'recurring_pattern': ''  # API doesn't expose recurring pattern easily
+                })
+
+            # Check if there are more pages
+            total_pages = data.get('total_pages', 1)
+            if page >= total_pages:
+                break
+
+            page += 1
+
+        if source_type == 'events' and filtered_count > 0:
+            print(f"[Turner API] Filtered out {filtered_count} classes")
+
+        print(f"[Turner API] Total processed: {len(results)} {source_type}")
+        return results
+
+    except Exception as e:
+        print(f"[Turner API] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+
+
 def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events") -> List[Dict]:
     """
     Two-stage scraping for event listing pages with unreliable dates.
@@ -681,6 +809,12 @@ def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events
     Stage 2: Scrape each external URL for accurate date information
     """
     import time
+
+    # SPECIAL HANDLING: Turner Center uses a REST API for events
+    # Use the API directly instead of scraping HTML
+    if 'turnercenter.org' in url and source_type in ['classes', 'events']:
+        print(f"[Two-Stage] Detected Turner Center {source_type}, using REST API")
+        return _scrape_turner_center_api(url, source_type)
 
     print(f"[Two-Stage] Starting two-stage scraping for {url}")
 
@@ -773,18 +907,35 @@ def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events
                 for element in soup(["script", "style", "nav", "footer", "header"]):
                     element.decompose()
 
-                # Get main content
-                main_content = soup.find(["main", "article"]) or soup.find("div", class_=re.compile(r"main|content", re.I))
-                # If main_content is too small (< 5000 chars), it's probably just navigation
-                # Use full body instead to capture all event content
-                if main_content and len(str(main_content)) < 5000:
-                    print(f"  HTML extraction: Main container too small ({len(str(main_content))} chars), using full body")
-                    # For sites with content deep in the page, use more content (up to 60000 chars)
-                    html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
-                elif main_content:
-                    html_content = str(main_content)[:30000]
+                # SPECIAL HANDLING: Filter for classes only on turnercenter.org
+                # Classes are marked with CSS class 'cat_classes' or 'tribe_events_cat-classes'
+                if source_type == 'classes' and 'turnercenter.org' in process_url:
+                    all_events = soup.find_all('article', class_=lambda x: x and 'tribe-events' in ' '.join(x) if x else False)
+                    classes_only = [e for e in all_events if any('cat_classes' in c or 'tribe_events_cat-classes' in c for c in e.get('class', []))]
+
+                    print(f"  [FILTER] Found {len(all_events)} total events, filtered to {len(classes_only)} classes")
+
+                    if classes_only:
+                        # Create a new soup with only class events
+                        filtered_html = '\n'.join([str(e) for e in classes_only])
+                        html_content = filtered_html[:60000]
+                    else:
+                        # If no classes found with filter, fall back to regular extraction
+                        print(f"  [FILTER] WARNING: No classes found with cat_classes filter, using all events")
+                        html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
                 else:
-                    html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
+                    # Get main content for other sites
+                    main_content = soup.find(["main", "article"]) or soup.find("div", class_=re.compile(r"main|content", re.I))
+                    # If main_content is too small (< 5000 chars), it's probably just navigation
+                    # Use full body instead to capture all event content
+                    if main_content and len(str(main_content)) < 5000:
+                        print(f"  HTML extraction: Main container too small ({len(str(main_content))} chars), using full body")
+                        # For sites with content deep in the page, use more content (up to 60000 chars)
+                        html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
+                    elif main_content:
+                        html_content = str(main_content)[:30000]
+                    else:
+                        html_content = str(soup.body)[:60000] if soup.body else str(soup)[:60000]
 
                 # Generate category-specific Stage 1 prompt
                 if source_type == 'classes':
@@ -1449,15 +1600,16 @@ def _is_supported_recurring_pattern(recurring_pattern: str) -> bool:
 def _expand_recurring_events(results: List[Dict], source_type: str = "events") -> List[Dict]:
     """Detect and expand recurring events into multiple occurrences
 
-    IMPORTANT: Classes are NEVER expanded - they should provide specific dates only.
-    Only events and meetings use recurring pattern expansion.
+    IMPORTANT: Classes and meetings are NEVER expanded - they should provide specific dates only.
+    Only events use recurring pattern expansion.
     """
     from dateutil.relativedelta import relativedelta
     from calendar import monthrange
 
-    # SAFEGUARD: Never expand classes, even if AI accidentally sets recurring_pattern
-    if source_type == 'classes':
-        print(f"  [RECURRING] Skipping expansion for classes (classes should have specific dates only)")
+    # SAFEGUARD: Never expand classes or meetings, even if AI accidentally sets recurring_pattern
+    # Meetings are scheduled with specific dates on their websites and should be displayed as-is
+    if source_type in ['classes', 'meetings']:
+        print(f"  [RECURRING] Skipping expansion for {source_type} ({source_type} should have specific dates only)")
         return results
 
     expanded = []

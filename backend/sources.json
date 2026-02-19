@@ -37,8 +37,8 @@
       "added_date": "2025-01-10T00:00:00Z"
     },
     {
-      "name": "Turner Center from the Arts",
-      "url": "https://turnercenter.org/classes",
+      "name": "Turner Center for the Arts",
+      "url": "https://turnercenter.org/events/",
       "type": "classes",
       "enabled": true,
       "scraping_method": "ai_twostage",
@@ -71,10 +71,19 @@
       "scraping_method": "ai_twostage",
       "id": "8",
       "added_date": "2026-02-08T02:12:56.377326Z"
+    },
+    {
+      "name": "Turner Center for the Arts",
+      "url": "https://turnercenter.org/events/",
+      "type": "events",
+      "enabled": true,
+      "scraping_method": "ai_twostage",
+      "id": "9",
+      "added_date": "2026-02-19T02:34:01.061424Z"
     }
   ],
   "settings": {
     "passcode_hash": "0d4a67cd480b8bc2b2805f48bbd44be60efc64b488788a774d0428f2be0973ce",
-    "last_updated": "2026-02-08T02:12:56.377332Z"
+    "last_updated": "2026-02-19T02:34:01.061444Z"
   }
 }

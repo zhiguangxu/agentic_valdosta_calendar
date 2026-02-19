@@ -767,39 +767,7 @@ function App() {
 
       {/* Tab Content */}
       {activeTab === "events" && renderCalendar(events, "events")}
-      {activeTab === "classes" && (
-        <>
-          {renderCalendar(classes, "classes")}
-          <div
-            style={{
-              margin: "20px",
-              padding: "15px",
-              backgroundColor: "#f8f9fa",
-              borderLeft: "4px solid #3498db",
-              borderRadius: "4px",
-              fontSize: "14px",
-              color: "#495057",
-            }}
-          >
-            <strong>Note:</strong> This calendar shows a subset of available classes
-            with confirmed dates. For a complete list of all classes and workshops,
-            please visit the{" "}
-            <a
-              href="https://turnercenter.org/classes"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#3498db",
-                textDecoration: "none",
-                fontWeight: "600",
-              }}
-            >
-              Turner Center for the Arts website
-            </a>
-            .
-          </div>
-        </>
-      )}
+      {activeTab === "classes" && renderCalendar(classes, "classes")}
       {activeTab === "meetings" && renderCalendar(meetings, "meetings")}
 
       {/* Visit Valdosta Tab Content */}

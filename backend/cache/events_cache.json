@@ -1,6 +1,14 @@
 {
-  "timestamp": "2026-02-19T18:04:51.798179Z",
+  "timestamp": "2026-02-19T18:35:09.719583Z",
   "data": [
+    {
+      "title": "Faculty Recital: Ryan Sorenson, tuba/euphonium",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-19T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
     {
       "title": "Georgia Arbor Day Celebration",
       "url": "https://www.valdostacity.com/event/georgia-arbor-day-celebration",
@@ -18,17 +26,56 @@
       "recurring_pattern": null
     },
     {
+      "title": "New Exhibit Opening Reception",
+      "start": "2026-02-22T13:00:00",
+      "description": "Please join us today, 1-3pm, for a new exhibit opening reception in honor of our Annual Youth Art Month. Event is free and open to the public; light refreshments served. Visit turnercenter.org/exhibit",
+      "url": "https://turnercenter.org/event/new-exhibit-opening-reception-2/",
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Ella Stephenson, clarinet",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-22T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Lance Thigpen, saxophone & Isai Perez, jazz guitar",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-22T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Lift Every Voice: A Legacy of Harmony",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-24T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
       "title": "Coffee with the Chiefs",
       "url": "https://www.valdostacity.com/event/coffee-chiefs-0",
-      "description": "Join us for 'Coffee with the Chiefs', an engaging event where attendees can meet local law enforcement leaders, discuss community issues, and enjoy a.",
+      "description": "Join us for 'Coffee with the Chiefs', a unique opportunity to engage with local law enforcement leaders.",
       "start": "2026-02-25T09:00:00",
       "allDay": false,
       "recurring_pattern": "None"
     },
     {
+      "title": "Concert Band and Wind Ensemble",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-25T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
       "title": "2026 Chamber Annual Awards",
       "url": "https://business.valdostachamber.com/events/Details/2026-chamber-annual-awards-1587292?sourceTypeId=Website",
-      "description": "All Chamber members are cordially invited to celebrate the achievements of the past year as we recognize outstanding individuals and businesses who...",
+      "description": "Join us for the 2026 Chamber Annual Awards, a prestigious event celebrating the achievements of the past year.",
       "start": "2026-02-26T17:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -36,10 +83,89 @@
     {
       "title": "The Doo Wop Project",
       "url": "https://turnercenter.org/presenter-series-2/",
-      "description": "The Doo Wop Project is a vibrant musical experience that celebrates the classic sounds of the 1950s and 60s.",
+      "description": "The Doo Wop Project is a vibrant musical experience that brings the classic sounds of the 1950s and 60s to life.",
       "start": "2026-02-26T19:00:00",
       "allDay": false,
       "recurring_pattern": null
+    },
+    {
+      "title": "Student Recital: Tyress McGauley, jazz percussion",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-26T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Presenter Series Second Show of the Season",
+      "start": "2026-02-26T19:30:00",
+      "description": "A Brand New Show from America\u2019s Premiere Doo Wop Group The dynamic Broadway stars of The Doo Wop Project are on a mission to put Doo Wop on everyone\u2019s playlist! With their smokin\u2019 hot band, they captu",
+      "url": "https://turnercenter.org/event/presenter-series-second-show-of-the-season/",
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Ramiyah Fulton, jazz percussion & Aidan Lee, jazz percussion",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-27T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Oscar Suy-Perez, jazz piano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-28T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Jada Sanders, soprano & Johnny Dixon, trumpet",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-02-28T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Kayla Griffin, mezzo-soprano & Michael Lurie, bass trombone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-01T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Graduate Recital: Ashley Acksen, soprano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-01T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Flute Studio Recital: Flutes & Friends",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-01T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Alysia Johnson, violin",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-03T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Riley Carr, trombone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-04T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
     },
     {
       "title": "March Business After Hours- Valdosta State University Foundation",
@@ -60,15 +186,23 @@
     {
       "title": "South Georgia Film Festival",
       "url": "https://southgeorgiafilm.com/",
-      "description": "The South Georgia Film Festival is a vibrant celebration of cinema, showcasing a diverse range of films from local and international filmmakers.",
+      "description": "The South Georgia Film Festival is an exciting event showcasing independent films from various genres.",
       "start": "2026-03-06T19:00:00",
       "allDay": false,
       "recurring_pattern": null
     },
     {
+      "title": "Student Recital: Natalie Savoie, trombone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-07T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
       "title": "South Georgia Film Festival",
       "url": "https://southgeorgiafilm.com/",
-      "description": "The South Georgia Film Festival is a vibrant celebration of independent cinema, showcasing a diverse range of films from local and international...",
+      "description": "The South Georgia Film Festival is an exciting event showcasing independent films from various genres.",
       "start": "2026-03-07T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -76,18 +210,127 @@
     {
       "title": "South Georgia Film Festival",
       "url": "https://southgeorgiafilm.com/",
-      "description": "The South Georgia Film Festival is an exciting event showcasing independent films from various genres.",
+      "description": "The South Georgia Film Festival is a vibrant celebration of film and creativity, showcasing a diverse range of independent films.",
       "start": "2026-03-08T19:00:00",
       "allDay": false,
       "recurring_pattern": null
     },
     {
+      "title": "Faculty Jazz Combo",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-10T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Theo Horton, horn & Rebekah McCord, flute",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-11T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "6th Annual Art of Writing Contest Awards Reception",
+      "start": "2026-03-12T18:00:00",
+      "description": "",
+      "url": "https://turnercenter.org/event/6th-annual-art-of-writing-contest-awards-reception/",
+      "recurring_pattern": ""
+    },
+    {
       "title": "The Broadway Boys",
       "url": "https://turnercenter.org/presenter-series-2/",
-      "description": "The Broadway Boys is a captivating performance that showcases a dynamic group of male vocalists, blending classic Broadway hits with contemporary...",
+      "description": "The Broadway Boys is an electrifying performance that showcases the talents of some of Broadway's finest male vocalists.",
       "start": "2026-03-19T19:00:00",
       "allDay": false,
       "recurring_pattern": null
+    },
+    {
+      "title": "Presenter Series Third Show of the Season",
+      "start": "2026-03-19T19:30:00",
+      "description": "Presenting \u2013 THE BROADWAY BOYS! The Broadway Boys is a collection of diverse male voices from the New York stage, representing shows such as HAMILTON, WICKED, JERSEY BOYS, THE LION KING, THE BOOK OF M",
+      "url": "https://turnercenter.org/event/presenter-series-third-show-of-the-season/",
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Spring Into Art \u2013 Entry Deadline",
+      "start": "2026-03-20T00:00:00",
+      "description": "Completed entry forms and entry fees should be received or postmarked by Friday, March 20. Mail form to the Turner Center, 527 N. Patterson St., Valdosta, GA 31601. An artist must complete an entry fo",
+      "url": "https://turnercenter.org/event/spring-into-art-entry-deadline/",
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Low Brass Ensembles",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-24T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Graduate Recital: Justin McKinney, tuba",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-25T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Shanya Garnett Bradshaw, soprano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-26T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Elle Perryman, soprano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-27T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Britney White, soprano & Joely Myrick, euphonium",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-28T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Christina Kato, tuba",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-28T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Valdosta Symphony Orchestra: Progression",
+      "url": "https://valdostasymphony.org/tickets.php",
+      "description": "The Valdosta Symphony Orchestra presents 'Progression', an engaging concert that showcases a blend of classical and contemporary music.",
+      "start": "2026-03-28T19:00:00",
+      "allDay": false,
+      "recurring_pattern": null
+    },
+    {
+      "title": "Percussion Ensemble & Steel Band",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-31T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Matthew Seebran, saxophone & Seth Lee, jazz saxophone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-02T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
     },
     {
       "title": "First Friday",
@@ -98,10 +341,90 @@
       "recurring_pattern": "First Friday of every month"
     },
     {
+      "title": "Student Recital: Sergio Sabillon, violin",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-03T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Kenzie Taylor, flute",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-04T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Danarieza Villa Nu\u00f1ez, soprano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-04T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Benjamin Suarez, viola",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-04T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Jazz Combos",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-07T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "High Brass Ensembles",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-08T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "District 8 Honor Jazz Ensemble",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-09T14:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Opera After Dark",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-09T18:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
       "title": "2026 Bluesberry Festival",
       "url": "https://www.facebook.com/events/unity-park-amphitheater/bluesberry-festival-2026/853337284334758/",
       "description": "Join us in Historic Downtown Valdosta for the 4th Annual Bluesberry Festival \u2014 a FREE, family-friendly celebration of music, community, and...",
       "start": "2026-04-10T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Faculty Recital: Laurel Yu, viola",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-10T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Ana Ribot Rodriguez, flute",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-11T17:00:00",
       "allDay": false,
       "recurring_pattern": ""
     },
@@ -114,10 +437,178 @@
       "recurring_pattern": ""
     },
     {
+      "title": "String Ensemble",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-12T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Brody Johnson, jazz trumpet & Tirik Williams, jazz trombone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-12T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Faculty Recital: Bradley Sowell, baritone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-12T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "New Jazz Ensemble featuring Mike Kamuf, composer/arranger/trumpet",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-14T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Graduate Recital: Alex Burch, horn",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-15T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Jazz Ensemble featuring Ellen Rowe, composer/arranger/piano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-16T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Voce Vita & Spotlighters",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-17T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Guest Artist Recital: The Moanin\u2019 Frogs (saxophone sextet)",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-17T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Dancing with the Stars",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-18T18:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Zachary Whitesides, percussion & Chris Singleton, percussion",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-19T15:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Doug Farwell & Friends",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-19T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Wind Ensemble",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-20T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Larry Hon, saxophone",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-21T18:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Jakalin Bryant, percussion",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-21T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Guitar Ensemble",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-22T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Undergraduate & Graduate Chamber Music",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-25T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
       "title": "Unity Park Spring Fest",
       "url": "https://www.facebook.com/events/1321233305978398/?acontext=%7B%22action_history%22%3A%22null%22%7D&ref_source=newsfeed&ref_mechanism=feed_attachment",
       "description": "Head to 301 East Central Ave to enjoy live entertainment, food trucks and vendors. There will also be a bounce house for kids!",
       "start": "2026-04-25T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Concert Band",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-26T13:30:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Joint Piano and Dance Concert",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-26T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Chamber Singers",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-27T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Concert Choir & Musical Union",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-28T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Woodwind Showcase",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-04-28T19:00:00",
       "allDay": false,
       "recurring_pattern": ""
     },
@@ -128,6 +619,22 @@
       "start": "2026-05-01T17:00:00",
       "allDay": false,
       "recurring_pattern": "First Friday of every month"
+    },
+    {
+      "title": "Valdosta Symphony Orchestra: Made in America",
+      "url": "https://valdostasymphony.org/tickets.php",
+      "description": "The Valdosta Symphony Orchestra presents 'Made in America', a captivating concert celebrating American music and culture.",
+      "start": "2026-05-02T19:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "South Georgia String Project",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-05-05T18:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
     },
     {
       "title": "First Friday",
@@ -148,7 +655,7 @@
     {
       "title": "Valdosta Comic Con",
       "url": "http://valdostacomiccon.com/",
-      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime at Valdosta State University.",
+      "description": "Valdosta Comic Con is a vibrant three-day event celebrating comics, games, and anime. Attendees can meet industry guests, participate in fan panels,..",
       "start": "2026-07-24T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -162,5 +669,5 @@
       "recurring_pattern": null
     }
   ],
-  "count": 20
+  "count": 84
 }

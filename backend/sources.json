@@ -84,11 +84,11 @@
   ],
   "settings": {
     "passcode_hash": "0d4a67cd480b8bc2b2805f48bbd44be60efc64b488788a774d0428f2be0973ce",
-    "last_updated": "2026-02-19T18:18:58.755732Z",
+    "last_updated": "2026-02-19T18:42:27.816650Z",
     "cache": {
       "meetings": true,
       "classes": true,
-      "events": false
+      "events": true
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-19T12:58:01.305837Z",
+  "timestamp": "2026-02-19T17:02:39.296448Z",
   "data": [
     {
       "title": "Faculty Recital: Ryan Sorenson, tuba/euphonium",
@@ -12,7 +12,7 @@
     {
       "title": "Georgia Arbor Day Celebration",
       "url": "https://www.valdostacity.com/event/georgia-arbor-day-celebration",
-      "description": "Join us for the Georgia Arbor Day Celebration, a special event dedicated to promoting tree planting and environmental awareness.",
+      "description": "Join us for the Georgia Arbor Day Celebration, a special event dedicated to promoting the importance of trees and environmental stewardship.",
       "start": "2026-02-20T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -20,7 +20,7 @@
     {
       "title": "Tree Commission Tree Give Away Pick-Up",
       "url": "https://www.valdostacity.com/event/tree-commission-tree-give-away-pick",
-      "description": "The Tree Commission Tree Give Away Pick-Up event allows community members to receive free trees to plant in their yards.",
+      "description": "The Tree Commission Tree Give Away Pick-Up is an event where community members can collect free trees to plant in their yards or local areas.",
       "start": "2026-02-21T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -75,7 +75,7 @@
     {
       "title": "The Doo Wop Project",
       "url": "https://turnercenter.org/presenter-series-2/",
-      "description": "The Doo Wop Project is a vibrant musical experience that celebrates the classic sounds of the 1950s and 60s.",
+      "description": "The Doo Wop Project is a vibrant musical experience that brings the classic sounds of the 1950s and 60s to life.",
       "start": "2026-02-26T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -178,10 +178,10 @@
     {
       "title": "South Georgia Film Festival",
       "url": "https://southgeorgiafilm.com/",
-      "description": "The South Georgia Film Festival is a vibrant celebration of independent cinema, showcasing a diverse range of films from emerging filmmakers.",
+      "description": "The South Georgia Film Festival is an exciting event showcasing independent films from around the region.",
       "start": "2026-03-06T19:00:00",
       "allDay": false,
-      "recurring_pattern": "None"
+      "recurring_pattern": null
     },
     {
       "title": "First Friday",
@@ -202,7 +202,7 @@
     {
       "title": "South Georgia Film Festival",
       "url": "https://southgeorgiafilm.com/",
-      "description": "The South Georgia Film Festival is an exciting event showcasing independent films from various genres.",
+      "description": "The South Georgia Film Festival is a vibrant celebration of independent cinema, showcasing a diverse range of films from local and international...",
       "start": "2026-03-07T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -213,7 +213,7 @@
       "description": "The South Georgia Film Festival is a vibrant celebration of independent cinema, showcasing a diverse range of films from local and international...",
       "start": "2026-03-08T19:00:00",
       "allDay": false,
-      "recurring_pattern": "N/A"
+      "recurring_pattern": null
     },
     {
       "title": "Faculty Jazz Combo",
@@ -241,7 +241,7 @@
     {
       "title": "The Broadway Boys",
       "url": "https://turnercenter.org/presenter-series-2/",
-      "description": "The Broadway Boys is a vibrant musical performance featuring a talented ensemble of male vocalists.",
+      "description": "The Broadway Boys is a captivating performance that showcases a dynamic group of male vocalists, blending classic Broadway hits with contemporary...",
       "start": "2026-03-19T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -311,7 +311,7 @@
     {
       "title": "Valdosta Symphony Orchestra: Progression",
       "url": "https://valdostasymphony.org/tickets.php",
-      "description": "The Valdosta Symphony Orchestra presents 'Progression', an engaging concert featuring a diverse repertoire that showcases the talents of the...",
+      "description": "The Valdosta Symphony Orchestra presents 'Progression', an engaging musical experience that showcases a variety of compositions and performances.",
       "start": "2026-03-28T19:00:00",
       "allDay": false,
       "recurring_pattern": null
@@ -623,10 +623,10 @@
     {
       "title": "Valdosta Symphony Orchestra: Made in America",
       "url": "https://valdostasymphony.org/tickets.php",
-      "description": "The Valdosta Symphony Orchestra presents 'Made in America', a captivating concert celebrating American music.",
+      "description": "The Valdosta Symphony Orchestra presents 'Made in America', a captivating concert celebrating American music and culture.",
       "start": "2026-05-02T19:00:00",
       "allDay": false,
-      "recurring_pattern": ""
+      "recurring_pattern": null
     },
     {
       "title": "South Georgia String Project",
@@ -667,15 +667,7 @@
       "start": "2026-07-25T19:00:00",
       "allDay": false,
       "recurring_pattern": null
-    },
-    {
-      "title": "Valdosta Comic Con",
-      "url": "http://valdostacomiccon.com/",
-      "description": "Valdosta Comic Con is a three-day event at Valdosta State University celebrating comics, games, and anime.",
-      "start": "2026-07-26T19:00:00",
-      "allDay": false,
-      "recurring_pattern": null
     }
   ],
-  "count": 85
+  "count": 84
 }

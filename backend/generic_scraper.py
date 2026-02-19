@@ -477,8 +477,10 @@ INSTRUCTIONS:
    - Do NOT extract dates for other events on the same page
 
 3. TIME EXTRACTION:
-   - Extract time like "7:00 PM" → "19:00" (24-hour format)
-   - Default to "19:00" if no time found
+   - Look carefully for ANY time mention: "8:00am", "5:00 PM", "9:30 AM", "(5:00 PM - 9:00 PM)", etc.
+   - Convert to 24-hour HH:MM format: "8:00am" → "08:00", "5:00 PM" → "17:00", "7:30 PM" → "19:30"
+   - Use the START time if a range is given (e.g. "5:00 PM - 9:00 PM" → "17:00")
+   - Only default to "19:00" if NO time is found anywhere on the page
 
 4. DESCRIPTION EXTRACTION:
    - Extract a comprehensive description (200-300 characters)
@@ -1259,8 +1261,19 @@ HTML:
                 for element in event_soup(["script", "style", "nav", "footer", "header"]):
                     element.decompose()
 
-                # Get event page content
-                event_content = str(event_soup.body)[:30000] if event_soup.body else str(event_soup)[:30000]
+                # Get event page content: prefer <main> or <article> to avoid
+                # large nav/header HTML pushing the actual event details past the
+                # character limit that is sent to the AI.
+                main_el = (event_soup.find("main") or
+                           event_soup.find("article") or
+                           event_soup.find(id="main") or
+                           event_soup.find(id="content"))
+                if main_el:
+                    event_content = str(main_el)[:30000]
+                elif event_soup.body:
+                    event_content = str(event_soup.body)[:30000]
+                else:
+                    event_content = str(event_soup)[:30000]
 
                 # Stage 2 AI prompt - Use category-specific prompts
                 today = datetime.now()
@@ -1405,9 +1418,12 @@ HTML:
 
                     if is_internal_valdosta and fallback_date:
                         # Always use calendar dates for valdostacity.com internal pages
+                        # Use Stage 2's time (from event detail page) as it has the actual start time.
+                        # Only fall back to Stage 1's time if Stage 2 returned the default 19:00.
                         print(f"[Two-Stage]   Using calendar date for internal page: {event_title} on {fallback_date}")
                         dates = [fallback_date]
-                        time_str = fallback_time
+                        if time_str == '19:00' and fallback_time and fallback_time != '19:00':
+                            time_str = fallback_time
                     elif not dates:
                         # No dates in Stage 2, use fallback from Stage 1 (listing page)
                         if fallback_date:

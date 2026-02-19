@@ -10,7 +10,13 @@ WORKDIR /app
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy and build frontend
+COPY frontend/ ./frontend/
+WORKDIR /app/frontend
+RUN npm install && npm run build
+
 # Copy backend
+WORKDIR /app
 COPY backend/ ./backend/
 
 # Run the app with Uvicorn

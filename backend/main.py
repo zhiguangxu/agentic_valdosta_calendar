@@ -1005,6 +1005,12 @@ def update_cache_settings_endpoint(request: CacheSettingRequest, passcode: str):
             raise HTTPException(status_code=403, detail="Invalid passcode")
 
         source_manager.update_cache_setting(request.type, request.enabled)
+
+        # When caching is turned ON, clear any existing stale cache so the next
+        # load triggers a fresh scrape and saves up-to-date data.
+        if request.enabled:
+            cache_manager.clear_cache(request.type)
+
         return {"message": f"Cache setting for {request.type} updated successfully"}
     except HTTPException as he:
         raise he

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-19T12:49:53.166590Z",
+  "timestamp": "2026-02-19T18:17:46.570403Z",
   "data": [
     {
       "title": "Advanced Oil Painting",
@@ -83,6 +83,13 @@
       "start": "2026-02-28T09:45:00",
       "description": "Offered the 4th Saturday of each month | 9:45am-12:45pm OR 12:45pm-3:45pm Three hour sessions | Three students max per session Class is held behind the Richard Hill Glass Studio Explore the process of",
       "url": "https://turnercenter.org/event/raku-firing-sessions-9/",
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Fiber Arts Journal Class",
+      "start": "2026-02-28T10:00:00",
+      "description": "Beginner Level Rug Hooking Join Fiber artist Anita Gillis for an introduction to rug hooking and discover a new hobby! Rug hooking is essentially a stress-free art form. It\u2019s similar to coloring, but ",
+      "url": "https://turnercenter.org/event/fiber-arts-journal-class-2/",
       "recurring_pattern": ""
     },
     {
@@ -429,6 +436,13 @@
       "recurring_pattern": ""
     },
     {
+      "title": "Fiber Arts Journal Class",
+      "start": "2026-03-28T10:00:00",
+      "description": "Beginner Level Rug Hooking Join Fiber artist Anita Gillis for an introduction to rug hooking and discover a new hobby! Rug hooking is essentially a stress-free art form. It\u2019s similar to coloring, but ",
+      "url": "https://turnercenter.org/event/fiber-arts-journal-class-3/",
+      "recurring_pattern": ""
+    },
+    {
       "title": "Ceramics Open Studio",
       "start": "2026-03-28T12:00:00",
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
@@ -590,6 +604,13 @@
       "recurring_pattern": ""
     },
     {
+      "title": "Fiber Arts Journal Class",
+      "start": "2026-04-25T10:00:00",
+      "description": "Beginner Level Rug Hooking Join Fiber artist Anita Gillis for an introduction to rug hooking and discover a new hobby! Rug hooking is essentially a stress-free art form. It\u2019s similar to coloring, but ",
+      "url": "https://turnercenter.org/event/fiber-arts-journal-class-4/",
+      "recurring_pattern": ""
+    },
+    {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-04-27T17:00:00",
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, April 6, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
@@ -604,5 +625,5 @@
       "recurring_pattern": ""
     }
   ],
-  "count": 86
+  "count": 89
 }

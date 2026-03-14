@@ -11,3 +11,30 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* FullCalendar view-switcher buttons */
+.fc .fc-button {
+  background-color: #f0f0f0;
+  border: 1.5px solid #bbb;
+  color: #555;
+  font-weight: 500;
+  padding: 6px 14px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.fc .fc-button:hover:not(.fc-button-active):not(:disabled) {
+  background-color: #ddd;
+  color: #222;
+  border-color: #999;
+}
+
+.fc .fc-button-active,
+.fc .fc-button-active:focus {
+  background-color: #1a6fad !important;
+  border-color: #1a6fad !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em;
+  box-shadow: 0 3px 8px rgba(26, 111, 173, 0.5) !important;
+  transform: translateY(-1px);
+}

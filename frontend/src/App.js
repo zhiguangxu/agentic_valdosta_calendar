@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
@@ -407,8 +408,21 @@ function App() {
         {/* Calendar */}
         {categoryData.length > 0 && (
           <FullCalendar
-            plugins={[dayGridPlugin, interactionPlugin]}
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
+            }}
+            buttonText={{
+              today: "Today",
+              month: "Month",
+              week: "Week",
+              day: "Day",
+            }}
+            dayMaxEvents={4}
+            scrollTime="08:00:00"
             events={categoryData}
             eventClick={(info) => {
               if (info.event.url) {

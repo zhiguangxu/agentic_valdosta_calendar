@@ -954,7 +954,7 @@ CLASSES-SPECIFIC:
 - Include instructor names in title if visible
 - For recurring classes, note the schedule pattern
 - Parse times: "2:00pm" → "14:00", default to "10:00" if not found
-- Extract ALL upcoming classes
+- Extract ALL classes from today and beyond - include classes that start today even if they started earlier today
 
 Return JSON: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
 
@@ -975,7 +975,7 @@ MEETINGS-SPECIFIC:
 - Extract exact meeting times
 - Note location if visible in listing
 - For recurring meetings, note the pattern
-- Extract ALL upcoming meetings
+- Extract ALL meetings from today and beyond - include meetings that start today even if they started earlier today
 
 Return JSON: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
 
@@ -1004,8 +1004,9 @@ INSTRUCTIONS:
 - For calendar tables, look for links within cells
 - Parse times: "7:00pm" → "19:00", "10:00am" → "10:00"
 - Use current or upcoming year (2026) for dates
-- Extract ALL future events from ALL months (February, March, April, May, etc.)
-- Only skip events that are clearly in the past (before February 7, 2026)
+- Extract ALL events from today ({datetime.now().strftime("%Y-%m-%d")}) and future months
+- Include ALL events for today even if they started earlier today - do NOT filter by time of day
+- Only skip events that are clearly before today's date ({datetime.now().strftime("%Y-%m-%d")})
 - If multiple events occur on the same day, extract ALL of them
 
 Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
@@ -1786,9 +1787,9 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
                     # Generate occurrences for next 6 months (approx 26 weeks)
                     current_date = datetime.now().date()
 
-                    # Find the next occurrence of this weekday
+                    # Find the next occurrence of this weekday (include today)
                     days_ahead = target_weekday - current_date.weekday()
-                    if days_ahead <= 0:  # Target day already happened this week
+                    if days_ahead < 0:  # Target day already happened this week (not today)
                         days_ahead += 7
 
                     next_occurrence = current_date + timedelta(days=days_ahead)

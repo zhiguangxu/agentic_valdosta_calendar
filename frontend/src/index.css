@@ -211,16 +211,22 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
   .fc-scrollgrid-sync-table { width: 100% !important; }
 }
 
-/* ── Tippy tooltip: light style ─────────────────────────── */
+/* ── Tippy tooltip: light gray style ────────────────────── */
+.tippy-box[data-theme],
 .tippy-box {
-  background-color: #f0f7ff;
-  color: #2c3e50;
-  border: 1px solid #93c5fd;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-size: 13px;
+  background-color: #f5f5f5 !important;
+  color: #333 !important;
+  border: 1px solid #ccc !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+  font-size: 13px !important;
 }
-.tippy-arrow { color: #f0f7ff; }
-.tippy-box a { color: #1a6fad; }
+.tippy-box[data-placement^='top'] > .tippy-arrow::before,
+.tippy-box[data-placement^='bottom'] > .tippy-arrow::before,
+.tippy-box[data-placement^='left'] > .tippy-arrow::before,
+.tippy-box[data-placement^='right'] > .tippy-arrow::before,
+.tippy-arrow::before { border-top-color: #f5f5f5 !important; }
+.tippy-arrow { color: #f5f5f5 !important; }
+.tippy-box a { color: #1a6fad !important; }
 
 /* ── Mobile event detail bottom-sheet ───────────────────── */
 .event-modal-overlay {

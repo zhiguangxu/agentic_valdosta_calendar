@@ -1219,10 +1219,11 @@ HTML:
 
         print(f"[Two-Stage] Stage 1: {len(events_with_external_urls)} events with external URLs, {len(events_without_external_urls)} events without")
 
-        # Layer 2: Skip Stage 2 when Stage 1 already has sufficient data.
-        # - Meetings: skip if Stage 1 has valid date + time (government calendars are authoritative)
-        # - Events:   skip if Stage 1 has valid date + time (saves Stage 2 latency for well-listed events)
-        if source_type in ('meetings', 'events'):
+        # Layer 2: For meetings only — skip Stage 2 when Stage 1 already has a valid date + time.
+        # Government meeting calendars are authoritative so listing-page dates are reliable.
+        # Events are NOT included: event listing pages often show promotion/feature dates rather
+        # than actual event dates, and Stage 2 is needed to correct them.
+        if source_type == 'meetings':
             stage2_needed = []
             skipped = 0
             for event in events_with_external_urls:
@@ -1234,7 +1235,7 @@ HTML:
                 else:
                     stage2_needed.append(event)
             events_with_external_urls = stage2_needed
-            print(f"[Two-Stage] Layer 2: {skipped} use Stage 1 directly, {len(stage2_needed)} still need Stage 2")
+            print(f"[Two-Stage] Meetings Layer 2: {skipped} use Stage 1 directly, {len(stage2_needed)} still need Stage 2")
 
         # Process events WITHOUT external URLs (use listing page dates)
         all_results = []

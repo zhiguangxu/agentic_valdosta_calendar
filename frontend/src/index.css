@@ -211,6 +211,17 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
   .fc-scrollgrid-sync-table { width: 100% !important; }
 }
 
+/* ── Tippy tooltip: light style ─────────────────────────── */
+.tippy-box {
+  background-color: #f0f7ff;
+  color: #2c3e50;
+  border: 1px solid #93c5fd;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-size: 13px;
+}
+.tippy-arrow { color: #f0f7ff; }
+.tippy-box a { color: #1a6fad; }
+
 /* ── Mobile event detail bottom-sheet ───────────────────── */
 .event-modal-overlay {
   position: fixed; inset: 0;

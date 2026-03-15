@@ -433,10 +433,11 @@ def deduplicate_events(events: List[Dict]) -> List[Dict]:
                     print(f"    → Keeping Event 2 (better description)")
                     skip_indices.add(i)
                     skip_indices.remove(j)
-                    is_duplicate = False  # Current is duplicate, other is kept
+                    is_duplicate = True  # i (current) is the duplicate being removed
                     break
                 else:
                     print(f"    → Keeping Event 1 (better/same description)")
+                    is_duplicate = False  # i (current) is being kept, not removed
 
         if not is_duplicate:
             final_events.append(event)

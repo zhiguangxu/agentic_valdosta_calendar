@@ -31,6 +31,12 @@ function App() {
   const [activeTab, setActiveTab] = useState("classes");
   const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Use ref to store EventSource so we can clean it up
   const eventSourceRefs = React.useRef({
@@ -410,11 +416,11 @@ function App() {
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
-            }}
+            headerToolbar={
+              isMobile
+                ? { left: "prev,next", center: "title", right: "" }
+                : { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" }
+            }
             buttonText={{
               today: "Today",
               month: "Month",
@@ -489,21 +495,21 @@ function App() {
 
   // Otherwise show main calendar
   return (
-    <div style={{ maxWidth: "900px", margin: "40px auto 0 auto", position: "relative" }}>
+    <div style={{ maxWidth: "900px", margin: isMobile ? "0 auto" : "40px auto 0 auto", padding: isMobile ? "0 12px" : "0", position: "relative" }}>
       {/* Settings Button - Floating */}
       <button
         onClick={() => setShowSettings(true)}
         style={{
           position: "fixed",
-          top: "20px",
-          right: "20px",
-          padding: "12px 20px",
+          top: isMobile ? "10px" : "20px",
+          right: isMobile ? "10px" : "20px",
+          padding: isMobile ? "10px 14px" : "12px 20px",
           backgroundColor: "#34495e",
           color: "white",
           border: "none",
           borderRadius: "50px",
           cursor: "pointer",
-          fontSize: "14px",
+          fontSize: isMobile ? "12px" : "14px",
           fontWeight: "600",
           boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
           zIndex: 1000,
@@ -532,9 +538,9 @@ function App() {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           position: "relative",
-          padding: "60px 40px",
-          borderRadius: "12px",
-          marginBottom: "40px",
+          padding: isMobile ? "28px 16px" : "60px 40px",
+          borderRadius: isMobile ? "0" : "12px",
+          marginBottom: isMobile ? "20px" : "40px",
           boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
           overflow: "hidden",
         }}
@@ -557,7 +563,7 @@ function App() {
           <h1
             style={{
               color: "white",
-              fontSize: "2.5rem",
+              fontSize: isMobile ? "1.4rem" : "2.5rem",
               fontWeight: "700",
               margin: "0 0 15px 0",
               textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
@@ -570,7 +576,7 @@ function App() {
           <p
             style={{
               color: "rgba(255,255,255,0.9)",
-              fontSize: "1.2rem",
+              fontSize: isMobile ? "0.95rem" : "1.2rem",
               textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
               maxWidth: "600px",
               margin: "0 auto",
@@ -597,12 +603,12 @@ function App() {
           onClick={() => setActiveTab("classes")}
           style={{
             flex: 1,
-            padding: "15px 20px",
+            padding: isMobile ? "12px 4px" : "15px 20px",
             border: "none",
             backgroundColor:
               activeTab === "classes" ? "#3498db" : "transparent",
             color: activeTab === "classes" ? "white" : "#495057",
-            fontSize: "16px",
+            fontSize: isMobile ? "13px" : "16px",
             fontWeight: "600",
             cursor: "pointer",
             transition: "all 0.3s ease",
@@ -646,12 +652,12 @@ function App() {
           onClick={() => setActiveTab("events")}
           style={{
             flex: 1,
-            padding: "15px 20px",
+            padding: isMobile ? "12px 4px" : "15px 20px",
             border: "none",
             backgroundColor:
               activeTab === "events" ? "#3498db" : "transparent",
             color: activeTab === "events" ? "white" : "#495057",
-            fontSize: "16px",
+            fontSize: isMobile ? "13px" : "16px",
             fontWeight: "600",
             cursor: "pointer",
             transition: "all 0.3s ease",
@@ -695,12 +701,12 @@ function App() {
           onClick={() => setActiveTab("meetings")}
           style={{
             flex: 1,
-            padding: "15px 20px",
+            padding: isMobile ? "12px 4px" : "15px 20px",
             border: "none",
             backgroundColor:
               activeTab === "meetings" ? "#3498db" : "transparent",
             color: activeTab === "meetings" ? "white" : "#495057",
-            fontSize: "16px",
+            fontSize: isMobile ? "13px" : "16px",
             fontWeight: "600",
             cursor: "pointer",
             transition: "all 0.3s ease",
@@ -744,12 +750,12 @@ function App() {
           onClick={() => setActiveTab("attractions")}
           style={{
             flex: 1,
-            padding: "15px 20px",
+            padding: isMobile ? "12px 4px" : "15px 20px",
             border: "none",
             backgroundColor:
               activeTab === "attractions" ? "#3498db" : "transparent",
             color: activeTab === "attractions" ? "white" : "#495057",
-            fontSize: "16px",
+            fontSize: isMobile ? "13px" : "16px",
             fontWeight: "600",
             cursor: "pointer",
             transition: "all 0.3s ease",
@@ -769,7 +775,7 @@ function App() {
             }
           }}
         >
-          🏛️ Visit Valdosta
+          {isMobile ? "🏛️ Visits" : "🏛️ Visit Valdosta"}
           {attractions.length > 0 && (
             <span
               style={{

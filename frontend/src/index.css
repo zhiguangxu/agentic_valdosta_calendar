@@ -38,3 +38,12 @@ code {
   box-shadow: 0 3px 8px rgba(26, 111, 173, 0.5) !important;
   transform: translateY(-1px);
 }
+
+/* ── Mobile: FullCalendar tweaks ──────────────────────── */
+@media (max-width: 639px) {
+  .fc .fc-toolbar-title   { font-size: 1rem; }
+  .fc .fc-button          { padding: 4px 8px; font-size: 13px; }
+  .fc .fc-daygrid-day-number { font-size: 12px; }
+  .fc-event-title         { font-size: 11px; }
+  .fc                     { overflow-x: hidden; }
+}

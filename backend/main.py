@@ -1229,4 +1229,7 @@ def update_cache_settings_endpoint(request: CacheSettingRequest, passcode: str):
 if MODE == "HF":
     @app.get("/{full_path:path}")
     def serve_react_app(full_path: str):
-        return FileResponse("backend/static/index.html")
+        return FileResponse(
+            "backend/static/index.html",
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )

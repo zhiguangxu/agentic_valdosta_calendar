@@ -858,7 +858,7 @@ def extract_categories(attraction: Dict) -> List[str]:
 # Generate events with progressive updates (SSE)
 # -----------------------------
 # Create a thread pool executor for running blocking scraping operations
-executor = ThreadPoolExecutor(max_workers=10)
+executor = ThreadPoolExecutor(max_workers=3)
 
 @app.get("/generate_events_stream")
 async def generate_events_stream(category: str = "events"):

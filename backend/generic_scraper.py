@@ -1605,10 +1605,36 @@ HTML:
                         pass
             except Exception as e:
                 print(f"[Two-Stage]   Error scraping {event_title}: {e}")
+                # Fallback: Use listing page data so event is not silently lost
+                fallback_date = event.get('date', '')
+                fallback_time = event.get('time', '')
+                fallback_title = event_title
+                if fallback_date:
+                    try:
+                        parsed_date = datetime.fromisoformat(fallback_date).date()
+                        fallback_recurring = event.get('recurring_pattern', '')
+                        is_recurring = _is_supported_recurring_pattern(fallback_recurring)
+                        if parsed_date >= (datetime.now() - timedelta(days=1)).date() or is_recurring:
+                            if fallback_time and not re.match(r'^\d{2}:\d{2}$', fallback_time):
+                                fallback_time = ''
+                            fallback_desc = _truncate_description(event.get('description', ''))
+                            all_day = not fallback_time
+                            result_item = {
+                                "title": fallback_title,
+                                "url": event_url,
+                                "description": fallback_desc,
+                                "start": fallback_date if all_day else f"{fallback_date}T{fallback_time}:00",
+                                "allDay": all_day,
+                                "recurring_pattern": fallback_recurring
+                            }
+                            results.append(result_item)
+                            print(f"[Two-Stage]   Fallback (error): Added {fallback_title} on {fallback_date}")
+                    except Exception:
+                        pass
 
             return results
 
-        with ThreadPoolExecutor(max_workers=4) as executor:
+        with ThreadPoolExecutor(max_workers=2) as executor:
             futures = {executor.submit(scrape_one_event, event): event
                        for event in events_with_external_urls}
             for future in as_completed(futures):

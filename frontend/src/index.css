@@ -130,6 +130,21 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
 .tab-visits-short { display: none; }
 .tab-visits-full  { display: inline; }
 
+/* ── FullCalendar: no backgrounds on any event ──────────── */
+.fc-event,
+.fc-event-main,
+.fc-daygrid-event,
+.fc-timegrid-event .fc-event-main {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+/* Keep dot colour and text readable */
+.fc-daygrid-event-dot { border-color: #3498db !important; }
+.fc-event-title       { color: #1a6fad; font-weight: 500; }
+.fc-event-time        { color: #1a6fad; }
+
 /* ── FullCalendar base button styles ────────────────────── */
 .fc .fc-button {
   background-color: #f0f0f0;

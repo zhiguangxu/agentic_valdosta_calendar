@@ -31,12 +31,9 @@ function App() {
   const [activeTab, setActiveTab] = useState("classes");
   const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  // Use screen.width (physical device width) so detection works inside HF Space iframes
+  // where window.innerWidth reports the iframe's fixed width (~900px), not the phone screen
+  const isMobile = window.screen.width < 640;
 
   // Use ref to store EventSource so we can clean it up
   const eventSourceRefs = React.useRef({

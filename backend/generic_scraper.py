@@ -1256,7 +1256,7 @@ HTML:
                 is_recurring = _is_supported_recurring_pattern(event_recurring)
 
                 # Skip past dates UNLESS it's a supported recurring event
-                if parsed_date >= datetime.now().date() or is_recurring:
+                if parsed_date >= (datetime.now() - timedelta(days=1)).date() or is_recurring:
                     # Validate time format; keep empty as-is (no confirmed time)
                     if event_time and not re.match(r'^\d{2}:\d{2}$', event_time):
                         event_time = ''
@@ -1405,7 +1405,7 @@ HTML:
                                     is_recurring = _is_supported_recurring_pattern(recurring_pattern)
 
                                     # Skip past dates UNLESS it's a supported recurring class
-                                    if event_date >= datetime.now().date() or is_recurring:
+                                    if event_date >= (datetime.now() - timedelta(days=1)).date() or is_recurring:
                                         all_day = not time_str
                                         result_item = {
                                             "title": full_title,
@@ -1502,7 +1502,7 @@ HTML:
                             is_recurring = _is_supported_recurring_pattern(recurring_pattern)
 
                             # Skip past dates UNLESS it's a supported recurring event
-                            if event_date >= datetime.now().date() or is_recurring:
+                            if event_date >= (datetime.now() - timedelta(days=1)).date() or is_recurring:
                                 all_day = not time_str
                                 result_item = {
                                     "title": event_title,
@@ -1545,7 +1545,7 @@ HTML:
                         is_recurring = _is_supported_recurring_pattern(fallback_recurring)
 
                         # Skip past dates UNLESS it's a supported recurring event
-                        if parsed_date >= datetime.now().date() or is_recurring:
+                        if parsed_date >= (datetime.now() - timedelta(days=1)).date() or is_recurring:
                             if fallback_time and not re.match(r'^\d{2}:\d{2}$', fallback_time):
                                 fallback_time = ''
                             fallback_desc = _truncate_description(event.get('description', ''))
@@ -1583,7 +1583,7 @@ HTML:
                         is_recurring = _is_supported_recurring_pattern(fallback_recurring)
 
                         # Skip past dates UNLESS it's a supported recurring event
-                        if parsed_date >= datetime.now().date() or is_recurring:
+                        if parsed_date >= (datetime.now() - timedelta(days=1)).date() or is_recurring:
                             if fallback_time and not re.match(r'^\d{2}:\d{2}$', fallback_time):
                                 fallback_time = ''
                             fallback_desc = _truncate_description(event.get('description', ''))

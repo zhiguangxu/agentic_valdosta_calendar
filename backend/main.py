@@ -521,7 +521,106 @@ def deduplicate_classes(classes: List[Dict]) -> List[Dict]:
                 else:
                     print(f"    → Keeping existing (longer or same title)")
 
-    return list(best_classes.values())
+    # Second pass: Conservative time-window deduplication
+    # Catches duplicate classes from different sources within 90 minutes
+    from datetime import datetime
+
+    final_classes = []
+    skip_indices = set()
+    classes_list = list(best_classes.values())
+
+    for i, cls in enumerate(classes_list):
+        if i in skip_indices:
+            continue
+
+        cls_datetime_str = cls.get('start', '')
+        if not cls_datetime_str or len(cls_datetime_str) < 16:
+            final_classes.append(cls)
+            continue
+
+        try:
+            cls_dt = datetime.fromisoformat(cls_datetime_str[:16])
+        except:
+            final_classes.append(cls)
+            continue
+
+        # Check only nearby classes (within ±90 minutes)
+        is_duplicate = False
+        for j in range(i + 1, len(classes_list)):
+            if j in skip_indices:
+                continue
+
+            other_cls = classes_list[j]
+            other_datetime_str = other_cls.get('start', '')
+
+            if not other_datetime_str or len(other_datetime_str) < 16:
+                continue
+
+            try:
+                other_dt = datetime.fromisoformat(other_datetime_str[:16])
+            except:
+                continue
+
+            # Check if within 90-minute window
+            time_diff = abs((cls_dt - other_dt).total_seconds() / 60)
+            if time_diff > 90:
+                continue
+
+            # Within time window - check title similarity
+            cls_title = cls.get('title', '').lower()
+            other_title = other_cls.get('title', '').lower()
+            cls_desc = cls.get('description', '').lower().strip()
+            other_desc = other_cls.get('description', '').lower().strip()
+
+            stop_words = {'the', 'a', 'an', 'at', 'in', 'on', 'of', 'and', 'or', 'for', 'to', 'with', 'by'}
+            cls_words = set(cls_title.split()) - stop_words
+            other_words = set(other_title.split()) - stop_words
+
+            if cls_words and other_words:
+                overlap = len(cls_words & other_words)
+                title_similarity = overlap / min(len(cls_words), len(other_words))
+            else:
+                title_similarity = 0
+
+            desc_similarity = 0
+            if cls_desc and other_desc:
+                cls_desc_words = set(cls_desc.split()) - stop_words
+                other_desc_words = set(other_desc.split()) - stop_words
+                if cls_desc_words and other_desc_words:
+                    desc_overlap = len(cls_desc_words & other_desc_words)
+                    desc_similarity = desc_overlap / min(len(cls_desc_words), len(other_desc_words))
+
+            # CONSERVATIVE: Only deduplicate with strong evidence
+            should_deduplicate = (
+                (title_similarity >= 0.7 and time_diff <= 60) or  # High title similarity within 1 hour
+                (desc_similarity >= 0.7 and time_diff <= 60)       # Very high desc similarity within 1 hour
+            )
+
+            if should_deduplicate:
+                skip_indices.add(j)
+
+                print(f"  [DEDUP-CLASSES-TIMEWINDOW] Duplicate found:")
+                print(f"    Class 1: {cls_title[:60]} at {cls_datetime_str[:16]}")
+                print(f"    Class 2: {other_title[:60]} at {other_datetime_str[:16]}")
+                print(f"    Time diff: {time_diff:.0f} min, Title sim: {title_similarity:.2f}, Desc sim: {desc_similarity:.2f}")
+
+                cls_desc_str = cls.get('description', '').strip()
+                other_desc_str = other_cls.get('description', '').strip()
+
+                if len(other_desc_str) > len(cls_desc_str):
+                    print(f"    → Keeping Class 2 (better description)")
+                    skip_indices.add(i)
+                    skip_indices.discard(j)
+                    is_duplicate = True  # i (current) is the duplicate being removed
+                    break
+                else:
+                    print(f"    → Keeping Class 1 (better/same description)")
+                    is_duplicate = False  # i (current) is being kept, not removed
+
+        if not is_duplicate:
+            final_classes.append(cls)
+
+    return final_classes
 
 
 def deduplicate_meetings(meetings: List[Dict]) -> List[Dict]:
@@ -587,7 +686,93 @@ def deduplicate_meetings(meetings: List[Dict]) -> List[Dict]:
                 else:
                     print(f"    → Keeping existing (longer or same title)")
 
-    return list(best_meetings.values())
+    # Second pass: Conservative time-window deduplication
+    # Catches duplicate meetings from different sources within 90 minutes
+    from datetime import datetime
+
+    final_meetings = []
+    skip_indices = set()
+    meetings_list = list(best_meetings.values())
+
+    for i, meeting in enumerate(meetings_list):
+        if i in skip_indices:
+            continue
+
+        meeting_datetime_str = meeting.get('start', '')
+        if not meeting_datetime_str or len(meeting_datetime_str) < 16:
+            final_meetings.append(meeting)
+            continue
+
+        try:
+            meeting_dt = datetime.fromisoformat(meeting_datetime_str[:16])
+        except:
+            final_meetings.append(meeting)
+            continue
+
+        # Check only nearby meetings (within ±90 minutes)
+        is_duplicate = False
+        for j in range(i + 1, len(meetings_list)):
+            if j in skip_indices:
+                continue
+
+            other_meeting = meetings_list[j]
+            other_datetime_str = other_meeting.get('start', '')
+
+            if not other_datetime_str or len(other_datetime_str) < 16:
+                continue
+
+            try:
+                other_dt = datetime.fromisoformat(other_datetime_str[:16])
+            except:
+                continue
+
+            # Check if within 90-minute window
+            time_diff = abs((meeting_dt - other_dt).total_seconds() / 60)
+            if time_diff > 90:
+                continue
+
+            # Within time window - check title similarity (strict for meetings)
+            meeting_title = meeting.get('title', '').lower()
+            other_title = other_meeting.get('title', '').lower()
+
+            stop_words = {'the', 'a', 'an', 'at', 'in', 'on', 'of', 'and', 'or', 'for', 'to', 'with', 'by'}
+            meeting_words = set(meeting_title.split()) - stop_words
+            other_words = set(other_title.split()) - stop_words
+
+            if meeting_words and other_words:
+                overlap = len(meeting_words & other_words)
+                title_similarity = overlap / min(len(meeting_words), len(other_words))
+            else:
+                title_similarity = 0
+
+            # STRICT: Meetings must have very similar titles to be deduplicated
+            should_deduplicate = title_similarity >= 0.85 and time_diff <= 60
+
+            if should_deduplicate:
+                skip_indices.add(j)
+
+                print(f"  [DEDUP-MEETINGS-TIMEWINDOW] Duplicate found:")
+                print(f"    Meeting 1: {meeting_title[:60]} at {meeting_datetime_str[:16]}")
+                print(f"    Meeting 2: {other_title[:60]} at {other_datetime_str[:16]}")
+                print(f"    Time diff: {time_diff:.0f} min, Title sim: {title_similarity:.2f}")
+
+                meeting_desc_str = meeting.get('description', '').strip()
+                other_desc_str = other_meeting.get('description', '').strip()
+
+                if len(other_desc_str) > len(meeting_desc_str):
+                    print(f"    → Keeping Meeting 2 (better description)")
+                    skip_indices.add(i)
+                    skip_indices.discard(j)
+                    is_duplicate = True  # i (current) is the duplicate being removed
+                    break
+                else:
+                    print(f"    → Keeping Meeting 1 (better/same description)")
+                    is_duplicate = False  # i (current) is being kept, not removed
+
+        if not is_duplicate:
+            final_meetings.append(meeting)
+
+    return final_meetings
 
 
 def normalize_title(title: str) -> str:

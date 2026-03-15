@@ -192,3 +192,61 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
   }
   .fc-scrollgrid-sync-table { width: 100% !important; }
 }
+
+/* ── Mobile event detail bottom-sheet ───────────────────── */
+.event-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.event-modal {
+  background: white;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 32px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.event-modal-title {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+.event-modal-desc {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  color: #495057;
+  line-height: 1.5;
+}
+.event-modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.event-modal-link {
+  flex: 1;
+  display: inline-block;
+  padding: 12px 16px;
+  background: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.95rem;
+}
+.event-modal-close {
+  flex: 1;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}

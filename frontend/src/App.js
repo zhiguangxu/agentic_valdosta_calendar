@@ -30,6 +30,7 @@ function App() {
   const [sortBy, setSortBy] = useState("name");
   const [activeTab, setActiveTab] = useState("classes");
   const [showSettings, setShowSettings] = useState(false);
+  const [eventDetail, setEventDetail] = useState(null);
   const attractionsPerPage = 6;
 
 
@@ -424,27 +425,23 @@ function App() {
             }}
             dayMaxEvents={4}
             scrollTime="08:00:00"
-            eventDataTransform={(event) => {
-              if (event.allDay) {
-                return {
-                  ...event,
-                  display: "list-item",
-                  backgroundColor: "#888",
-                  borderColor: "#888",
-                };
-              }
-              return event;
-            }}
             events={categoryData}
             eventClick={(info) => {
-              if (info.event.url) {
+              info.jsEvent.preventDefault();
+              if (navigator.maxTouchPoints > 0) {
+                // Mobile: show bottom-sheet modal instead of opening URL immediately
+                setEventDetail({
+                  title: info.event.title,
+                  description: info.event.extendedProps.description || "",
+                  url: info.event.url || info.event.extendedProps.url || "",
+                });
+              } else if (info.event.url) {
                 window.open(info.event.url, "_blank");
-                info.jsEvent.preventDefault();
               }
             }}
             eventDidMount={(info) => {
-              const desc =
-                info.event.extendedProps.description || "No description";
+              if (navigator.maxTouchPoints > 0) return; // no hover tooltip on touch devices
+              const desc = info.event.extendedProps.description || "No description";
               const url = info.event.extendedProps.url
                 ? `<a href="${info.event.extendedProps.url}" target="_blank" rel="noopener noreferrer">More info</a>`
                 : "";
@@ -1007,6 +1004,34 @@ function App() {
       )}
 
       {/* Simple Footer */}
+      {/* Mobile event detail bottom-sheet */}
+      {eventDetail && (
+        <div className="event-modal-overlay" onClick={() => setEventDetail(null)}>
+          <div className="event-modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="event-modal-title">{eventDetail.title}</h3>
+            {eventDetail.description && (
+              <p className="event-modal-desc">{eventDetail.description}</p>
+            )}
+            <div className="event-modal-actions">
+              {eventDetail.url && (
+                <a
+                  href={eventDetail.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="event-modal-link"
+                  onClick={() => setEventDetail(null)}
+                >
+                  Open event page →
+                </a>
+              )}
+              <button className="event-modal-close" onClick={() => setEventDetail(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer
         style={{
           marginTop: "60px",

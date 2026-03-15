@@ -142,8 +142,10 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
 }
 /* Keep dot colour and text readable */
 .fc-daygrid-event-dot { border-color: #3498db !important; }
-.fc-event-title       { color: #1a6fad; font-weight: 500; }
-.fc-event-time        { color: #1a6fad; }
+.fc-event-title       { color: #1a6fad; font-weight: 700; }
+.fc-event-time        { color: #1a6fad; font-weight: 700; }
+.fc-list-event-title  { font-weight: 700; }
+.fc-event             { font-weight: 700; }
 
 /* ── FullCalendar base button styles ────────────────────── */
 .fc .fc-button {

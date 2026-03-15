@@ -31,9 +31,8 @@ function App() {
   const [activeTab, setActiveTab] = useState("classes");
   const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
-  // Detect mobile using screen.width (device CSS pixels, unaffected by iframe sizing)
-  // plus touch-point check as a fallback for edge cases
-  const isMobile = window.screen.width < 640 || (navigator.maxTouchPoints > 0 && window.screen.width < 1024);
+  // pointer:coarse = touch screen (works inside fixed-width iframes; screen.width/innerWidth don't)
+  const isMobile = window.matchMedia("(pointer: coarse)").matches;
 
   // Use ref to store EventSource so we can clean it up
   const eventSourceRefs = React.useRef({

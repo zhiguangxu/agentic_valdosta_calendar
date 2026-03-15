@@ -49,8 +49,8 @@ code {
 }
 
 /* ── Mobile: FullCalendar tweaks ──────────────────────── */
-/* Use device-width so this fires on real phones even inside fixed-width iframes */
-@media screen and (max-device-width: 639px) {
+/* pointer:coarse = touch device; fires correctly even inside fixed-width HF Space iframes */
+@media (pointer: coarse) {
   .fc .fc-toolbar-title      { font-size: 1rem; }
   .fc .fc-button             { padding: 4px 8px; font-size: 13px; }
   .fc .fc-daygrid-day-number { font-size: 12px; }

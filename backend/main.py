@@ -672,7 +672,7 @@ def extract_categories(attraction: Dict) -> List[str]:
 # Generate events with progressive updates (SSE)
 # -----------------------------
 # Create a thread pool executor for running blocking scraping operations
-executor = ThreadPoolExecutor(max_workers=1)
+executor = ThreadPoolExecutor(max_workers=10)
 
 @app.get("/generate_events_stream")
 async def generate_events_stream(category: str = "events"):
@@ -752,41 +752,47 @@ async def generate_events_stream(category: str = "events"):
                 print(f"{'='*80}")
 
                 all_items = []
-                for idx, source in enumerate(sources, 1):
-                    try:
-                        print(f"[{category.upper()}] ({idx}/{total_sources}) Scraping: {source['name']}")
-                        print(f"[{category.upper()}]   URL: {source['url']}")
-                        print(f"[{category.upper()}]   Type: {source['type']}")
 
-                        # Validate source type matches category
-                        if source['type'] != category:
-                            print(f"[{category.upper()}] ⚠️  WARNING: Source type mismatch! Expected '{category}', got '{source['type']}'. Skipping.")
-                            current += 1
-                            error_msg = f"Type mismatch: expected {category}, got {source['type']}"
-                            yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': error_msg, 'current': current, 'total': total_sources})}\n\n"
-                            continue
-
-                        # Run blocking scrape_source in thread pool
-                        items = await loop.run_in_executor(executor, scrape_source, source)
+                # Report type-mismatched sources immediately
+                for source in sources:
+                    if source['type'] != category:
+                        print(f"[{category.upper()}] ⚠️  WARNING: Source type mismatch! Expected '{category}', got '{source['type']}'. Skipping.")
                         current += 1
+                        error_msg = f"Type mismatch: expected {category}, got {source['type']}"
+                        yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': error_msg, 'current': current, 'total': total_sources})}\n\n"
 
-                        all_items.extend(items)
+                # Launch all valid sources in parallel
+                valid_sources = [s for s in sources if s['type'] == category]
+                print(f"[{category.upper()}] Launching {len(valid_sources)} sources in parallel")
+                pending_futures = {
+                    asyncio.ensure_future(loop.run_in_executor(executor, scrape_source, source)): source
+                    for source in valid_sources
+                }
 
-                        # Send progress update
-                        progress_data = {
-                            'type': 'progress',
-                            'message': f'Scraped {len(items)} {category} from {source["name"]}',
-                            'source': source['name'],
-                            'current': current,
-                            'total': total_sources
-                        }
-                        yield f"data: {json.dumps(progress_data)}\n\n"
-                        print(f"[{category.upper()}]   ✅ Found {len(items)} items")
-
-                    except Exception as e:
-                        print(f"[{category.upper()}]   ❌ Error: {e}")
+                # Collect results as each source finishes, streaming progress
+                pending = set(pending_futures.keys())
+                while pending:
+                    done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+                    for fut in done:
+                        source = pending_futures[fut]
                         current += 1
-                        yield f"data: {json.dumps({'type': 'error', 'source': source['name'], 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
+                        try:
+                            items = fut.result()
+                            all_items.extend(items)
+                            source_name = source['name']
+                            print(f"[{category.upper()}] ({current}/{total_sources}) ✅ Found {len(items)} items from {source_name}")
+                            progress_payload = {
+                                'type': 'progress',
+                                'message': f'Scraped {len(items)} {category} from {source_name}',
+                                'source': source_name,
+                                'current': current,
+                                'total': total_sources
+                            }
+                            yield f"data: {json.dumps(progress_payload)}\n\n"
+                        except Exception as e:
+                            source_name = source['name']
+                            print(f"[{category.upper()}]   ❌ Error from {source_name}: {e}")
+                            yield f"data: {json.dumps({'type': 'error', 'source': source_name, 'error': str(e), 'current': current, 'total': total_sources})}\n\n"
 
                 # Deduplicate and send all items using category-specific deduplication
                 if all_items:

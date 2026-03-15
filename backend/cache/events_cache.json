@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-15T01:03:36.144148Z",
+  "timestamp": "2026-03-15T02:34:31.245842Z",
   "data": [
     {
       "title": "2026 Azalea Festival",
@@ -23,22 +23,6 @@
       "description": "The 26th Annual Azalea Festival is scheduled for March 14 & 15, 2026. This outdoor event features over 250 arts & crafts vendors, a food court,...",
       "start": "2026-03-15",
       "allDay": true,
-      "recurring_pattern": ""
-    },
-    {
-      "title": "The Broadway Boys",
-      "url": "https://turnercenter.org/presenter-series-2/",
-      "description": "The Broadway Boys is a vibrant performance showcasing a talented ensemble of male vocalists who bring the best of Broadway to life.",
-      "start": "2026-03-19T19:30:00",
-      "allDay": false,
-      "recurring_pattern": ""
-    },
-    {
-      "title": "Presenter Series Third Show of the Season",
-      "start": "2026-03-19T19:30:00",
-      "allDay": false,
-      "description": "Presenting \u2013 THE BROADWAY BOYS! The Broadway Boys is a collection of diverse male voices from the New York stage, representing shows such as HAMILTON, WICKED, JERSEY BOYS, THE LION KING, THE BOOK OF M",
-      "url": "https://turnercenter.org/event/presenter-series-third-show-of-the-season/",
       "recurring_pattern": ""
     },
     {
@@ -68,7 +52,7 @@
     {
       "title": "St. Patrick\u2019s Day Party @ Georgia Beer Co.",
       "url": "https://www.instagram.com/p/DVKMKIREdxr/?utm_source=ig_web_copy_link",
-      "description": "Join us for a festive St. Patrick\u2019s Day Party at Georgia Beer Co.! Celebrate with great beer, lively music, and a vibrant atmosphere.",
+      "description": "Come to Georgia Beer Co. to enjoy some pints and celebrate St. Patrick's Day in Valdosta!",
       "start": "2026-03-21T12:00:00",
       "allDay": false,
       "recurring_pattern": ""
@@ -106,19 +90,19 @@
       "recurring_pattern": ""
     },
     {
-      "title": "Student Recital: Elle Perryman, soprano",
-      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
-      "description": "",
-      "start": "2026-03-27T19:00:00",
-      "allDay": false,
-      "recurring_pattern": ""
-    },
-    {
       "title": "Levitt AMP Valdosta Music Series Concert",
       "start": "2026-03-27T19:00:00",
       "allDay": false,
       "description": "Join us at the Levitt AMP Valdosta Music Series with Indie Americana artist Chloe Kimes performing at the Turner Center Art Park, 7-9PM! Click HERE for more information.",
       "url": "https://turnercenter.org/event/levitt-amp-valdosta-music-series-concert-3/",
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Student Recital: Elle Perryman, soprano",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-27T19:00:00",
+      "allDay": false,
       "recurring_pattern": ""
     },
     {
@@ -134,6 +118,14 @@
       "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
       "description": "",
       "start": "2026-03-28T17:00:00",
+      "allDay": false,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Valdosta Symphony Orchestra: Progression",
+      "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
+      "description": "",
+      "start": "2026-03-28T19:00:00",
       "allDay": false,
       "recurring_pattern": ""
     },
@@ -175,12 +167,12 @@
       "description": "Welcome to First Friday! Downtown Valdosta comes to life after dark with shopping, music, art, food and so much more! Bring a friend or bring twelve!",
       "start": "2026-04-03",
       "allDay": true,
-      "recurring_pattern": "First Friday of each month"
+      "recurring_pattern": "First Friday of every month"
     },
     {
       "title": "First Friday",
       "url": "https://www.valdostacity.com/event/first-friday",
-      "description": "First Friday is a monthly event held in Downtown Valdosta, where attendees can enjoy a vibrant atmosphere filled with local art, music, and community.",
+      "description": "Join us for First Friday in Downtown Valdosta, a vibrant monthly event featuring local art, music, and food.",
       "start": "2026-04-03T17:00:00",
       "allDay": false,
       "recurring_pattern": "First Friday of each month"
@@ -196,7 +188,7 @@
     {
       "title": "Splash Island opening weekend",
       "url": "https://www.wildadventures.com/splash-island-waterpark/",
-      "description": "Splash Island Waterpark returns on April 4th, 2026, offering a perfect spot to cool down with attractions for both thrill-seekers and families.",
+      "description": "Splash Island Waterpark returns on April 4th, 2026, offering a perfect spot to cool down during the summer.",
       "start": "2026-04-04",
       "allDay": true,
       "recurring_pattern": ""
@@ -292,7 +284,7 @@
     {
       "title": "Wild Adventures Concert: KANSAS",
       "url": "https://www.wildadventures.com/explore-the-park/concerts/kansas/",
-      "description": "KANSAS is one of America\u2019s most iconic classic rock bands, delivering timeless hits and powerful performances for over five decades.",
+      "description": "Join us for an unforgettable evening with KANSAS, one of America's most iconic classic rock bands.",
       "start": "2026-04-11",
       "allDay": true,
       "recurring_pattern": ""
@@ -354,6 +346,14 @@
       "recurring_pattern": ""
     },
     {
+      "title": "Levitt AMP Valdosta Music Series Concert",
+      "start": "2026-04-17T19:00:00",
+      "allDay": false,
+      "description": "Join us at the Levitt AMP Valdosta Music Series with Rag Time Jazz artists Blair Crimmins & The Hookers performing at the Turner Center Art Park, 7-9PM! Click HERE for more information.",
+      "url": "https://turnercenter.org/event/levitt-amp-valdosta-music-series-concert-4/",
+      "recurring_pattern": ""
+    },
+    {
       "title": "Voce Vita & Spotlighters",
       "url": "https://www.valdosta.edu/colleges/arts/music/concert-calendar.php",
       "description": "",
@@ -370,17 +370,9 @@
       "recurring_pattern": ""
     },
     {
-      "title": "Levitt AMP Valdosta Music Series Concert",
-      "start": "2026-04-17T19:00:00",
-      "allDay": false,
-      "description": "Join us at the Levitt AMP Valdosta Music Series with Rag Time Jazz artists Blair Crimmins & The Hookers performing at the Turner Center Art Park, 7-9PM! Click HERE for more information.",
-      "url": "https://turnercenter.org/event/levitt-amp-valdosta-music-series-concert-4/",
-      "recurring_pattern": ""
-    },
-    {
       "title": "Wild Adventures Concert: Tyler Hubbard",
       "url": "https://www.wildadventures.com/explore-the-park/concerts/tyler-hubbard/",
-      "description": "Join us for an electrifying concert featuring Tyler Hubbard, a chart-topping country star known for his high-energy performances and hit songs.",
+      "description": "Join us for an exciting concert featuring Tyler Hubbard, a chart-topping country star known for his high-energy performances and hit songs.",
       "start": "2026-04-18",
       "allDay": true,
       "recurring_pattern": ""
@@ -535,7 +527,7 @@
       "description": "Welcome to First Friday! Downtown Valdosta comes to life after dark with shopping, music, art, food and so much more! Bring a friend or bring twelve!",
       "start": "2026-05-01",
       "allDay": true,
-      "recurring_pattern": "First Friday of each month"
+      "recurring_pattern": "First Friday of every month"
     },
     {
       "title": "NHRA Southern Nationals",
@@ -548,7 +540,7 @@
     {
       "title": "First Friday",
       "url": "https://www.valdostacity.com/event/first-friday",
-      "description": "First Friday is a monthly event held in Downtown Valdosta, where attendees can enjoy a vibrant atmosphere filled with local art, music, and community.",
+      "description": "Join us for First Friday in Downtown Valdosta, a vibrant monthly event featuring local art, music, and food.",
       "start": "2026-05-01T17:00:00",
       "allDay": false,
       "recurring_pattern": "First Friday of each month"
@@ -562,19 +554,27 @@
       "recurring_pattern": ""
     },
     {
-      "title": "Wild Adventures Concert: ZZ Top",
-      "url": "https://www.wildadventures.com/explore-the-park/concerts/zz-top/",
-      "description": "Join ZZ Top, the legendary rock band, for an unforgettable concert experience at Wild Adventures.",
-      "start": "2026-05-02",
-      "allDay": true,
-      "recurring_pattern": ""
-    },
-    {
       "title": "NHRA Southern Nationals",
       "url": "https://nhra.evenue.net/events/VG1T",
       "description": "The NHRA celebrates its 75th anniversary by returning to south Georgia this spring!",
       "start": "2026-05-02",
       "allDay": true,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Wild Adventures Concert: ZZ Top",
+      "url": "https://www.wildadventures.com/explore-the-park/concerts/zz-top/",
+      "description": "Join us for an unforgettable night as ZZ Top, the legendary rock band, takes the stage at Wild Adventures.",
+      "start": "2026-05-02",
+      "allDay": true,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Valdosta Symphony Orchestra: Made in America",
+      "url": "https://valdostasymphony.org/tickets.php",
+      "description": "",
+      "start": "2026-05-02T19:00:00",
+      "allDay": false,
       "recurring_pattern": ""
     },
     {
@@ -623,12 +623,12 @@
       "description": "Welcome to First Friday! Downtown Valdosta comes to life after dark with shopping, music, art, food and so much more! Bring a friend or bring twelve!",
       "start": "2026-06-05",
       "allDay": true,
-      "recurring_pattern": "First Friday of each month"
+      "recurring_pattern": "First Friday of every month"
     },
     {
       "title": "First Friday",
       "url": "https://www.valdostacity.com/event/first-friday",
-      "description": "First Friday is a monthly event held in Downtown Valdosta, where attendees can enjoy a vibrant atmosphere filled with local art, music, and community.",
+      "description": "Join us for First Friday in Downtown Valdosta, a vibrant monthly event featuring local art, music, and food.",
       "start": "2026-06-05T17:00:00",
       "allDay": false,
       "recurring_pattern": "First Friday of each month"
@@ -676,7 +676,7 @@
     {
       "title": "Wild Adventures Concert: Travis Tritt",
       "url": "https://www.wildadventures.com/explore-the-park/concerts/travis-tritt/",
-      "description": "Join us for an unforgettable evening with Travis Tritt, a legendary country music artist known for his Southern rock influences and timeless hits.",
+      "description": "Join us for an unforgettable evening with Travis Tritt, a Southern rock-influenced country music artist known for his powerful voice and engaging...",
       "start": "2026-06-27",
       "allDay": true,
       "recurring_pattern": ""
@@ -687,12 +687,12 @@
       "description": "Welcome to First Friday! Downtown Valdosta comes to life after dark with shopping, music, art, food and so much more! Bring a friend or bring twelve!",
       "start": "2026-07-03",
       "allDay": true,
-      "recurring_pattern": "First Friday of each month"
+      "recurring_pattern": "First Friday of every month"
     },
     {
       "title": "First Friday",
       "url": "https://www.valdostacity.com/event/first-friday",
-      "description": "First Friday is a monthly event held in Downtown Valdosta, where attendees can enjoy a vibrant atmosphere filled with local art, music, and community.",
+      "description": "Join us for First Friday in Downtown Valdosta, a vibrant monthly event featuring local art, music, and food.",
       "start": "2026-07-03T17:00:00",
       "allDay": false,
       "recurring_pattern": "First Friday of each month"
@@ -708,16 +708,8 @@
     {
       "title": "Valdosta Comic Con",
       "url": "http://valdostacomiccon.com/",
-      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime. Attendees can meet industry guests, participate in fan panels, and...",
+      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime at Valdosta State University.",
       "start": "2026-07-24",
-      "allDay": true,
-      "recurring_pattern": ""
-    },
-    {
-      "title": "Valdosta Comic Con",
-      "url": "http://valdostacomiccon.com/",
-      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime. Attendees can meet industry guests, participate in fan panels, and...",
-      "start": "2026-07-25",
       "allDay": true,
       "recurring_pattern": ""
     },
@@ -732,7 +724,15 @@
     {
       "title": "Valdosta Comic Con",
       "url": "http://valdostacomiccon.com/",
-      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime. Attendees can meet industry guests, participate in fan panels, and...",
+      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime at Valdosta State University.",
+      "start": "2026-07-25",
+      "allDay": true,
+      "recurring_pattern": ""
+    },
+    {
+      "title": "Valdosta Comic Con",
+      "url": "http://valdostacomiccon.com/",
+      "description": "Valdosta Comic Con is a three-day event celebrating comics, games, and anime at Valdosta State University.",
       "start": "2026-07-26",
       "allDay": true,
       "recurring_pattern": ""
@@ -743,12 +743,12 @@
       "description": "Welcome to First Friday! Downtown Valdosta comes to life after dark with shopping, music, art, food and so much more! Bring a friend or bring twelve!",
       "start": "2026-08-07",
       "allDay": true,
-      "recurring_pattern": "First Friday of each month"
+      "recurring_pattern": "First Friday of every month"
     },
     {
       "title": "First Friday",
       "url": "https://www.valdostacity.com/event/first-friday",
-      "description": "First Friday is a monthly event held in Downtown Valdosta, where attendees can enjoy a vibrant atmosphere filled with local art, music, and community.",
+      "description": "Join us for First Friday in Downtown Valdosta, a vibrant monthly event featuring local art, music, and food.",
       "start": "2026-08-07T17:00:00",
       "allDay": false,
       "recurring_pattern": "First Friday of each month"

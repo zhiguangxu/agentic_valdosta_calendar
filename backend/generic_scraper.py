@@ -890,7 +890,9 @@ def _scrape_twostage(url: str, openai_client: OpenAI, source_type: str = "events
             urls_to_process = [updated_url]
 
         # For other calendar-based sites (e.g., valdostacity.com, chamber), fetch multiple months
-        elif not use_structural_parsing and soup.find("table"):
+        # Skip for meetings: their listing pages are single authoritative sources; extra month
+        # fetches hit invalid URLs and waste 5-10s per attempt.
+        elif source_type != 'meetings' and not use_structural_parsing and soup.find("table"):
             from dateutil.relativedelta import relativedelta
             current_date = datetime.now()
             for i in range(1, 7):  # Get next 6 months
@@ -1216,6 +1218,23 @@ HTML:
                 events_without_external_urls.append(event)
 
         print(f"[Two-Stage] Stage 1: {len(events_with_external_urls)} events with external URLs, {len(events_without_external_urls)} events without")
+
+        # Layer 2: Skip Stage 2 when Stage 1 already has sufficient data.
+        # - Meetings: skip if Stage 1 has valid date + time (government calendars are authoritative)
+        # - Events:   skip if Stage 1 has valid date + time (saves Stage 2 latency for well-listed events)
+        if source_type in ('meetings', 'events'):
+            stage2_needed = []
+            skipped = 0
+            for event in events_with_external_urls:
+                time_str = (event.get('time') or '').strip()
+                if re.match(r'^\d{2}:\d{2}$', time_str):
+                    events_without_external_urls.append(event)
+                    skipped += 1
+                    print(f"[Two-Stage]   Layer 2 skip Stage 2: {event.get('title', '')} on {event.get('date', '')} at {time_str}")
+                else:
+                    stage2_needed.append(event)
+            events_with_external_urls = stage2_needed
+            print(f"[Two-Stage] Layer 2: {skipped} use Stage 1 directly, {len(stage2_needed)} still need Stage 2")
 
         # Process events WITHOUT external URLs (use listing page dates)
         all_results = []
@@ -1588,7 +1607,7 @@ HTML:
 
             return results
 
-        with ThreadPoolExecutor(max_workers=8) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             futures = {executor.submit(scrape_one_event, event): event
                        for event in events_with_external_urls}
             for future in as_completed(futures):

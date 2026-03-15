@@ -80,30 +80,50 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
 /* ── Tab bar ────────────────────────────────────────────── */
 .tab-bar {
   display: flex;
-  border-bottom: 2px solid #e9ecef;
   margin-bottom: 30px;
   background: #f8f9fa;
   border-radius: 8px 8px 0 0;
   overflow: hidden;
+  border-bottom: 3px solid #e9ecef;
 }
 .tab-btn {
   flex: 1;
   padding: 15px 20px;
   border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;          /* sit on top of tab-bar border */
   background: transparent;
-  color: #495057;
+  color: #6c757d;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.2s, color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
+.tab-btn:hover:not(.tab-active) {
+  background: #e9ecef;
+  color: #343a40;
+}
 .tab-btn.tab-active {
   background: #3498db;
   color: white;
+  border-bottom-color: #1a6fad;  /* darker underline seals it to content */
+}
+
+/* Count badge */
+.tab-badge {
+  background: #adb5bd;           /* grey on inactive tabs */
+  color: white;
+  padding: 1px 7px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tab-active .tab-badge {
+  background: rgba(255,255,255,0.35);   /* light on active tab */
 }
 
 /* "Visit Valdosta" short label hidden by default */
@@ -153,7 +173,8 @@ code { font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', mon
 
   .settings-btn { padding: 8px 12px; font-size: 12px; top: 10px; right: 10px; }
 
-  .tab-btn { padding: 10px 4px; font-size: 13px; }
+  .tab-btn { padding: 10px 4px; font-size: 12px; gap: 4px; }
+  .tab-badge { font-size: 10px; padding: 1px 5px; }
   .tab-visits-short { display: inline; }
   .tab-visits-full  { display: none; }
 

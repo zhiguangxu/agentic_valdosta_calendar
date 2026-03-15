@@ -518,109 +518,29 @@ function App() {
 
       {/* Tab Navigation */}
       <div className="tab-bar">
-        <button
-          onClick={() => setActiveTab("classes")}
-          className={"tab-btn" + (activeTab === "classes" ? " tab-active" : "")}
-          onMouseEnter={(e) => { if (activeTab !== "classes") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
-          onMouseLeave={(e) => { if (activeTab !== "classes") e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
+        <button onClick={() => setActiveTab("classes")}
+          className={"tab-btn" + (activeTab === "classes" ? " tab-active" : "")}>
           📚 Classes
-          {classes.length > 0 && (
-            <span
-              style={{
-                backgroundColor:
-                  activeTab === "classes"
-                    ? "rgba(255,255,255,0.3)"
-                    : "#3498db",
-                color: "white",
-                padding: "2px 8px",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "500",
-              }}
-            >
-              {classes.length}
-            </span>
-          )}
+          {classes.length > 0 && <span className="tab-badge">{classes.length}</span>}
         </button>
 
-        <button
-          onClick={() => setActiveTab("events")}
-          className={"tab-btn" + (activeTab === "events" ? " tab-active" : "")}
-          onMouseEnter={(e) => { if (activeTab !== "events") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
-          onMouseLeave={(e) => { if (activeTab !== "events") e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
+        <button onClick={() => setActiveTab("events")}
+          className={"tab-btn" + (activeTab === "events" ? " tab-active" : "")}>
           📅 Events
-          {events.length > 0 && (
-            <span
-              style={{
-                backgroundColor:
-                  activeTab === "events"
-                    ? "rgba(255,255,255,0.3)"
-                    : "#3498db",
-                color: "white",
-                padding: "2px 8px",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "500",
-              }}
-            >
-              {events.length}
-            </span>
-          )}
+          {events.length > 0 && <span className="tab-badge">{events.length}</span>}
         </button>
 
-        <button
-          onClick={() => setActiveTab("meetings")}
-          className={"tab-btn" + (activeTab === "meetings" ? " tab-active" : "")}
-          onMouseEnter={(e) => { if (activeTab !== "meetings") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
-          onMouseLeave={(e) => { if (activeTab !== "meetings") e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
+        <button onClick={() => setActiveTab("meetings")}
+          className={"tab-btn" + (activeTab === "meetings" ? " tab-active" : "")}>
           🤝 Meetings
-          {meetings.length > 0 && (
-            <span
-              style={{
-                backgroundColor:
-                  activeTab === "meetings"
-                    ? "rgba(255,255,255,0.3)"
-                    : "#3498db",
-                color: "white",
-                padding: "2px 8px",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "500",
-              }}
-            >
-              {meetings.length}
-            </span>
-          )}
+          {meetings.length > 0 && <span className="tab-badge">{meetings.length}</span>}
         </button>
 
-        <button
-          onClick={() => setActiveTab("attractions")}
-          className={"tab-btn" + (activeTab === "attractions" ? " tab-active" : "")}
-          onMouseEnter={(e) => { if (activeTab !== "attractions") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
-          onMouseLeave={(e) => { if (activeTab !== "attractions") e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
+        <button onClick={() => setActiveTab("attractions")}
+          className={"tab-btn" + (activeTab === "attractions" ? " tab-active" : "")}>
           <span className="tab-visits-full">🏛️ Visit Valdosta</span>
           <span className="tab-visits-short">🏛️ Visits</span>
-          {attractions.length > 0 && (
-            <span
-              style={{
-                backgroundColor:
-                  activeTab === "attractions"
-                    ? "rgba(255,255,255,0.3)"
-                    : "#3498db",
-                color: "white",
-                padding: "2px 8px",
-                borderRadius: "12px",
-                fontSize: "12px",
-                fontWeight: "500",
-              }}
-            >
-              {attractions.length}
-            </span>
-          )}
+          {attractions.length > 0 && <span className="tab-badge">{attractions.length}</span>}
         </button>
       </div>
 

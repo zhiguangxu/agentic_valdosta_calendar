@@ -425,6 +425,9 @@ function App() {
             }}
             dayMaxEvents={4}
             scrollTime="08:00:00"
+            views={{
+              dayGridMonth: { eventDisplay: "list-item" },
+            }}
             events={categoryData}
             eventClick={(info) => {
               info.jsEvent.preventDefault();

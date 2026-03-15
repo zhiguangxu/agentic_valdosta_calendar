@@ -31,8 +31,7 @@ function App() {
   const [activeTab, setActiveTab] = useState("classes");
   const [showSettings, setShowSettings] = useState(false);
   const attractionsPerPage = 6;
-  // pointer:coarse = touch screen (works inside fixed-width iframes; screen.width/innerWidth don't)
-  const isMobile = window.matchMedia("(pointer: coarse)").matches;
+
 
   // Use ref to store EventSource so we can clean it up
   const eventSourceRefs = React.useRef({
@@ -412,16 +411,16 @@ function App() {
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
-            headerToolbar={
-              isMobile
-                ? { left: "prev,next", center: "title", right: "" }
-                : { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" }
-            }
+            headerToolbar={{
+              left: "prev,next",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
+            }}
             buttonText={{
               today: "Today",
-              month: "Month",
-              week: "Week",
-              day: "Day",
+              month: "M",
+              week: "W",
+              day: "D",
             }}
             dayMaxEvents={4}
             scrollTime="08:00:00"
@@ -491,138 +490,39 @@ function App() {
 
   // Otherwise show main calendar
   return (
-    <div style={{ maxWidth: "900px", margin: isMobile ? "0 auto" : "40px auto 0 auto", padding: isMobile ? "0 12px" : "0", position: "relative" }}>
-      {/* Settings Button - Floating */}
-      <button
-        onClick={() => setShowSettings(true)}
-        style={{
-          position: "fixed",
-          top: isMobile ? "10px" : "20px",
-          right: isMobile ? "10px" : "20px",
-          padding: isMobile ? "10px 14px" : "12px 20px",
-          backgroundColor: "#34495e",
-          color: "white",
-          border: "none",
-          borderRadius: "50px",
-          cursor: "pointer",
-          fontSize: isMobile ? "12px" : "14px",
-          fontWeight: "600",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-          zIndex: 1000,
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = "#2c3e50";
-          e.target.style.transform = "scale(1.05)";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = "#34495e";
-          e.target.style.transform = "scale(1)";
-        }}
-      >
-        ⚙️ Settings
-      </button>
+    <div className="app-wrapper">
 
       {/* Hero Section with Background */}
-      <div
-        style={{
-          backgroundImage:
-            "url('https://www.valdostacity.com/sites/default/files/uploads/dji_0723-hdr-pano.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          position: "relative",
-          padding: isMobile ? "28px 16px" : "60px 40px",
-          borderRadius: isMobile ? "0" : "12px",
-          marginBottom: isMobile ? "20px" : "40px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Overlay for better text readability */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            zIndex: 1,
-          }}
-        />
+      <div className="hero-section">
+        {/* Overlay */}
+        <div className="hero-overlay" />
 
-        {/* Content */}
-        <div style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
-          <h1
-            style={{
-              color: "white",
-              fontSize: isMobile ? "1.4rem" : "2.5rem",
-              fontWeight: "700",
-              margin: "0 0 15px 0",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
-              lineHeight: "1.2",
-            }}
-          >
-            🌟 Wonder what to do in Valdosta GA? 🌟
-          </h1>
+        {/* Settings button lives inside the hero — never overlaps the tab bar */}
+        <button
+          className="settings-btn"
+          onClick={() => setShowSettings(true)}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#2c3e50"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#34495e"; }}
+        >
+          ⚙️ Settings
+        </button>
 
-          <p
-            style={{
-              color: "rgba(255,255,255,0.9)",
-              fontSize: isMobile ? "0.95rem" : "1.2rem",
-              textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
-              maxWidth: "600px",
-              margin: "0 auto",
-            }}
-          >
-            Discover amazing events, classes, meetings, and places to visit in the heart of South
-            Georgia
+        {/* Hero text */}
+        <div className="hero-content">
+          <h1 className="hero-title">🌟 Wonder what to do in Valdosta GA? 🌟</h1>
+          <p className="hero-subtitle">
+            Discover amazing events, classes, meetings, and places to visit in the heart of South Georgia
           </p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div
-        style={{
-          display: "flex",
-          borderBottom: "2px solid #e9ecef",
-          marginBottom: "30px",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "8px 8px 0 0",
-          overflow: "hidden",
-        }}
-      >
+      <div className="tab-bar">
         <button
           onClick={() => setActiveTab("classes")}
-          style={{
-            flex: 1,
-            padding: isMobile ? "12px 4px" : "15px 20px",
-            border: "none",
-            backgroundColor:
-              activeTab === "classes" ? "#3498db" : "transparent",
-            color: activeTab === "classes" ? "white" : "#495057",
-            fontSize: isMobile ? "13px" : "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== "classes") {
-              e.target.style.backgroundColor = "#e9ecef";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== "classes") {
-              e.target.style.backgroundColor = "transparent";
-            }
-          }}
+          className={"tab-btn" + (activeTab === "classes" ? " tab-active" : "")}
+          onMouseEnter={(e) => { if (activeTab !== "classes") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
+          onMouseLeave={(e) => { if (activeTab !== "classes") e.currentTarget.style.backgroundColor = "transparent"; }}
         >
           📚 Classes
           {classes.length > 0 && (
@@ -646,32 +546,9 @@ function App() {
 
         <button
           onClick={() => setActiveTab("events")}
-          style={{
-            flex: 1,
-            padding: isMobile ? "12px 4px" : "15px 20px",
-            border: "none",
-            backgroundColor:
-              activeTab === "events" ? "#3498db" : "transparent",
-            color: activeTab === "events" ? "white" : "#495057",
-            fontSize: isMobile ? "13px" : "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== "events") {
-              e.target.style.backgroundColor = "#e9ecef";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== "events") {
-              e.target.style.backgroundColor = "transparent";
-            }
-          }}
+          className={"tab-btn" + (activeTab === "events" ? " tab-active" : "")}
+          onMouseEnter={(e) => { if (activeTab !== "events") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
+          onMouseLeave={(e) => { if (activeTab !== "events") e.currentTarget.style.backgroundColor = "transparent"; }}
         >
           📅 Events
           {events.length > 0 && (
@@ -695,32 +572,9 @@ function App() {
 
         <button
           onClick={() => setActiveTab("meetings")}
-          style={{
-            flex: 1,
-            padding: isMobile ? "12px 4px" : "15px 20px",
-            border: "none",
-            backgroundColor:
-              activeTab === "meetings" ? "#3498db" : "transparent",
-            color: activeTab === "meetings" ? "white" : "#495057",
-            fontSize: isMobile ? "13px" : "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== "meetings") {
-              e.target.style.backgroundColor = "#e9ecef";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== "meetings") {
-              e.target.style.backgroundColor = "transparent";
-            }
-          }}
+          className={"tab-btn" + (activeTab === "meetings" ? " tab-active" : "")}
+          onMouseEnter={(e) => { if (activeTab !== "meetings") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
+          onMouseLeave={(e) => { if (activeTab !== "meetings") e.currentTarget.style.backgroundColor = "transparent"; }}
         >
           🤝 Meetings
           {meetings.length > 0 && (
@@ -744,34 +598,12 @@ function App() {
 
         <button
           onClick={() => setActiveTab("attractions")}
-          style={{
-            flex: 1,
-            padding: isMobile ? "12px 4px" : "15px 20px",
-            border: "none",
-            backgroundColor:
-              activeTab === "attractions" ? "#3498db" : "transparent",
-            color: activeTab === "attractions" ? "white" : "#495057",
-            fontSize: isMobile ? "13px" : "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== "attractions") {
-              e.target.style.backgroundColor = "#e9ecef";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== "attractions") {
-              e.target.style.backgroundColor = "transparent";
-            }
-          }}
+          className={"tab-btn" + (activeTab === "attractions" ? " tab-active" : "")}
+          onMouseEnter={(e) => { if (activeTab !== "attractions") e.currentTarget.style.backgroundColor = "#e9ecef"; }}
+          onMouseLeave={(e) => { if (activeTab !== "attractions") e.currentTarget.style.backgroundColor = "transparent"; }}
         >
-          {isMobile ? "🏛️ Visits" : "🏛️ Visit Valdosta"}
+          <span className="tab-visits-full">🏛️ Visit Valdosta</span>
+          <span className="tab-visits-short">🏛️ Visits</span>
           {attractions.length > 0 && (
             <span
               style={{

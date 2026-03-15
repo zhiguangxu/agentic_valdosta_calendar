@@ -700,8 +700,8 @@ def _scrape_turner_center_api(url: str, source_type: str = "classes") -> List[Di
 
     print(f"[Turner API] Scraping Turner Center {source_type} from REST API")
 
-    # Calculate date range: today to 6 months from now
-    current_date = datetime.now()
+    # Calculate date range: yesterday to 6 months from now (buffer for UTC offset on server)
+    current_date = datetime.now() - timedelta(days=1)
     end_date = current_date + relativedelta(months=6)
 
     # API endpoint
@@ -1958,8 +1958,8 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
 
     # Step 4: Category-specific date filtering
     if source_type == 'events':
-        # Events: Filter out past dates
-        current_date = datetime.now().date()
+        # Events: Filter out past dates (use yesterday as cutoff for UTC server offset)
+        current_date = (datetime.now() - timedelta(days=1)).date()
         before_filter = len(processed)
         filtered_events = []
         for r in processed:
@@ -1990,8 +1990,8 @@ def _post_process_ai_results(results: List[Dict], source_type: str, base_url: st
             print(f"  Filtered out {before_filter - len(processed)} old classes")
 
     elif source_type == 'meetings':
-        # Meetings: Filter out past dates (like events)
-        current_date = datetime.now().date()
+        # Meetings: Filter out past dates (use yesterday as cutoff for UTC server offset)
+        current_date = (datetime.now() - timedelta(days=1)).date()
         before_filter = len(processed)
         filtered_meetings = []
         for r in processed:
@@ -2267,10 +2267,10 @@ def scrape_generic_auto(url: str, source_type: str) -> List[Dict]:
             if len(article_headers) > 0:
                 print(f"  Article-style fallback pattern found {len(article_headers)} headers, added {len(results) - filtered_count} new items")
 
-        # Filter out past events
+        # Filter out past events (use yesterday as cutoff for UTC server offset)
         if source_type == 'events':
             before_filter = len(results)
-            current_date = datetime.now().date()
+            current_date = (datetime.now() - timedelta(days=1)).date()
             results = [r for r in results if datetime.fromisoformat(r['start'].split('T')[0]).date() >= current_date]
             if before_filter > len(results):
                 print(f"  Filtered out {before_filter - len(results)} past events (before: {before_filter}, after: {len(results)})")

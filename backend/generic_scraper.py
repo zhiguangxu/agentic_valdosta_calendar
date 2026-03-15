@@ -1634,7 +1634,7 @@ HTML:
 
             return results
 
-        with ThreadPoolExecutor(max_workers=2) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             futures = {executor.submit(scrape_one_event, event): event
                        for event in events_with_external_urls}
             for future in as_completed(futures):

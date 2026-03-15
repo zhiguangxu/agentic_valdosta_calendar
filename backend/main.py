@@ -50,7 +50,7 @@ if not openai_api_key:
     # Create a dummy client for now - the app will work but GPT features won't
     client = None
 else:
-    client = OpenAI(api_key=openai_api_key)
+    client = OpenAI(api_key=openai_api_key, max_retries=3)
 
 MODE = os.environ.get("ENV", "LOCAL")  # LOCAL or HF deploy
 
@@ -858,7 +858,7 @@ def extract_categories(attraction: Dict) -> List[str]:
 # Generate events with progressive updates (SSE)
 # -----------------------------
 # Create a thread pool executor for running blocking scraping operations
-executor = ThreadPoolExecutor(max_workers=3)
+executor = ThreadPoolExecutor(max_workers=5)
 
 @app.get("/generate_events_stream")
 async def generate_events_stream(category: str = "events"):

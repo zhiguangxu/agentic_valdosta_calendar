@@ -425,7 +425,12 @@ function App() {
             scrollTime="08:00:00"
             eventDataTransform={(event) => {
               if (event.allDay) {
-                return { ...event, display: "list-item" };
+                return {
+                  ...event,
+                  display: "list-item",
+                  backgroundColor: "#888",
+                  borderColor: "#888",
+                };
               }
               return event;
             }}

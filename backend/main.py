@@ -889,9 +889,12 @@ async def generate_events_stream(category: str = "events"):
                 if cached_data:
                     # Filter out past events (keep today and future); string comparison works
                     # because ISO dates are lexicographically ordered.
-                    today_str = datetime.now().strftime('%Y-%m-%d')
+                    # Use yesterday as the cutoff to avoid dropping "today" events when the
+                    # server runs in UTC and the user's local date is one day behind the server.
+                    from datetime import timedelta
+                    cutoff_str = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
                     before_filter = len(cached_data)
-                    cached_data = [e for e in cached_data if e.get('start', '') >= today_str]
+                    cached_data = [e for e in cached_data if e.get('start', '') >= cutoff_str]
                     if len(cached_data) < before_filter:
                         print(f"[CACHE] Filtered {before_filter - len(cached_data)} past items")
 

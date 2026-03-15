@@ -1259,21 +1259,24 @@ HTML:
                 print(f"[Two-Stage]   Skipping event with invalid date: {event_title} - {e}")
                 continue
 
-        # Stage 2: Scrape pages for events WITH external URLs
+        # Stage 2: Scrape pages for events WITH external URLs (parallel)
         if events_with_external_urls:
-            print(f"[Two-Stage] Stage 2: Scraping {len(events_with_external_urls)} external event pages")
+            print(f"[Two-Stage] Stage 2: Scraping {len(events_with_external_urls)} event pages in parallel (max 8 workers)")
 
-        for idx, event in enumerate(events_with_external_urls, 1):
+        def scrape_one_event(event):
+            """Fetch + AI-process one event page. Returns list of result items."""
             event_title = event.get('title', 'Untitled')
             event_url = event.get('url', '')
-            listing_date = event.get('date', '')  # Date from Stage 1 (listing page)
+            listing_date = event.get('date', '')
 
             if not event_url:
-                continue
+                return []
 
-            print(f"[Two-Stage] Stage 2 ({idx}/{len(events_with_external_urls)}): Scraping {event_title}")
+            print(f"[Two-Stage] Stage 2: Scraping {event_title}")
             if listing_date:
                 print(f"[Two-Stage]   Hint: Listing page showed date {listing_date}")
+
+            results = []
 
             try:
                 # Fetch event page
@@ -1392,7 +1395,7 @@ HTML:
                                             "allDay": all_day,
                                             "recurring_pattern": recurring_pattern
                                         }
-                                        all_results.append(result_item)
+                                        results.append(result_item)
                                         if is_recurring:
                                             print(f"[Two-Stage]   Added recurring class: {full_title} on {date_str} (will expand)")
                                         else:
@@ -1403,8 +1406,7 @@ HTML:
                                     print(f"[Two-Stage]   Invalid date format: {date_str} - {e}")
                                     continue
 
-                        # Continue to next event (skip the old-format processing below)
-                        continue
+                        return results
 
                     # Standard processing for events/meetings (old format)
                     status = event_data.get('status', 'unknown')
@@ -1433,7 +1435,7 @@ HTML:
                     # Skip cancelled/postponed events
                     if status in ['cancelled', 'postponed']:
                         print(f"[Two-Stage]   Skipping {event_title} - Status: {status}")
-                        continue
+                        return []
 
                     # For internal valdostacity.com URLs, always use calendar dates (source of truth)
                     # For external URLs, prefer Stage 2 dates if found, otherwise use fallback
@@ -1459,7 +1461,7 @@ HTML:
                                 description = _truncate_description(event.get('description', ''))
                         else:
                             print(f"[Two-Stage]   Skipping {event_title} - No dates found in Stage 2 or fallback")
-                            continue
+                            return []
 
                     # Validate time format; keep empty as-is (no confirmed time)
                     if time_str and not re.match(r'^\d{2}:\d{2}$', time_str):
@@ -1490,7 +1492,7 @@ HTML:
                                     "allDay": all_day,
                                     "recurring_pattern": recurring_pattern
                                 }
-                                all_results.append(result_item)
+                                results.append(result_item)
                                 if is_recurring:
                                     print(f"[Two-Stage]   Added recurring event: {event_title} on {date_str} (will expand)")
                                 else:
@@ -1504,11 +1506,6 @@ HTML:
                 except json.JSONDecodeError as e:
                     print(f"[Two-Stage]   ERROR: Failed to parse Stage 2 response for {event_title}: {e}")
                     print(f"[Two-Stage]   Raw output: {stage2_raw[:200]}...")
-                    continue
-
-                # Rate limiting: 1 second between requests
-                if idx < len(events_with_external_urls):
-                    time.sleep(1)
 
             except requests.exceptions.HTTPError as e:
                 print(f"[Two-Stage]   HTTP error for {event_title}: {e.response.status_code}")
@@ -1541,14 +1538,13 @@ HTML:
                                 "allDay": all_day,
                                 "recurring_pattern": fallback_recurring
                             }
-                            all_results.append(result_item)
+                            results.append(result_item)
                             if is_recurring:
                                 print(f"[Two-Stage]   Fallback: Added recurring event {fallback_title} on {fallback_date} (will expand)")
                             else:
                                 print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
                     except Exception:
                         pass
-                continue
             except requests.exceptions.Timeout:
                 print(f"[Two-Stage]   Timeout for {event_title}")
                 # Fallback: Use listing page date
@@ -1580,17 +1576,27 @@ HTML:
                                 "allDay": all_day,
                                 "recurring_pattern": fallback_recurring
                             }
-                            all_results.append(result_item)
+                            results.append(result_item)
                             if is_recurring:
                                 print(f"[Two-Stage]   Fallback: Added recurring event {fallback_title} on {fallback_date} (will expand)")
                             else:
                                 print(f"[Two-Stage]   Fallback: Added {fallback_title} on {fallback_date} (from listing page)")
                     except Exception:
                         pass
-                continue
             except Exception as e:
                 print(f"[Two-Stage]   Error scraping {event_title}: {e}")
-                continue
+
+            return results
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures = {executor.submit(scrape_one_event, event): event
+                       for event in events_with_external_urls}
+            for future in as_completed(futures):
+                try:
+                    all_results.extend(future.result())
+                except Exception as e:
+                    ev = futures[future]
+                    print(f"[Two-Stage]   Unexpected error for {ev.get('title', 'unknown')}: {e}")
 
         # Final deduplication based on URL + date + title
         # Include title to allow multiple events on same day at same venue

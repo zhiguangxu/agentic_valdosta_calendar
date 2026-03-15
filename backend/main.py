@@ -701,6 +701,14 @@ async def generate_events_stream(category: str = "events"):
                 cached_data = cache_manager.load_from_cache(category)
 
                 if cached_data:
+                    # Filter out past events (keep today and future); string comparison works
+                    # because ISO dates are lexicographically ordered.
+                    today_str = datetime.now().strftime('%Y-%m-%d')
+                    before_filter = len(cached_data)
+                    cached_data = [e for e in cached_data if e.get('start', '') >= today_str]
+                    if len(cached_data) < before_filter:
+                        print(f"[CACHE] Filtered {before_filter - len(cached_data)} past items")
+
                     # Send cache data to frontend
                     cache_age = cache_manager.get_cache_age_hours(category)
                     print(f"[CACHE] Sending {len(cached_data)} items from cache (age: {cache_age:.1f}h)")

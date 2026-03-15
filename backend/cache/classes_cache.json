@@ -1,9 +1,10 @@
 {
-  "timestamp": "2026-03-14T00:05:46.640670Z",
+  "timestamp": "2026-03-15T01:06:44.578467Z",
   "data": [
     {
       "title": "Adult Pottery Workshop",
       "start": "2026-03-14T10:00:00",
+      "allDay": false,
       "description": "Workshop meets 2nd Saturday of each month | 10AM \u2013 1pPM OR 3PM \u2013 6PM In this beginner-friendly workshop, students learn about and explore clay through hand-building to create a functional or decorativ",
       "url": "https://turnercenter.org/event/adult-pottery-workshop-4/",
       "recurring_pattern": ""
@@ -11,6 +12,7 @@
     {
       "title": "Youth Drawing Class",
       "start": "2026-03-14T13:00:00",
+      "allDay": false,
       "description": "Class meets 2nd Saturday of each month | 1-3pm Do you have a youth who loves to draw? Looking for a way to help your child grow their artistic skills? This class will focus on a different drawing tech",
       "url": "https://turnercenter.org/event/youth-drawing-class-4/",
       "recurring_pattern": ""
@@ -18,6 +20,7 @@
     {
       "title": "Adult Pottery Workshop",
       "start": "2026-03-14T15:00:00",
+      "allDay": false,
       "description": "Workshop meets 2nd Saturday of each month | 10AM \u2013 1pPM OR 3PM \u2013 6PM In this beginner-friendly workshop, students learn about and explore clay through hand-building to create a functional or decorativ",
       "url": "https://turnercenter.org/event/adult-pottery-workshop-5/",
       "recurring_pattern": ""
@@ -25,6 +28,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-16T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-55/",
       "recurring_pattern": ""
@@ -32,6 +36,7 @@
     {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-03-16T17:00:00",
+      "allDay": false,
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, March 2, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
       "url": "https://turnercenter.org/event/the-hal-jill-project-beginning-guitar-lessons-4/",
       "recurring_pattern": ""
@@ -39,6 +44,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-16T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-56/",
       "recurring_pattern": ""
@@ -46,6 +52,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-17T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-57/",
       "recurring_pattern": ""
@@ -53,6 +60,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-17T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-58/",
       "recurring_pattern": ""
@@ -60,6 +68,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-18T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-59/",
       "recurring_pattern": ""
@@ -67,6 +76,7 @@
     {
       "title": "Comic & Manga Illustration Class",
       "start": "2026-03-18T17:00:00",
+      "allDay": false,
       "description": "Join artist Cass and learn the basics of comic and manga illustration, including character design, expressive faces, and simple storytelling. The first session focuses on stylized heads using basic fo",
       "url": "https://turnercenter.org/event/comic-manga-illustration-class/2026-03-18/",
       "recurring_pattern": ""
@@ -74,6 +84,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-18T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-60/",
       "recurring_pattern": ""
@@ -81,6 +92,7 @@
     {
       "title": "Glassblowing Workshop Stemless Wine Glasses",
       "start": "2026-03-20T15:00:00",
+      "allDay": false,
       "description": "Friday, March 20 | Three (3) sessions | Four (4) students per session Saturday, March 21 | Three (3) sessions | Four (4) students per session Create your own stemless wine glass in this beginner frien",
       "url": "https://turnercenter.org/event/glassblowing-workshop-stemless-wine-glasses/",
       "recurring_pattern": ""
@@ -88,6 +100,7 @@
     {
       "title": "Glassblowing Workshop Stemless Wine Glasses",
       "start": "2026-03-20T17:00:00",
+      "allDay": false,
       "description": "Friday, March 20 | Three (3) sessions | Four (4) students per session Saturday, March 21 | Three (3) sessions | Four (4) students per session Create your own stemless wine glass in this beginner frien",
       "url": "https://turnercenter.org/event/glassblowing-workshop-stemless-wine-glasses-2/",
       "recurring_pattern": ""
@@ -95,6 +108,7 @@
     {
       "title": "Glassblowing Workshop Stemless Wine Glasses",
       "start": "2026-03-20T19:00:00",
+      "allDay": false,
       "description": "Friday, March 20 | Three (3) sessions | Four (4) students per session Saturday, March 21 | Three (3) sessions | Four (4) students per session Create your own stemless wine glass in this beginner frien",
       "url": "https://turnercenter.org/event/glassblowing-workshop-stemless-wine-glasses-3/",
       "recurring_pattern": ""
@@ -102,6 +116,7 @@
     {
       "title": "Craft Academy",
       "start": "2026-03-21T10:00:00",
+      "allDay": false,
       "description": "Class meets 3rd Saturday of each month Deadline for registration is the Friday before class at 4pm. Join artist Debra Kantelis for a day of creativity! In this class, students get crafty to explore va",
       "url": "https://turnercenter.org/event/craft-academy-7/",
       "recurring_pattern": ""
@@ -109,6 +124,7 @@
     {
       "title": "Paint Your Own Gala Dress \u2013 Fiber Arts",
       "start": "2026-03-21T10:00:00",
+      "allDay": false,
       "description": "Saturday, March 21 | 10am-1pm Join us for a unique and creative \u201cPaint Your Gala Dress\u201d workshop! In this hands-on class, you will transform an ordinary or thrifted dress into a one-of-a-kind, wearabl",
       "url": "https://turnercenter.org/event/paint-your-own-gala-dress/",
       "recurring_pattern": ""
@@ -116,6 +132,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-03-21T12:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-21/",
       "recurring_pattern": ""
@@ -123,6 +140,7 @@
     {
       "title": "Glassblowing Workshop Stemless Wine Glasses",
       "start": "2026-03-21T12:00:00",
+      "allDay": false,
       "description": "Friday, March 20 | Three (3) sessions | Four (4) students per session Saturday, March 21 | Three (3) sessions | Four (4) students per session Create your own stemless wine glass in this beginner frien",
       "url": "https://turnercenter.org/event/glassblowing-workshop-stemless-wine-glasses-4/",
       "recurring_pattern": ""
@@ -130,6 +148,7 @@
     {
       "title": "Glassblowing Workshop Stemless Wine Glasses",
       "start": "2026-03-21T14:00:00",
+      "allDay": false,
       "description": "Friday, March 20 | Three (3) sessions | Four (4) students per session Saturday, March 21 | Three (3) sessions | Four (4) students per session Create your own stemless wine glass in this beginner frien",
       "url": "https://turnercenter.org/event/glassblowing-workshop-stemless-wine-glasses-5/",
       "recurring_pattern": ""
@@ -137,6 +156,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-03-21T16:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-22/",
       "recurring_pattern": ""
@@ -144,6 +164,7 @@
     {
       "title": "Glassblowing Workshop Stemless Wine Glasses",
       "start": "2026-03-21T16:00:00",
+      "allDay": false,
       "description": "Friday, March 20 | Three (3) sessions | Four (4) students per session Saturday, March 21 | Three (3) sessions | Four (4) students per session Create your own stemless wine glass in this beginner frien",
       "url": "https://turnercenter.org/event/glassblowing-workshop-stemless-wine-glasses-6/",
       "recurring_pattern": ""
@@ -151,6 +172,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-23T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-61/",
       "recurring_pattern": ""
@@ -158,6 +180,7 @@
     {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-03-23T17:00:00",
+      "allDay": false,
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, March 2, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
       "url": "https://turnercenter.org/event/the-hal-jill-project-beginning-guitar-lessons-5/",
       "recurring_pattern": ""
@@ -165,6 +188,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-23T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-62/",
       "recurring_pattern": ""
@@ -172,6 +196,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-24T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-63/",
       "recurring_pattern": ""
@@ -179,6 +204,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-24T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-64/",
       "recurring_pattern": ""
@@ -186,6 +212,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-25T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-65/",
       "recurring_pattern": ""
@@ -193,6 +220,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-25T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-66/",
       "recurring_pattern": ""
@@ -200,6 +228,7 @@
     {
       "title": "Raku Firing Sessions",
       "start": "2026-03-28T09:45:00",
+      "allDay": false,
       "description": "Offered the 4th Saturday of each month | 9:45am-12:45pm OR 12:45pm-3:45pm Three hour sessions | Three students max per session Class is held behind the Richard Hill Glass Studio Explore the process of",
       "url": "https://turnercenter.org/event/raku-firing-sessions-11/",
       "recurring_pattern": ""
@@ -207,6 +236,7 @@
     {
       "title": "Fiber Arts Class",
       "start": "2026-03-28T10:00:00",
+      "allDay": false,
       "description": "Offered the 4th Saturday of each month | 10am-1pm Everything Old is New Again Recycling old wool clothing into new rugs and mats is just one reason why the \u201cold\u201d technique known as standing wool is ga",
       "url": "https://turnercenter.org/event/fiber-arts-class/",
       "recurring_pattern": ""
@@ -214,6 +244,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-03-28T12:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-25/",
       "recurring_pattern": ""
@@ -221,6 +252,7 @@
     {
       "title": "Raku Firing Sessions",
       "start": "2026-03-28T12:45:00",
+      "allDay": false,
       "description": "Offered the 4th Saturday of each month | 9:45am-12:45pm OR 12:45pm-3:45pm Three hour sessions | Three students max per session Class is held behind the Richard Hill Glass Studio Explore the process of",
       "url": "https://turnercenter.org/event/raku-firing-sessions-12/",
       "recurring_pattern": ""
@@ -228,6 +260,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-03-28T16:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-26/",
       "recurring_pattern": ""
@@ -235,6 +268,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-30T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-67/",
       "recurring_pattern": ""
@@ -242,6 +276,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-30T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-68/",
       "recurring_pattern": ""
@@ -249,6 +284,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-31T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-69/",
       "recurring_pattern": ""
@@ -256,6 +292,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-03-31T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-70/",
       "recurring_pattern": ""
@@ -263,6 +300,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-01T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-71/",
       "recurring_pattern": ""
@@ -270,6 +308,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-01T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-72/",
       "recurring_pattern": ""
@@ -277,6 +316,7 @@
     {
       "title": "Beginner Watercolor Workshop",
       "start": "2026-04-04T10:00:00",
+      "allDay": false,
       "description": "Class meets the 1st Saturday of each month | 10am-Noon (Unless otherwise noted) Join instructor/artist Daisy Taylor for this beginner-friendly watercolor workshop. Learn foundational watercolor techni",
       "url": "https://turnercenter.org/event/beginner-watercolor-workshop-2/",
       "recurring_pattern": ""
@@ -284,6 +324,7 @@
     {
       "title": "Kids Pottery Workshop",
       "start": "2026-04-04T10:00:00",
+      "allDay": false,
       "description": "Workshop meets 1st Saturday of each month | 10am-Noon OR 2-4pm Youth students explore the world of clay through hand-building to make a functional or decorative ceramic piece. Each class focuses on a ",
       "url": "https://turnercenter.org/event/kids-pottery-workshop-7/",
       "recurring_pattern": ""
@@ -291,6 +332,7 @@
     {
       "title": "Kids Pottery Workshop",
       "start": "2026-04-04T14:00:00",
+      "allDay": false,
       "description": "Workshop meets 1st Saturday of each month | 10am-Noon OR 2-4pm Youth students explore the world of clay through hand-building to make a functional or decorative ceramic piece. Each class focuses on a ",
       "url": "https://turnercenter.org/event/kids-pottery-workshop-8/",
       "recurring_pattern": ""
@@ -298,6 +340,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-06T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-73/",
       "recurring_pattern": ""
@@ -305,6 +348,7 @@
     {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-04-06T17:00:00",
+      "allDay": false,
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, April 6, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
       "url": "https://turnercenter.org/event/the-hal-jill-project-beginning-guitar-lessons-6/",
       "recurring_pattern": ""
@@ -312,6 +356,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-06T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-74/",
       "recurring_pattern": ""
@@ -319,6 +364,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-07T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-75/",
       "recurring_pattern": ""
@@ -326,6 +372,7 @@
     {
       "title": "Paint & Sip",
       "start": "2026-04-07T17:30:00",
+      "allDay": false,
       "description": "Class meets 2nd Tuesday of each month | 5:30-8pm (Unless otherwise noted) Next class will be Tuesday, April 7, 2026 In this beginner-friendly class, students will use acrylics to create an abstract wo",
       "url": "https://turnercenter.org/event/paint-sip-3/",
       "recurring_pattern": ""
@@ -333,6 +380,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-07T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-76/",
       "recurring_pattern": ""
@@ -340,6 +388,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-08T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-77/",
       "recurring_pattern": ""
@@ -347,6 +396,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-08T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-78/",
       "recurring_pattern": ""
@@ -354,6 +404,7 @@
     {
       "title": "Adult Pottery Workshop",
       "start": "2026-04-11T10:00:00",
+      "allDay": false,
       "description": "Workshop meets 2nd Saturday of each month | 10AM \u2013 1pPM OR 3PM \u2013 6PM In this beginner-friendly workshop, students learn about and explore clay through hand-building to create a functional or decorativ",
       "url": "https://turnercenter.org/event/adult-pottery-workshop-6/",
       "recurring_pattern": ""
@@ -361,6 +412,7 @@
     {
       "title": "Youth Drawing Class",
       "start": "2026-04-11T13:00:00",
+      "allDay": false,
       "description": "Class meets 2nd Saturday of each month | 1-3pm Do you have a youth who loves to draw? Looking for a way to help your child grow their artistic skills? This class will focus on a different drawing tech",
       "url": "https://turnercenter.org/event/youth-drawing-class-5/",
       "recurring_pattern": ""
@@ -368,6 +420,7 @@
     {
       "title": "Adult Pottery Workshop",
       "start": "2026-04-11T15:00:00",
+      "allDay": false,
       "description": "Workshop meets 2nd Saturday of each month | 10AM \u2013 1pPM OR 3PM \u2013 6PM In this beginner-friendly workshop, students learn about and explore clay through hand-building to create a functional or decorativ",
       "url": "https://turnercenter.org/event/adult-pottery-workshop-7/",
       "recurring_pattern": ""
@@ -375,6 +428,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-13T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-79/",
       "recurring_pattern": ""
@@ -382,6 +436,7 @@
     {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-04-13T17:00:00",
+      "allDay": false,
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, April 6, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
       "url": "https://turnercenter.org/event/the-hal-jill-project-beginning-guitar-lessons-7/",
       "recurring_pattern": ""
@@ -389,6 +444,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-13T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-80/",
       "recurring_pattern": ""
@@ -396,6 +452,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-14T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-81/",
       "recurring_pattern": ""
@@ -403,6 +460,7 @@
     {
       "title": "Paints & Pastries",
       "start": "2026-04-14T17:30:00",
+      "allDay": false,
       "description": "Class meets 2nd Monday of each month | 5:30-8pm\u00a0 (Unless otherwise noted) Next class is Monday, April 13, 2026 This beginner-friendly class is an excellent way to try your hand at acrylics or to brush",
       "url": "https://turnercenter.org/event/paints-pastries-8/",
       "recurring_pattern": ""
@@ -410,6 +468,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-14T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-82/",
       "recurring_pattern": ""
@@ -417,6 +476,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-15T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-83/",
       "recurring_pattern": ""
@@ -424,6 +484,7 @@
     {
       "title": "Comic & Manga Illustration Class",
       "start": "2026-04-15T17:00:00",
+      "allDay": false,
       "description": "Join artist Cass and learn the basics of comic and manga illustration, including character design, expressive faces, and simple storytelling. The first session focuses on stylized heads using basic fo",
       "url": "https://turnercenter.org/event/comic-manga-illustration-class-2/",
       "recurring_pattern": ""
@@ -431,6 +492,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-15T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-84/",
       "recurring_pattern": ""
@@ -438,6 +500,7 @@
     {
       "title": "Advanced Oil Painting",
       "start": "2026-04-16T10:00:00",
+      "allDay": false,
       "description": "Offered every Thursday of the month (unless otherwise noted) | 10AM \u2013 2PM Class begins Thursday, February 5, 2026 This year-round, weekly class provides an intensive focus on traditional oil painting ",
       "url": "https://turnercenter.org/event/advanced-oil-painting-14/",
       "recurring_pattern": ""
@@ -445,6 +508,7 @@
     {
       "title": "Craft Academy",
       "start": "2026-04-18T10:00:00",
+      "allDay": false,
       "description": "Class meets 3rd Saturday of each month Deadline for registration is the Friday before class at 4pm. Join artist Debra Kantelis for a day of creativity! In this class, students get crafty to explore va",
       "url": "https://turnercenter.org/event/craft-academy-8/",
       "recurring_pattern": ""
@@ -452,6 +516,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-04-18T12:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-27/",
       "recurring_pattern": ""
@@ -459,6 +524,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-04-18T16:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-28/",
       "recurring_pattern": ""
@@ -466,6 +532,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-20T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-85/",
       "recurring_pattern": ""
@@ -473,6 +540,7 @@
     {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-04-20T17:00:00",
+      "allDay": false,
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, April 6, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
       "url": "https://turnercenter.org/event/the-hal-jill-project-beginning-guitar-lessons-8/",
       "recurring_pattern": ""
@@ -480,6 +548,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-20T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-86/",
       "recurring_pattern": ""
@@ -487,6 +556,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-21T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-87/",
       "recurring_pattern": ""
@@ -494,6 +564,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-21T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-88/",
       "recurring_pattern": ""
@@ -501,6 +572,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-22T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-89/",
       "recurring_pattern": ""
@@ -508,6 +580,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-22T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-90/",
       "recurring_pattern": ""
@@ -515,6 +588,7 @@
     {
       "title": "Advanced Oil Painting",
       "start": "2026-04-23T10:00:00",
+      "allDay": false,
       "description": "Offered every Thursday of the month (unless otherwise noted) | 10AM \u2013 2PM Class begins Thursday, April 2, 2026 This year-round, weekly class provides an intensive focus on traditional oil painting pra",
       "url": "https://turnercenter.org/event/advanced-oil-painting-12/",
       "recurring_pattern": ""
@@ -522,6 +596,7 @@
     {
       "title": "Raku Firing Sessions",
       "start": "2026-04-25T09:45:00",
+      "allDay": false,
       "description": "Offered the 4th Saturday of each month | 9:45am-12:45pm OR 12:45pm-3:45pm Three hour sessions | Three students max per session Class is held behind the Richard Hill Glass Studio Explore the process of",
       "url": "https://turnercenter.org/event/raku-firing-sessions-13/",
       "recurring_pattern": ""
@@ -529,6 +604,7 @@
     {
       "title": "Fiber Arts Journal Class",
       "start": "2026-04-25T10:00:00",
+      "allDay": false,
       "description": "Beginner Level Rug Hooking Join Fiber artist Anita Gillis for an introduction to rug hooking and discover a new hobby! Rug hooking is essentially a stress-free art form. It\u2019s similar to coloring, but ",
       "url": "https://turnercenter.org/event/fiber-arts-journal-class-4/",
       "recurring_pattern": ""
@@ -536,6 +612,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-04-25T12:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-29/",
       "recurring_pattern": ""
@@ -543,6 +620,7 @@
     {
       "title": "Raku Firing Sessions",
       "start": "2026-04-25T12:45:00",
+      "allDay": false,
       "description": "Offered the 4th Saturday of each month | 9:45am-12:45pm OR 12:45pm-3:45pm Three hour sessions | Three students max per session Class is held behind the Richard Hill Glass Studio Explore the process of",
       "url": "https://turnercenter.org/event/raku-firing-sessions-14/",
       "recurring_pattern": ""
@@ -550,6 +628,7 @@
     {
       "title": "Ceramics Open Studio",
       "start": "2026-04-25T16:00:00",
+      "allDay": false,
       "description": "Open studios meet the 3rd & 4th Saturday of each month | Noon-3PM & 4-7PM For more independent Weekday Pottery students, open studios allow more time to work in the studio outside of class hours. Havi",
       "url": "https://turnercenter.org/event/ceramics-open-studio-30/",
       "recurring_pattern": ""
@@ -557,6 +636,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-27T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-91/",
       "recurring_pattern": ""
@@ -564,6 +644,7 @@
     {
       "title": "The Hal & Jill Project \u2013 Beginning Guitar Lessons",
       "start": "2026-04-27T17:00:00",
+      "allDay": false,
       "description": "Offered in 4-week sessions on Mondays | 5-6pm Next session begins Monday, April 6, 2026 Ready to start playing guitar? That\u2019s fantastic! Join guitarist Matt Savitsky, newest member of the Naturally So",
       "url": "https://turnercenter.org/event/the-hal-jill-project-beginning-guitar-lessons-9/",
       "recurring_pattern": ""
@@ -571,6 +652,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-27T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-92/",
       "recurring_pattern": ""
@@ -578,6 +660,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-28T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-93/",
       "recurring_pattern": ""
@@ -585,6 +668,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-28T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-94/",
       "recurring_pattern": ""
@@ -592,6 +676,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-29T10:00:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-95/",
       "recurring_pattern": ""
@@ -599,6 +684,7 @@
     {
       "title": "Weekday Pottery Class",
       "start": "2026-04-29T17:30:00",
+      "allDay": false,
       "description": "Classes offered on Mondays OR Tuesdays OR Wednesdays | 10am-1pm OR 5:30-8:30pm Classes meet on the selected day and time for 4 consecutive weeks Weekday Pottery class instruction includes an introduct",
       "url": "https://turnercenter.org/event/weekday-pottery-class-96/",
       "recurring_pattern": ""
@@ -606,6 +692,7 @@
     {
       "title": "Advanced Oil Painting",
       "start": "2026-04-30T10:00:00",
+      "allDay": false,
       "description": "Offered every Thursday of the month (unless otherwise noted) | 10AM \u2013 2PM Class begins Thursday, April 2, 2026 This year-round, weekly class provides an intensive focus on traditional oil painting pra",
       "url": "https://turnercenter.org/event/advanced-oil-painting-13/",
       "recurring_pattern": ""
@@ -613,6 +700,7 @@
     {
       "title": "Kids Pottery Workshop",
       "start": "2026-05-02T10:00:00",
+      "allDay": false,
       "description": "Workshop meets 1st Saturday of each month | 10am \u2013 Noon OR 2-4pm Youth students explore the world of clay through hand-building to make a functional or decorative ceramic piece. Each class focuses on ",
       "url": "https://turnercenter.org/event/kids-pottery-workshop-9/",
       "recurring_pattern": ""
@@ -620,6 +708,7 @@
     {
       "title": "Kids Pottery Workshop",
       "start": "2026-05-02T14:00:00",
+      "allDay": false,
       "description": "Workshop meets 1st Saturday of each month | 10am \u2013 Noon OR 2-4pm Youth students explore the world of clay through hand-building to make a functional or decorative ceramic piece. Each class focuses on ",
       "url": "https://turnercenter.org/event/kids-pottery-workshop-10/",
       "recurring_pattern": ""

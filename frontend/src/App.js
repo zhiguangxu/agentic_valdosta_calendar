@@ -423,6 +423,12 @@ function App() {
             }}
             dayMaxEvents={4}
             scrollTime="08:00:00"
+            eventDataTransform={(event) => {
+              if (event.allDay) {
+                return { ...event, display: "list-item" };
+              }
+              return event;
+            }}
             events={categoryData}
             eventClick={(info) => {
               if (info.event.url) {

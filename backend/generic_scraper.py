@@ -262,7 +262,7 @@ ITEMS:
                 # Process each item with post-processing
                 for item in items:
                     date_str = item.get('date', datetime.now().strftime("%Y-%m-%d"))
-                    time_str = item.get('time', '19:00' if source_type == 'events' else '10:00')
+                    time_str = item.get('time', '')
                     title = item.get('title', 'Untitled')
                     item_url = item.get('url', url)
 
@@ -305,16 +305,17 @@ ITEMS:
                         # For attractions, always use today's date (they're not time-specific)
                         date_str = datetime.now().strftime("%Y-%m-%d")
 
-                    # Validate and fix time format
-                    if not re.match(r'^\d{2}:\d{2}$', time_str):
-                        time_str = '19:00' if source_type == 'events' else '10:00'
+                    # Validate and fix time format; keep empty string as-is (no confirmed time)
+                    if time_str and not re.match(r'^\d{2}:\d{2}$', time_str):
+                        time_str = ''
 
+                    all_day = not time_str
                     result_item = {
                         "title": title,
                         "url": item_url,
                         "description": item.get('description', ''),
-                        "start": f"{date_str}T{time_str}:00",
-                        "allDay": False
+                        "start": date_str if all_day else f"{date_str}T{time_str}:00",
+                        "allDay": all_day
                     }
                     print(f"    Adding: {title} on {date_str}")
                     all_results.append(result_item)
@@ -345,7 +346,7 @@ CURRENT YEAR: {current_year}
 IMPORTANT INSTRUCTIONS:
 1. Extract ALL events you can find, not just a few examples - INCLUDE ALL calendar entries
 2. For dates: Use YYYY-MM-DD format. The current year is {current_year}. For dates without a year, assume {current_year}. If a date (like "November 13") has already passed in {current_year}, assume it's for the NEXT year ({current_year + 1}).
-3. For times: Use HH:MM 24-hour format. Look for times in the content. If no time found, use "19:00"
+3. For times: Use HH:MM 24-hour format. Look for times in the content. If no time found, use "" (empty string)
 4. For URLs: Extract href attributes from <a> tags. Return relative URLs as-is (e.g., "/event/123")
 5. For titles: Extract the event name exactly as shown - keep all calendar entries
 6. EXCLUDE ONLY: Navigation items and UI elements like "Log In", "Sign Up", "Read More", "Menu", "Search", "Home", "About", "Contact"
@@ -408,7 +409,7 @@ MEETINGS-SPECIFIC INSTRUCTIONS:
 2. For titles: Use exact meeting names - be precise (e.g., "City Council Meeting", "Board of Directors Meeting")
 3. For locations: Extract meeting location/venue (e.g., "City Hall Room 203")
 4. For dates: Use YYYY-MM-DD format. Current year is {current_year}
-5. For times: Use HH:MM 24-hour format. Meetings often have exact start times - extract them precisely
+5. For times: Use HH:MM 24-hour format. Meetings often have exact start times - extract them precisely. Use "" (empty string) if no time is found.
 6. For descriptions: Include agenda items, attendees, purpose of meeting (200 chars)
 7. IMPORTANT: Extract ONLY the specific meeting dates shown on the page - do NOT infer or generate recurring patterns
 8. IMPORTANT: Keep year prefixes if present (e.g., "2026 Annual Meeting")
@@ -417,6 +418,7 @@ Return ONLY a valid JSON array with no markdown formatting. Format:
 [
   {{"title": "Meeting Name", "date": "{current_year}-02-15", "time": "18:00", "description": "Meeting purpose and agenda", "url": "/meeting/123", "location": "Meeting Location", "recurring_pattern": ""}}
 ]
+(Use "" for time if no time is found on the page.)
 
 If you cannot find any meetings, return an empty array: []
 
@@ -471,16 +473,19 @@ INSTRUCTIONS:
      * Describe the pattern in recurring_pattern field
      * DO NOT generate multiple dates - the system will expand recurring events automatically
 
-2. SPECIFIC DATE EXTRACTION (FOR ONE-TIME EVENTS):
+2. SPECIFIC DATE EXTRACTION (FOR ONE-TIME OR MULTI-DAY EVENTS):
    - Look for specific dates like "Saturday, February 7, 2026"
-   - CRITICAL: Return only ONE date unless this is a multi-day event
+   - For a single-day event: return one date in the array
+   - For a multi-day event (e.g., "March 14-15", "March 14 & 15", "March 14-16"):
+     * Return ALL days as separate entries: ["2026-03-14", "2026-03-15"]
+     * Do NOT collapse a range into just the start date
    - Do NOT extract dates for other events on the same page
 
 3. TIME EXTRACTION:
    - Look carefully for ANY time mention: "8:00am", "5:00 PM", "9:30 AM", "(5:00 PM - 9:00 PM)", etc.
    - Convert to 24-hour HH:MM format: "8:00am" → "08:00", "5:00 PM" → "17:00", "7:30 PM" → "19:30"
    - Use the START time if a range is given (e.g. "5:00 PM - 9:00 PM" → "17:00")
-   - Only default to "19:00" if NO time is found anywhere on the page
+   - Use "" (empty string) if NO time is found anywhere on the page
 
 4. DESCRIPTION EXTRACTION:
    - Extract a comprehensive description (200-300 characters)
@@ -491,8 +496,8 @@ Return ONLY valid JSON:
   "status": "active|cancelled|postponed|full|unknown",
   "dates": ["2026-02-14"],
   "recurring_pattern": "Optional: describe pattern",
-  "time": "19:00",
-  "description": "Detailed description",
+  "time": "19:30",
+  "description": "Detailed description (use empty string if no time on page)",
   "corrected_title": "Only if page has BETTER title"
 }}
 
@@ -567,7 +572,7 @@ CLASSES-SPECIFIC INSTRUCTIONS:
 4. TIME EXTRACTION:
    - Extract exact class time (e.g., "2:00 PM - 4:00 PM" → "14:00")
    - If multiple time options (e.g., "10am OR 5:30pm"), use the FIRST option
-   - Default to "14:00" if not specified
+   - Use "" (empty string) if no time is specified on the page
 
 5. DETAILED DESCRIPTION:
    - Include: instructor name, skill level, what students will learn, age group
@@ -578,7 +583,7 @@ Return ONLY valid JSON:
   "category": "CATEGORY NAME (with | separators if present)",
   "classes": [
     {{
-      "title": "Class with specific dates (e.g., Feb 2, 9, 16)",
+      "title": "Class with specific dates and known time (e.g., Feb 2, 9, 16)",
       "status": "active",
       "dates": ["2026-02-02", "2026-02-09", "2026-02-16"],
       "recurring_pattern": "",
@@ -587,11 +592,11 @@ Return ONLY valid JSON:
       "instructor": "Instructor Name"
     }},
     {{
-      "title": "Class on 2nd Saturday each month",
+      "title": "Class on 2nd Saturday each month (time not specified on page)",
       "status": "active",
       "dates": ["2026-02-14"],
       "recurring_pattern": "",
-      "time": "10:00",
+      "time": "",
       "description": "Offered 2nd Saturday each month.",
       "instructor": ""
     }},
@@ -652,7 +657,10 @@ MEETINGS-SPECIFIC INSTRUCTIONS:
 
 2. EXACT DATE AND TIME:
    - Meetings usually have precise dates and times
-   - Extract exact start time
+   - Look carefully for ANY time mention: "6:00 PM", "9:00 AM", "18:00", etc.
+   - Convert to 24-hour HH:MM format: "6:00 PM" → "18:00", "9:30 AM" → "09:30"
+   - Use the START time if a range is given
+   - Use "" (empty string) if no time is found anywhere on the page
 
 3. LOCATION:
    - Extract meeting location/venue
@@ -671,6 +679,7 @@ Return ONLY valid JSON:
   "location": "Meeting Location",
   "corrected_title": "Only if page has BETTER title"
 }}
+(Use "" for time if no time is found on the page.)
 
 HTML content:
 {meeting_content}
@@ -764,24 +773,28 @@ def _scrape_turner_center_api(url: str, source_type: str = "classes") -> List[Di
                     description = event.get('excerpt', '')[:200]
 
                 # Parse date and time
+                is_all_day = event.get('all_day', False)
                 start_date = event.get('start_date', '')
                 if start_date:
                     # Format: "2026-02-18 10:00:00"
                     try:
                         dt = datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S')
-                        iso_date = dt.strftime('%Y-%m-%dT%H:%M:%S')
+                        if is_all_day:
+                            iso_date = dt.strftime('%Y-%m-%d')
+                        else:
+                            iso_date = dt.strftime('%Y-%m-%dT%H:%M:%S')
                     except:
-                        # Fallback: use as-is
-                        iso_date = start_date.replace(' ', 'T')
+                        iso_date = start_date.split(' ')[0] if is_all_day else start_date.replace(' ', 'T')
                 else:
-                    iso_date = current_date.strftime('%Y-%m-%dT10:00:00')
+                    iso_date = current_date.strftime('%Y-%m-%d') if is_all_day else current_date.strftime('%Y-%m-%dT10:00:00')
 
                 results.append({
                     'title': title,
                     'start': iso_date,
+                    'allDay': is_all_day,
                     'description': description,
                     'url': event_url,
-                    'recurring_pattern': ''  # API doesn't expose recurring pattern easily
+                    'recurring_pattern': ''
                 })
 
             # Check if there are more pages
@@ -1004,10 +1017,11 @@ INSTRUCTIONS:
 - For calendar tables, look for links within cells
 - Parse times: "7:00pm" → "19:00", "10:00am" → "10:00"
 - Use current or upcoming year (2026) for dates
-- Extract ALL events from today ({datetime.now().strftime("%Y-%m-%d")}) and future months
+- Extract ALL events from today ({datetime.now().strftime("%Y-%m-%d")}) through ALL future months shown (including April, May, June, and beyond)
 - Include ALL events for today even if they started earlier today - do NOT filter by time of day
 - Only skip events that are clearly before today's date ({datetime.now().strftime("%Y-%m-%d")})
 - If multiple events occur on the same day, extract ALL of them
+- Do NOT stop at the end of the current month - continue through every month listed on the page
 
 Return JSON array: [{{"title": "...", "url": "...", "date": "...", "time": "...", "recurring_pattern": "..."}}]
 
@@ -1019,7 +1033,7 @@ HTML:
 
                 ai_response = openai_client.chat.completions.create(
                     model="gpt-4o-mini",
-                    messages=[{"role": "user", "content": stage1_prompt + "\n\nHTML:\n" + html_content}],
+                    messages=[{"role": "user", "content": stage1_prompt}],
                     temperature=0.1
                 )
 
@@ -1042,7 +1056,7 @@ HTML:
                         title = event.get('title', '')
                         event_url = event.get('url', '')
                         event_date = event.get('date') or ''
-                        event_time = event.get('time') or '19:00'
+                        event_time = event.get('time') or ''
                         recurring_pattern = event.get('recurring_pattern', '')
 
                         # Make URL absolute
@@ -1123,28 +1137,36 @@ HTML:
                             if "noon" in desc_text.lower():
                                 event_time = "12:00"
                             else:
-                                event_time = "19:00"
+                                event_time = ""
 
-                        # Parse date
+                        # Parse date — day field may be a range like "14-15", "14 & 15", "14–15"
                         if day and month and title:
                             try:
-                                # Convert month name to number
-                                date_str = f"{day} {month} {current_year}"
-                                parsed_date = dateparser.parse(date_str)
-                                if parsed_date:
-                                    # If date is in the past, assume next year
+                                # Detect date range in the day field
+                                range_match = re.search(r'(\d{1,2})\s*[-–&]\s*(\d{1,2})', day)
+                                if range_match:
+                                    start_day = int(range_match.group(1))
+                                    end_day = int(range_match.group(2))
+                                    days_to_process = list(range(start_day, end_day + 1))
+                                else:
+                                    # Single day — strip any non-numeric suffix
+                                    day_num = re.search(r'\d+', day)
+                                    days_to_process = [int(day_num.group())] if day_num else []
+
+                                has_external_url = event_url and "visitvaldosta.org" not in event_url if event_url else False
+
+                                if title.lower() in ['unknown', 'untitled', 'tbd', 'tba']:
+                                    print(f"[Two-Stage]   ⚠️  WARNING: Suspicious title '{title}' extracted!")
+
+                                for d in days_to_process:
+                                    date_str = f"{d} {month} {current_year}"
+                                    parsed_date = dateparser.parse(date_str)
+                                    if not parsed_date:
+                                        continue
                                     if parsed_date.date() < datetime.now().date():
                                         parsed_date = parsed_date.replace(year=current_year + 1)
 
                                     formatted_date = parsed_date.strftime("%Y-%m-%d")
-
-                                    # Check if URL is external (not visitvaldosta.org)
-                                    has_external_url = event_url and "visitvaldosta.org" not in event_url if event_url else False
-
-                                    # Debug: check for suspicious titles
-                                    if title.lower() in ['unknown', 'untitled', 'tbd', 'tba']:
-                                        print(f"[Two-Stage]   ⚠️  WARNING: Suspicious title '{title}' extracted!")
-
                                     event_data = {
                                         "title": title,
                                         "url": event_url or url,
@@ -1200,7 +1222,7 @@ HTML:
         for event in events_without_external_urls:
             event_title = event.get('title', 'Untitled')
             event_date = event.get('date') or ''
-            event_time = event.get('time') or '19:00'
+            event_time = event.get('time') or ''
             event_url = event.get('url', url)  # Use listing page URL if no specific URL
 
             # Fix common typos in title
@@ -1215,16 +1237,17 @@ HTML:
 
                 # Skip past dates UNLESS it's a supported recurring event
                 if parsed_date >= datetime.now().date() or is_recurring:
-                    # Validate time format
-                    if not re.match(r'^\d{2}:\d{2}$', event_time):
-                        event_time = '19:00'
+                    # Validate time format; keep empty as-is (no confirmed time)
+                    if event_time and not re.match(r'^\d{2}:\d{2}$', event_time):
+                        event_time = ''
 
+                    all_day = not event_time
                     result_item = {
                         "title": event_title,
                         "url": event_url,
                         "description": _truncate_description(event.get('description', '')),
-                        "start": f"{event_date}T{event_time}:00",
-                        "allDay": False,
+                        "start": event_date if all_day else f"{event_date}T{event_time}:00",
+                        "allDay": all_day,
                         "recurring_pattern": event_recurring  # Store recurring pattern if available
                     }
                     all_results.append(result_item)
@@ -1329,7 +1352,7 @@ HTML:
 
                             status = class_item.get('status', 'unknown')
                             dates = class_item.get('dates', [])
-                            time_str = class_item.get('time', '14:00')
+                            time_str = class_item.get('time', '')
                             raw_description = class_item.get('description', '')
                             description = _truncate_description(raw_description)
                             recurring_pattern = class_item.get('recurring_pattern', '')
@@ -1348,9 +1371,9 @@ HTML:
                                     print(f"[Two-Stage]   Skipping {full_title} - No dates found")
                                     continue
 
-                            # Validate time format
-                            if not re.match(r'^\d{2}:\d{2}$', time_str):
-                                time_str = '14:00'
+                            # Validate time format; keep empty string as-is (means no confirmed time)
+                            if time_str and not re.match(r'^\d{2}:\d{2}$', time_str):
+                                time_str = ''
 
                             # Create calendar entry for each date
                             for date_str in dates:
@@ -1360,12 +1383,13 @@ HTML:
 
                                     # Skip past dates UNLESS it's a supported recurring class
                                     if event_date >= datetime.now().date() or is_recurring:
+                                        all_day = not time_str
                                         result_item = {
                                             "title": full_title,
                                             "url": event_url,
                                             "description": _truncate_description(description),
-                                            "start": f"{date_str}T{time_str}:00",
-                                            "allDay": False,
+                                            "start": date_str if all_day else f"{date_str}T{time_str}:00",
+                                            "allDay": all_day,
                                             "recurring_pattern": recurring_pattern
                                         }
                                         all_results.append(result_item)
@@ -1385,7 +1409,7 @@ HTML:
                     # Standard processing for events/meetings (old format)
                     status = event_data.get('status', 'unknown')
                     dates = event_data.get('dates', [])
-                    time_str = event_data.get('time', '19:00')
+                    time_str = event_data.get('time', '')
                     raw_description = event_data.get('description', '')
                     description = _truncate_description(raw_description)
                     corrected_title = event_data.get('corrected_title', '')
@@ -1415,15 +1439,14 @@ HTML:
                     # For external URLs, prefer Stage 2 dates if found, otherwise use fallback
                     is_internal_valdosta = "valdostacity.com/event/" in event_url
                     fallback_date = event.get('date', '')
-                    fallback_time = event.get('time', '19:00')
+                    fallback_time = event.get('time', '')
 
                     if is_internal_valdosta and fallback_date:
-                        # Always use calendar dates for valdostacity.com internal pages
-                        # Use Stage 2's time (from event detail page) as it has the actual start time.
-                        # Only fall back to Stage 1's time if Stage 2 returned the default 19:00.
+                        # Always use calendar dates for valdostacity.com internal pages.
+                        # Prefer Stage 2's time; fall back to Stage 1's time if Stage 2 found nothing.
                         print(f"[Two-Stage]   Using calendar date for internal page: {event_title} on {fallback_date}")
                         dates = [fallback_date]
-                        if time_str == '19:00' and fallback_time and fallback_time != '19:00':
+                        if not time_str and fallback_time:
                             time_str = fallback_time
                     elif not dates:
                         # No dates in Stage 2, use fallback from Stage 1 (listing page)
@@ -1438,9 +1461,15 @@ HTML:
                             print(f"[Two-Stage]   Skipping {event_title} - No dates found in Stage 2 or fallback")
                             continue
 
-                    # Validate time format
-                    if not re.match(r'^\d{2}:\d{2}$', time_str):
-                        time_str = '19:00'
+                    # Validate time format; keep empty as-is (no confirmed time)
+                    if time_str and not re.match(r'^\d{2}:\d{2}$', time_str):
+                        time_str = ''
+
+                    # If Stage 2 found no time (e.g. Facebook/blocked page returned empty),
+                    # fall back to the time Stage 1 extracted from the listing page.
+                    if not time_str and fallback_time and re.match(r'^\d{2}:\d{2}$', fallback_time):
+                        time_str = fallback_time
+                        print(f"[Two-Stage]   Using Stage 1 fallback time {fallback_time} for {event_title}")
 
                     # Create calendar entry for EACH date (multi-day support)
                     for date_str in dates:
@@ -1452,13 +1481,14 @@ HTML:
 
                             # Skip past dates UNLESS it's a supported recurring event
                             if event_date >= datetime.now().date() or is_recurring:
+                                all_day = not time_str
                                 result_item = {
                                     "title": event_title,
                                     "url": event_url,
                                     "description": _truncate_description(description),
-                                    "start": f"{date_str}T{time_str}:00",
-                                    "allDay": False,
-                                    "recurring_pattern": recurring_pattern  # Store recurring pattern for detection
+                                    "start": date_str if all_day else f"{date_str}T{time_str}:00",
+                                    "allDay": all_day,
+                                    "recurring_pattern": recurring_pattern
                                 }
                                 all_results.append(result_item)
                                 if is_recurring:
@@ -1484,7 +1514,7 @@ HTML:
                 print(f"[Two-Stage]   HTTP error for {event_title}: {e.response.status_code}")
                 # Fallback: Use listing page date
                 fallback_date = event.get('date', '')
-                fallback_time = event.get('time', '19:00')
+                fallback_time = event.get('time', '')
 
                 # Fix common typos in title
                 fallback_title = event_title
@@ -1499,15 +1529,16 @@ HTML:
 
                         # Skip past dates UNLESS it's a supported recurring event
                         if parsed_date >= datetime.now().date() or is_recurring:
-                            if not re.match(r'^\d{2}:\d{2}$', fallback_time):
-                                fallback_time = '19:00'
+                            if fallback_time and not re.match(r'^\d{2}:\d{2}$', fallback_time):
+                                fallback_time = ''
                             fallback_desc = _truncate_description(event.get('description', ''))
+                            all_day = not fallback_time
                             result_item = {
                                 "title": fallback_title,
                                 "url": event_url,
                                 "description": fallback_desc,
-                                "start": f"{fallback_date}T{fallback_time}:00",
-                                "allDay": False,
+                                "start": fallback_date if all_day else f"{fallback_date}T{fallback_time}:00",
+                                "allDay": all_day,
                                 "recurring_pattern": fallback_recurring
                             }
                             all_results.append(result_item)
@@ -1522,7 +1553,7 @@ HTML:
                 print(f"[Two-Stage]   Timeout for {event_title}")
                 # Fallback: Use listing page date
                 fallback_date = event.get('date', '')
-                fallback_time = event.get('time', '19:00')
+                fallback_time = event.get('time', '')
 
                 # Fix common typos in title
                 fallback_title = event_title
@@ -1537,15 +1568,16 @@ HTML:
 
                         # Skip past dates UNLESS it's a supported recurring event
                         if parsed_date >= datetime.now().date() or is_recurring:
-                            if not re.match(r'^\d{2}:\d{2}$', fallback_time):
-                                fallback_time = '19:00'
+                            if fallback_time and not re.match(r'^\d{2}:\d{2}$', fallback_time):
+                                fallback_time = ''
                             fallback_desc = _truncate_description(event.get('description', ''))
+                            all_day = not fallback_time
                             result_item = {
                                 "title": fallback_title,
                                 "url": event_url,
                                 "description": fallback_desc,
-                                "start": f"{fallback_date}T{fallback_time}:00",
-                                "allDay": False,
+                                "start": fallback_date if all_day else f"{fallback_date}T{fallback_time}:00",
+                                "allDay": all_day,
                                 "recurring_pattern": fallback_recurring
                             }
                             all_results.append(result_item)
@@ -1651,11 +1683,11 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
             # Get the original event's time
             original_start = event.get('start', '')
             try:
-                # Extract time from original event (default to 19:00)
+                # Extract time from original event; None means no confirmed time
                 if 'T' in original_start:
                     event_time = original_start.split('T')[1]
                 else:
-                    event_time = '19:00:00'
+                    event_time = None
 
                 # Generate first Friday of each month for next 6 months
                 current_date = datetime.now()
@@ -1674,7 +1706,13 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
                     # Only add if it's in the future
                     if first_friday.date() >= datetime.now().date():
                         recurring_event = event.copy()
-                        recurring_event['start'] = f"{first_friday.strftime('%Y-%m-%d')}T{event_time}"
+                        date_str = first_friday.strftime('%Y-%m-%d')
+                        if event_time:
+                            recurring_event['start'] = f"{date_str}T{event_time}"
+                            recurring_event['allDay'] = False
+                        else:
+                            recurring_event['start'] = date_str
+                            recurring_event['allDay'] = True
                         expanded.append(recurring_event)
                         print(f"    [RECURRING] Generated: {event['title']} on {first_friday.strftime('%Y-%m-%d')}")
             except Exception as e:
@@ -1694,7 +1732,7 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
                 if 'T' in original_start:
                     event_time = original_start.split('T')[1]
                 else:
-                    event_time = '19:00:00'
+                    event_time = None
 
                 current_date = datetime.now()
                 for i in range(6):
@@ -1711,7 +1749,13 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
 
                     if second_saturday.date() >= datetime.now().date():
                         recurring_event = event.copy()
-                        recurring_event['start'] = f"{second_saturday.strftime('%Y-%m-%d')}T{event_time}"
+                        date_str = second_saturday.strftime('%Y-%m-%d')
+                        if event_time:
+                            recurring_event['start'] = f"{date_str}T{event_time}"
+                            recurring_event['allDay'] = False
+                        else:
+                            recurring_event['start'] = date_str
+                            recurring_event['allDay'] = True
                         expanded.append(recurring_event)
                         print(f"    [RECURRING] Generated: {event['title']} on {second_saturday.strftime('%Y-%m-%d')}")
             except Exception as e:
@@ -1730,7 +1774,7 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
                 if 'T' in original_start:
                     event_time = original_start.split('T')[1]
                 else:
-                    event_time = '19:00:00'
+                    event_time = None
 
                 current_date = datetime.now()
                 for i in range(6):
@@ -1747,7 +1791,13 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
 
                     if third_tuesday.date() >= datetime.now().date():
                         recurring_event = event.copy()
-                        recurring_event['start'] = f"{third_tuesday.strftime('%Y-%m-%d')}T{event_time}"
+                        date_str = third_tuesday.strftime('%Y-%m-%d')
+                        if event_time:
+                            recurring_event['start'] = f"{date_str}T{event_time}"
+                            recurring_event['allDay'] = False
+                        else:
+                            recurring_event['start'] = date_str
+                            recurring_event['allDay'] = True
                         expanded.append(recurring_event)
                         print(f"    [RECURRING] Generated: {event['title']} on {third_tuesday.strftime('%Y-%m-%d')}")
             except Exception as e:
@@ -1782,7 +1832,7 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
                     if 'T' in original_start:
                         event_time = original_start.split('T')[1]
                     else:
-                        event_time = '14:00:00'  # Default to 2pm for classes
+                        event_time = None  # No confirmed time; preserve allDay
 
                     # Generate occurrences for next 6 months (approx 26 weeks)
                     current_date = datetime.now().date()
@@ -1803,7 +1853,13 @@ def _expand_recurring_events(results: List[Dict], source_type: str = "events") -
                             break
 
                         recurring_event = event.copy()
-                        recurring_event['start'] = f"{occurrence_date.strftime('%Y-%m-%d')}T{event_time}"
+                        date_str = occurrence_date.strftime('%Y-%m-%d')
+                        if event_time:
+                            recurring_event['start'] = f"{date_str}T{event_time}"
+                            recurring_event['allDay'] = False
+                        else:
+                            recurring_event['start'] = date_str
+                            recurring_event['allDay'] = True
                         expanded.append(recurring_event)
 
                         # Only print first few to avoid spam
